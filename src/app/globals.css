@@ -1,0 +1,257 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #140702;
+  --foreground: #fef3c7;
+}
+
+body {
+  color: var(--foreground);
+  /* Dark vintage tavern wood planks with ambient gold warmth and ember glow */
+  background: 
+    radial-gradient(circle at 50% 15%, rgba(251, 191, 36, 0.12) 0%, transparent 60%),
+    radial-gradient(circle at 20% 80%, rgba(180, 83, 9, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 85%, rgba(180, 83, 9, 0.15) 0%, transparent 50%),
+    linear-gradient(180deg, #240c03 0%, #150601 50%, #0d0300 100%);
+  min-height: 100vh;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom Wood & Gold Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #190802;
+  border-left: 1px solid #3d1606;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #d97706 0%, #92400e 100%);
+  border: 1px solid #fef08a;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #f59e0b 0%, #b45309 100%);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Glassmorphism */
+.glass-panel {
+  background: rgba(25, 25, 45, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* =========================================================
+   CASUAL RPG WOODEN GUI DESIGN SYSTEM (PURE CSS / NO IMAGES)
+   ========================================================= */
+
+/* RPG Text Shadow Styles */
+.rpg-text-gold {
+  color: #fef08a;
+  text-shadow: 0 2px 0 #270e02, 0 3px 4px rgba(0, 0, 0, 0.9);
+}
+
+.rpg-text-white {
+  color: #fffef5;
+  text-shadow: 0 1px 0 #270e02, 0 2px 3px rgba(0, 0, 0, 0.85);
+}
+
+.rpg-text-stroke {
+  text-shadow: 
+    -1px -1px 0 #270e02,  
+     1px -1px 0 #270e02,
+    -1px  1px 0 #270e02,
+     1px  1px 0 #270e02,
+     0 3px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* 3D Wooden Plank / Panel */
+.wood-panel {
+  background: linear-gradient(180deg, #b8651b 0%, #823e0c 45%, #451a03 100%);
+  border: 4px solid #3a1503;
+  box-shadow: 
+    0 8px 18px rgba(0, 0, 0, 0.65),
+    inset 0 3px 2px rgba(255, 220, 120, 0.45),
+    inset 0 -5px 6px rgba(30, 10, 0, 0.75);
+}
+
+/* Deeper Carved Recessed Wooden Basin (E.g. Dice Arena / Table Floor) */
+.wood-recessed {
+  background: radial-gradient(circle at 50% 40%, #522306 0%, #2e1102 70%, #170700 100%);
+  border: 3px solid #1c0901;
+  box-shadow: 
+    inset 0 6px 14px rgba(0, 0, 0, 0.85),
+    inset 0 -2px 4px rgba(255, 200, 100, 0.15),
+    0 2px 4px rgba(255, 200, 100, 0.1);
+}
+
+/* Header Plaque with Golden Brass Rivets in 4 corners */
+.wood-plaque {
+  background: linear-gradient(180deg, #a65814 0%, #703308 100%);
+  border: 3px solid #2f1103;
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.5),
+    inset 0 2px 1px rgba(255, 225, 130, 0.4),
+    inset 0 -3px 4px rgba(20, 6, 0, 0.6);
+  position: relative;
+}
+
+/* Simulated Brass Rivets (Corner Screws) */
+.wood-rivet {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 35% 35%, #fff2a3 0%, #d49520 60%, #5e3b00 100%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+/* Chunky 3D Wooden & Gold Action Button */
+.wood-btn-gold {
+  background: linear-gradient(180deg, #ffc83b 0%, #e68e14 48%, #b85f09 100%);
+  border-top: 1.5px solid rgba(255, 255, 255, 0.6);
+  border-left: 2px solid #6b3004;
+  border-right: 2px solid #6b3004;
+  border-bottom: 6px solid #2f1103;
+  color: #fffef2;
+  text-shadow: 0 2px 0 #4a2103, 0 3px 2px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.45), inset 0 2px 2px rgba(255, 255, 255, 0.5);
+  transition: all 0.08s ease-in-out;
+}
+
+.wood-btn-gold:hover:not(:disabled) {
+  background: linear-gradient(180deg, #ffd359 0%, #fa9b19 48%, #c76709 100%);
+}
+
+.wood-btn-gold:active:not(:disabled) {
+  transform: translateY(4px);
+  border-bottom-width: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 2px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Chunky 3D Red / Crimson Button (For Drink Penalty) */
+.wood-btn-red {
+  background: linear-gradient(180deg, #f85032 0%, #e73827 45%, #a81c10 100%);
+  border-top: 1.5px solid rgba(255, 255, 255, 0.6);
+  border-left: 2px solid #5a0e07;
+  border-right: 2px solid #5a0e07;
+  border-bottom: 6px solid #2e0502;
+  color: #ffffff;
+  text-shadow: 0 2px 0 #440b06, 0 3px 2px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.45), inset 0 2px 2px rgba(255, 255, 255, 0.4);
+  transition: all 0.08s ease-in-out;
+}
+
+.wood-btn-red:active:not(:disabled) {
+  transform: translateY(4px);
+  border-bottom-width: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* Chunky 3D Green Button (For Safe / Pass) */
+.wood-btn-green {
+  background: linear-gradient(180deg, #4ade80 0%, #22c55e 45%, #15803d 100%);
+  border-top: 1.5px solid rgba(255, 255, 255, 0.6);
+  border-left: 2px solid #0f4823;
+  border-right: 2px solid #0f4823;
+  border-bottom: 6px solid #072512;
+  color: #ffffff;
+  text-shadow: 0 2px 0 #0b371b, 0 3px 2px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.45), inset 0 2px 2px rgba(255, 255, 255, 0.4);
+  transition: all 0.08s ease-in-out;
+}
+
+.wood-btn-green:active:not(:disabled) {
+  transform: translateY(4px);
+  border-bottom-width: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* Chunky 3D Brown Button (Like "CLOSE" in Reference Image) */
+.wood-btn-brown {
+  background: linear-gradient(180deg, #7c3b10 0%, #582405 45%, #381402 100%);
+  border-top: 1.5px solid rgba(255, 230, 160, 0.45);
+  border-left: 2px solid #2e1002;
+  border-right: 2px solid #2e1002;
+  border-bottom: 6px solid #1a0801;
+  color: #fde68a;
+  text-shadow: 0 2px 0 #1f0b02, 0 3px 2px rgba(0, 0, 0, 0.9);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5), inset 0 2px 2px rgba(255, 255, 255, 0.2);
+  transition: all 0.08s ease-in-out;
+}
+
+.wood-btn-brown:hover:not(:disabled) {
+  background: linear-gradient(180deg, #8f4514 0%, #662b08 45%, #421803 100%);
+}
+
+.wood-btn-brown:active:not(:disabled) {
+  transform: translateY(4px);
+  border-bottom-width: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* Wood & Gold Fantasy Quest Banner ("ACTIVE QUEST" in Reference Image) */
+.rpg-scroll-banner {
+  background: linear-gradient(180deg, #ffea9f 0%, #f5be47 30%, #d98818 75%, #924d04 100%);
+  border-top: 2px solid #fff5cc;
+  border-bottom: 2px solid #632d03;
+  box-shadow: 
+    0 6px 12px rgba(0, 0, 0, 0.6),
+    inset 0 2px 2px rgba(255, 255, 255, 0.8),
+    inset 0 -3px 3px rgba(110, 48, 2, 0.6);
+  color: #3f1903;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7), 0 -1px 0 rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+/* Ornate Wood & Gold Dialog Box with Dual Filigree Border */
+.rpg-dialog-box {
+  background: 
+    radial-gradient(circle at 50% 30%, #542205 0%, #351302 60%, #200a01 100%);
+  border: 4px solid #1a0802;
+  box-shadow: 
+    0 16px 36px rgba(0, 0, 0, 0.9),
+    inset 0 0 0 2px #d49520,
+    inset 0 0 0 4px #5e2802,
+    inset 0 4px 6px rgba(255, 220, 100, 0.35),
+    inset 0 -8px 12px rgba(10, 3, 0, 0.8);
+  position: relative;
+}
+
+/* Ornate Corner Brackets (Corner Golden Trim) */
+.rpg-corner-gold {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: #fcd34d;
+  pointer-events: none;
+}
+.rpg-corner-tl { top: 6px; left: 6px; border-top: 2px solid #fcd34d; border-left: 2px solid #fcd34d; }
+.rpg-corner-tr { top: 6px; right: 6px; border-top: 2px solid #fcd34d; border-right: 2px solid #fcd34d; }
+.rpg-corner-bl { bottom: 6px; left: 6px; border-bottom: 2px solid #fcd34d; border-left: 2px solid #fcd34d; }
+.rpg-corner-br { bottom: 6px; right: 6px; border-bottom: 2px solid #fcd34d; border-right: 2px solid #fcd34d; }
+
+
