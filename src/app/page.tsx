@@ -310,7 +310,7 @@ export default function HomePage() {
       <section className="w-full space-y-3 my-2">
         <div className="flex items-center justify-between text-xs font-black text-amber-300 px-1">
           <span>เลือกมินิเกมในโรงเตี๊ยม</span>
-          <span className="rpg-text-gold">1 เกมพร้อมเปิดศึก</span>
+          <span className="rpg-text-gold">{AVAILABLE_GAMES.filter((g) => g.badge === 'ready').length} เกมพร้อมเปิดศึก</span>
         </div>
 
         <div className="space-y-3">
