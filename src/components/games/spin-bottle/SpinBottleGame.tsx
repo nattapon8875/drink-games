@@ -163,7 +163,7 @@ export const SpinBottleGame: React.FC<BaseGameProps> = ({
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 py-2 flex flex-col items-center">
+    <div className="w-full max-w-md mx-auto px-2 py-2 flex flex-col items-center">
       {/* Top Game Bar */}
       <div className="w-full flex items-center justify-between mb-3 bg-surface-card/80 backdrop-blur border border-amber-900/50 rounded-2xl px-4 py-2.5 shadow-lg">
         {/* Left: Turn Status */}

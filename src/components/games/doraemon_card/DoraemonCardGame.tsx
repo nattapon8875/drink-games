@@ -277,7 +277,7 @@ export const DoraemonCardGame: React.FC<DoraemonCardGameProps> = ({
   const currentRule = lastDrawnCard ? customRules[lastDrawnCard.value] || DEFAULT_DORAEMON_RULES[lastDrawnCard.value] : null;
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-2 py-2 flex flex-col items-center select-none">
+    <div className="w-full max-w-md mx-auto px-2 py-2 flex flex-col items-center select-none">
       {/* ⚠️ Permanent Doraemon Golden Rule Banner (Always Visible) */}
       <div className="w-full mb-3 bg-gradient-to-r from-red-950 via-amber-950 to-red-950 border-2 border-amber-500/70 rounded-2xl p-2.5 sm:p-3 shadow-[0_0_20px_rgba(245,158,11,0.3)] flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">

@@ -192,7 +192,7 @@ export const WheelGame: React.FC<BaseGameProps> = ({
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-2 py-2 flex flex-col items-center select-none">
+    <div className="w-full max-w-md mx-auto px-2 py-2 flex flex-col items-center select-none">
       {/* Top Banner Control Bar */}
       <div className="w-full mb-3 bg-[#260e03]/90 border border-amber-900/50 rounded-2xl px-4 py-2.5 shadow-lg flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5">

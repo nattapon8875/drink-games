@@ -40,7 +40,7 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
   };
 
   return (
-    <div className="flex flex-col w-full max-w-4xl mx-auto min-h-screen px-2 pb-12 pt-2 select-none">
+    <div className="flex flex-col w-full max-w-md mx-auto px-2 pb-8 pt-2 select-none">
       {/* Top Header: Compact Player Ribbon with Mini Icons & Turn Indicator */}
       <div className="w-full bg-[#2a1104]/95 border-2 border-[#54240a] rounded-2xl px-3 py-2 mb-2 relative shadow-xl">
         <div className="flex items-center justify-between gap-2">

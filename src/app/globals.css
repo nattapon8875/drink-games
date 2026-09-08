@@ -9,15 +9,18 @@
 
 body {
   color: var(--foreground);
-  /* Dark vintage tavern wood planks with ambient gold warmth and ember glow */
+  background-color: #0b0301;
+  min-height: 100vh;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  overflow-x: hidden;
+}
+
+.bg-tavern {
   background: 
     radial-gradient(circle at 50% 15%, rgba(251, 191, 36, 0.12) 0%, transparent 60%),
     radial-gradient(circle at 20% 80%, rgba(180, 83, 9, 0.15) 0%, transparent 50%),
     radial-gradient(circle at 80% 85%, rgba(180, 83, 9, 0.15) 0%, transparent 50%),
     linear-gradient(180deg, #240c03 0%, #150601 50%, #0d0300 100%);
-  min-height: 100vh;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  overflow-x: hidden;
 }
 
 /* Custom Wood & Gold Scrollbar */
