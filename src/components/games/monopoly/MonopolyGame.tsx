@@ -31,6 +31,8 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
     activeActionModal,
     rollDice,
     completeAction,
+    canAct,
+    isBotTurn,
   } = useMonopolyEngine(props);
 
   const getPlatform = (p: any): PlatformType => {
@@ -116,7 +118,7 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
       {/* Turn Announcement Ribbon Banner */}
       <div
         className={`w-full py-2.5 px-4 rounded-2xl mb-2 text-center text-sm sm:text-base font-black transition-all ${
-          isMyTurn
+          canAct
             ? 'wood-btn-gold border-b-4 border-[#2f1103] shadow-lg animate-pulse'
             : 'bg-[#240d02] border-2 border-[#451803] text-amber-200/90 shadow-inner'
         }`}
@@ -127,6 +129,8 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
           <span className="drop-shadow">🎲 ทอยได้แต้ม {diceResult}! กำลังเดินตัวละคร...</span>
         ) : isMyTurn ? (
           <span className="drop-shadow">🎲 ตาของคุณแล้ว! กดปุ่มทอยลูกเต๋าได้เลย!</span>
+        ) : isBotTurn && isHost ? (
+          <span className="drop-shadow">🤖 ตาของบอท ({currentTurnPlayer?.display_name})! คุณในฐานะโฮสต์กดทอยแทนได้เลย</span>
         ) : (
           <span>⏳ กำลังรอให้ <b>{currentTurnPlayer?.display_name}</b> ทอยลูกเต๋า...</span>
         )}
@@ -150,13 +154,21 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
 
             {/* 2D HUD Control Overlay for Rolling Dice & Info */}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 pointer-events-auto">
-              {isMyTurn && (
+              {canAct && (
                 <button
                   onClick={rollDice}
                   disabled={activeActionModal || isRolling || isMoving}
                   className="wood-btn-gold rounded-2xl font-black text-base sm:text-lg px-8 py-3.5 shadow-[0_10px_25px_rgba(0,0,0,0.8)] flex items-center gap-2 border-2 border-yellow-200 hover:scale-105 active:scale-95 transition"
                 >
-                  <span>{isRolling ? '🎲 กำลังทอย...' : isMoving ? `🎲 ได้แต้ม ${diceResult}!` : '🎲 ทอยลูกเต๋า 3D!'}</span>
+                  <span>
+                    {isRolling
+                      ? '🎲 กำลังทอย...'
+                      : isMoving
+                      ? `🎲 ได้แต้ม ${diceResult}!`
+                      : isBotTurn
+                      ? `🤖 ทอยแทน ${currentTurnPlayer?.display_name}!`
+                      : '🎲 ทอยลูกเต๋า 3D!'}
+                  </span>
                 </button>
               )}
 
@@ -187,12 +199,16 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
 
                 <div className="mb-2">
                   <span className="text-xs sm:text-sm font-bold text-amber-100 drop-shadow">
-                    {isMyTurn ? 'คุณกำลังจะทอย' : `${currentTurnPlayer?.display_name || 'เพื่อน'} กำลังทอย`}
+                    {isMyTurn
+                      ? 'คุณกำลังจะทอย'
+                      : isBotTurn && isHost
+                      ? `คุณทอยแทน ${currentTurnPlayer?.display_name}`
+                      : `${currentTurnPlayer?.display_name || 'เพื่อน'} กำลังทอย`}
                   </span>
                 </div>
 
                 <DiceRoller
-                  isMyTurn={isMyTurn}
+                  isMyTurn={canAct}
                   isRolling={isRolling}
                   diceResult={diceResult}
                   onRoll={rollDice}
@@ -215,7 +231,7 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
         isOpen={activeActionModal}
         tile={currentTile}
         targetPlayer={currentTurnPlayer || players[0]}
-        isMyTurn={isMyTurn}
+        isMyTurn={canAct}
         diceResult={diceResult}
         onComplete={completeAction}
       />

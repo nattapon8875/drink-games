@@ -23,8 +23,21 @@ export default function LobbyPage() {
   const roomCode = (params?.roomCode as string)?.toUpperCase();
 
   const { user, platform, isLoading: platformLoading } = usePlatform();
-  const { room, players, loading: roomLoading, error, joinRoom, leaveRoom, startGame, returnToLobby, closeRoom, updateGameState, reorderPlayers } =
-    useRoomRealtime(roomCode, user);
+  const {
+    room,
+    players,
+    loading: roomLoading,
+    error,
+    joinRoom,
+    leaveRoom,
+    addBotPlayer,
+    removePlayer,
+    startGame,
+    returnToLobby,
+    closeRoom,
+    updateGameState,
+    reorderPlayers,
+  } = useRoomRealtime(roomCode, user);
 
   const [hasJoined, setHasJoined] = useState(false);
   const [starting, setStarting] = useState(false);
@@ -213,6 +226,8 @@ export default function LobbyPage() {
           isHostUser={isHost}
           costumes={room?.game_state?.costumes}
           onReorderPlayers={reorderPlayers}
+          onAddBotPlayer={addBotPlayer}
+          onRemovePlayer={removePlayer}
         />
 
         {/* Custom Rules Button */}

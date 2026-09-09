@@ -24,13 +24,20 @@ export function useMonopolyEngine({
   const totalTiles = 28;
 
   // Turn verification
+  const isHost = Boolean(currentPlayer && room.host_id === currentPlayer.id);
+  const currentTurnPlayer = players.find((p) => p.id === room.current_turn_player_id) || players[0];
+  const isBotTurn = Boolean(
+    currentTurnPlayer && (currentTurnPlayer.line_user_id === 'bot' || currentTurnPlayer.id.startsWith('bot-'))
+  );
+
   const isMyTurn = Boolean(
     currentPlayer &&
     room.current_turn_player_id &&
     room.current_turn_player_id === currentPlayer.id
   );
 
-  const currentTurnPlayer = players.find((p) => p.id === room.current_turn_player_id) || players[0];
+  // If it's a bot's turn, host can act on behalf of the bot
+  const canAct = isMyTurn || (isHost && isBotTurn);
 
   // Positions dictionary: { [playerId]: tileIndex (0-27) }
   const positions: Record<string, number> = room.game_state?.positions || {};
@@ -41,16 +48,19 @@ export function useMonopolyEngine({
   const currentTile = tiles[lastTileIndex] || tiles[0];
   const diceResult = room.game_state?.diceResult ?? 1;
 
+  // Active moving player is the one whose turn it is
+  const activePlayer = isMyTurn ? currentPlayer : currentTurnPlayer;
+
   // Roll the dice with multi-step walking animation and delayed modal
   const rollDice = useCallback(async () => {
-    if (!isMyTurn || isRollingLocal || activeActionModal || !currentPlayer) return;
+    if (!canAct || isRollingLocal || activeActionModal || !activePlayer) return;
 
     setIsRollingLocal(true);
     sfx.playDiceRoll();
 
     // Roll random 1-6
     const roll = Math.floor(Math.random() * 6) + 1;
-    const startPos = positions[currentPlayer.id] ?? 0;
+    const startPos = positions[activePlayer.id] ?? 0;
     const finalPos = (startPos + roll) % totalTiles;
 
     // 1. Broadcast dice rolling status & result so everyone sees the dice spin & stop on number
@@ -79,7 +89,7 @@ export function useMonopolyEngine({
           currentStepPos = (currentStepPos + 1) % totalTiles;
           sfx.playStep();
 
-          const stepPositions = { ...positions, [currentPlayer.id]: currentStepPos };
+          const stepPositions = { ...positions, [activePlayer.id]: currentStepPos };
           await onUpdateGameState({
             positions: stepPositions,
             lastTileIndex: currentStepPos,
@@ -105,10 +115,10 @@ export function useMonopolyEngine({
             // Pause on landing tile before opening Action Modal
             setTimeout(async () => {
               await onUpdateGameState({
-                positions: { ...positions, [currentPlayer.id]: finalPos },
+                positions: { ...positions, [activePlayer.id]: finalPos },
                 diceResult: roll,
                 lastTileIndex: finalPos,
-                lastActionPlayerId: currentPlayer.id,
+                lastActionPlayerId: activePlayer.id,
                 isRolling: false,
                 activeActionModal: true,
               });
@@ -119,10 +129,10 @@ export function useMonopolyEngine({
       }, 900);
     }, 1200);
   }, [
-    isMyTurn,
+    canAct,
     isRollingLocal,
     activeActionModal,
-    currentPlayer,
+    activePlayer,
     positions,
     onUpdateGameState,
     totalTiles,
@@ -131,15 +141,15 @@ export function useMonopolyEngine({
   // Complete action & hand over turn
   const completeAction = useCallback(
     async (drankCount: number = 0) => {
-      if (!currentPlayer) return;
+      if (!activePlayer) return;
 
       if (drankCount > 0) {
         sfx.playDrinkPenalty();
-        await onUpdatePlayerDrink(currentPlayer.id, drankCount);
+        await onUpdatePlayerDrink(activePlayer.id, drankCount);
       }
 
       // Find next player by turn order
-      const currentIndex = players.findIndex((p) => p.id === currentPlayer.id);
+      const currentIndex = players.findIndex((p) => p.id === activePlayer.id);
       const nextIndex = (currentIndex + 1) % (players.length || 1);
       const nextPlayer = players[nextIndex];
 
@@ -147,13 +157,15 @@ export function useMonopolyEngine({
         await onNextTurn(nextPlayer.id);
       }
     },
-    [currentPlayer, players, onUpdatePlayerDrink, onNextTurn]
+    [activePlayer, players, onUpdatePlayerDrink, onNextTurn]
   );
 
   return {
     tiles,
     positions,
     isMyTurn,
+    canAct,
+    isBotTurn,
     currentTurnPlayer,
     isRolling: Boolean(room.game_state?.isRolling),
     isMoving: isRollingLocal,

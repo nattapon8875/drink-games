@@ -543,6 +543,91 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
     [roomCode]
   );
 
+  // Add Bot / Local Player (Host only)
+  const addBotPlayer = useCallback(
+    async (botName: string) => {
+      if (!roomCode) return;
+      const cleanName = botName.trim();
+      if (!cleanName) return;
+
+      const botId = `bot-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+      const newOrder = players.length;
+      const botPlayer: PlayerRecord = {
+        id: botId,
+        room_code: roomCode,
+        line_user_id: 'bot',
+        display_name: cleanName,
+        avatar_url: null,
+        drinks_count: 0,
+        turn_order: newOrder,
+        is_connected: true,
+      };
+
+      if (!isSupabaseConfigured()) {
+        try {
+          const res = await fetch('/api/room', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'join',
+              code: roomCode,
+              player: botPlayer,
+            }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.room) setRoom(data.room);
+            if (data.players) setPlayers(data.players);
+          }
+        } catch (err) {
+          console.error('[Mock API] Add bot error:', err);
+        }
+        return;
+      }
+
+      try {
+        await supabase.from('players').insert(botPlayer);
+
+        if (room) {
+          const positions = { ...(room.game_state?.positions || {}) };
+          positions[botId] = 0;
+
+          const costumes = { ...(room.game_state?.costumes || {}) };
+          if (costumes[botId] === undefined) {
+            const usedCostumes = new Set(Object.values(costumes));
+            const availableCostumes = Array.from({ length: 20 }, (_, i) => i).filter(
+              (c) => !usedCostumes.has(c)
+            );
+            const costumePool =
+              availableCostumes.length > 0
+                ? availableCostumes
+                : Array.from({ length: 20 }, (_, i) => i);
+            costumes[botId] =
+              costumePool[Math.floor(Math.random() * costumePool.length)];
+          }
+
+          await supabase
+            .from('rooms')
+            .update({
+              game_state: { ...room.game_state, positions, costumes },
+            })
+            .eq('code', roomCode);
+        }
+      } catch (err) {
+        console.error('[Realtime] Add bot error:', err);
+      }
+    },
+    [roomCode, players.length, room]
+  );
+
+  // Remove Player / Bot (Host only or leaving)
+  const removePlayer = useCallback(
+    async (targetPlayerId: string) => {
+      await leaveRoom(targetPlayerId);
+    },
+    [leaveRoom]
+  );
+
   return {
     room,
     players,
@@ -550,6 +635,8 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
     error,
     joinRoom,
     leaveRoom,
+    addBotPlayer,
+    removePlayer,
     startGame,
     returnToLobby,
     closeRoom,
