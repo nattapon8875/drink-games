@@ -11,7 +11,7 @@ body {
   color: var(--foreground);
   background-color: #0b0301;
   min-height: 100vh;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: var(--font-chakra), 'Chakra Petch', system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
 }
 
