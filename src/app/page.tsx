@@ -235,7 +235,7 @@ export default function HomePage() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-between p-4 sm:p-6 max-w-lg mx-auto select-none">
+    <main className="w-full flex-1 flex flex-col items-center justify-between p-4 sm:p-5 select-none">
       {/* Top Bar: User Profile & Platform Info (Rustic Wood Plaque) */}
       <header className="w-full flex items-center justify-between py-2 border-b border-[#5e2802] mb-4">
         <div className="flex items-center gap-2.5">

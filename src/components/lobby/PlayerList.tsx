@@ -50,7 +50,7 @@ export const PlayerList: React.FC<PlayerListProps> = ({
         </span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-64 overflow-y-auto pr-1 scrollbar-none">
+      <div className="flex flex-col gap-2.5 max-h-72 overflow-y-auto pr-1 scrollbar-none">
         {players.map((p, idx) => {
           const isPlayerHost = p.id === hostId;
           const isMe = p.id === currentUserId;
@@ -69,10 +69,10 @@ export const PlayerList: React.FC<PlayerListProps> = ({
                   : 'bg-[#220c02]/80 border-[#471903]'
               }`}
             >
-              <div className="flex items-center gap-2.5 min-w-0">
+              <div className="flex items-center gap-2.5 min-w-0 flex-1 mr-2">
                 {/* Host Reorder Buttons */}
                 {isHostUser && players.length > 1 && (
-                  <div className="flex flex-col gap-0.5 mr-0.5">
+                  <div className="flex flex-col gap-0.5 mr-0.5 shrink-0">
                     <button
                       type="button"
                       disabled={idx === 0}
@@ -124,9 +124,9 @@ export const PlayerList: React.FC<PlayerListProps> = ({
                     />
                   )}
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5 font-black text-sm text-amber-100">
-                    <span className="truncate max-w-[100px] drop-shadow">{p.display_name}</span>
+                    <span className="truncate max-w-[140px] sm:max-w-[180px] drop-shadow">{p.display_name}</span>
                     {isMe && (
                       <span className="text-[9px] bg-amber-500 text-[#301103] font-black px-1.5 py-0.2 rounded-md shrink-0">
                         คุณ

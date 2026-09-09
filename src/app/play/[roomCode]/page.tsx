@@ -160,7 +160,7 @@ export default function PlayPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between">
+    <div className="w-full flex-1 flex flex-col justify-between">
       {/* Top minimal back control (Tavern Sign) */}
       <div className="px-4 pt-2.5 flex items-center justify-between">
         <div className="flex items-center gap-2">

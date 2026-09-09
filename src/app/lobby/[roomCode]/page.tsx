@@ -144,7 +144,7 @@ export default function LobbyPage() {
   const hostPlayer = players.find((p) => p.id === room?.host_id);
 
   return (
-    <main className="min-h-screen flex flex-col justify-between p-4 sm:p-6 max-w-md mx-auto select-none">
+    <main className="w-full flex-1 flex flex-col justify-between p-4 sm:p-5 select-none">
       {/* Top Header */}
       <header className="flex items-center justify-between py-2 border-b border-[#54240a] mb-4">
         <button
