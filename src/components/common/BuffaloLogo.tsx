@@ -11,13 +11,13 @@ export const BuffaloLogo: React.FC<BuffaloLogoProps> = ({
 }) => {
   return (
     <div
-      className={`relative inline-flex items-center justify-center shrink-0 ${className}`}
+      className={`relative inline-flex items-center justify-center shrink-0 rounded-full overflow-hidden border border-yellow-500/40 shadow-inner ${className}`}
       style={size ? { width: size, height: size } : undefined}
     >
       <img
         src="/buffy-mascot.png"
         alt="Buffy Mascot"
-        className="w-full h-full object-contain drop-shadow-md"
+        className="w-full h-full object-cover scale-110"
       />
     </div>
   );
