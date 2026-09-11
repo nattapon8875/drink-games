@@ -5,7 +5,7 @@ import { MonopolyTileRecord } from '@/types/database';
 import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
 import { DEFAULT_MONOPOLY_TILES, getTileIcon } from '@/lib/mockTiles';
-import { Settings, RotateCcw, Check, Wine, Award, HelpCircle, ShieldCheck, Smile } from 'lucide-react';
+import { Settings, RotateCcw, Check, Wine, Award, HelpCircle, ShieldCheck, Smile, X } from 'lucide-react';
 import { showConfirm, showToast } from '@/lib/alerts';
 
 interface CustomTilesModalProps {
@@ -28,12 +28,13 @@ export const CustomTilesModal: React.FC<CustomTilesModalProps> = ({
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
+  // Initialize only when modal opens
   useEffect(() => {
     if (isOpen) {
       setTiles(currentTiles && currentTiles.length === 28 ? currentTiles : DEFAULT_MONOPOLY_TILES);
       setSavedSuccess(false);
     }
-  }, [isOpen, currentTiles]);
+  }, [isOpen]);
 
   const handleTileChange = (
     tileIndex: number,
@@ -175,17 +176,40 @@ export const CustomTilesModal: React.FC<CustomTilesModalProps> = ({
                     />
                   </div>
                   <div className="flex-1">
-                    <span className="text-[9px] text-amber-300/70 font-bold mb-0.5 block">ชื่อช่อง</span>
-                    <input
-                      type="text"
-                      value={tile.title}
-                      onChange={(e) =>
-                        handleTileChange(tile.tile_index, 'title', e.target.value)
-                      }
-                      placeholder="ชื่อช่อง"
-                      maxLength={50}
-                      className="w-full bg-[#1b0801] border-2 border-[#54240a] rounded-xl px-2.5 py-1.5 text-xs sm:text-sm font-bold text-white focus:outline-none focus:border-amber-400"
-                    />
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className="text-[9px] text-amber-300/70 font-bold block">ชื่อช่อง</span>
+                      {tile.title && (
+                        <button
+                          type="button"
+                          onClick={() => handleTileChange(tile.tile_index, 'title', '')}
+                          className="text-[9px] text-amber-400/60 hover:text-amber-200"
+                        >
+                          ล้างข้อความ
+                        </button>
+                      )}
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={tile.title}
+                        onChange={(e) =>
+                          handleTileChange(tile.tile_index, 'title', e.target.value)
+                        }
+                        placeholder="ชื่อช่อง"
+                        maxLength={50}
+                        className="w-full bg-[#1b0801] border-2 border-[#54240a] rounded-xl px-2.5 py-1.5 text-xs sm:text-sm font-bold text-white focus:outline-none focus:border-amber-400 select-text pr-7"
+                      />
+                      {tile.title && (
+                        <button
+                          type="button"
+                          onClick={() => handleTileChange(tile.tile_index, 'title', '')}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white p-0.5"
+                          title="ลบข้อความ"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -216,18 +240,33 @@ export const CustomTilesModal: React.FC<CustomTilesModalProps> = ({
 
               {isHost ? (
                 <div>
-                  <textarea
-                    value={tile.action_text}
-                    onChange={(e) =>
-                      handleTileChange(tile.tile_index, 'action_text', e.target.value)
-                    }
-                    placeholder="คำสั่งบทลงโทษ..."
-                    rows={3}
-                    maxLength={300}
-                    className="w-full bg-[#1b0801] border-2 border-[#54240a] rounded-xl p-2.5 text-xs text-amber-100 font-semibold focus:outline-none focus:border-amber-400 resize-y shadow-inner"
-                  />
-                  <div className="text-[10px] text-amber-300/40 text-right pr-1">
-                    {tile.action_text.length}/300 ตัวอักษร
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className="text-[9px] text-amber-300/70 font-bold block">คำสั่งบทลงโทษ</span>
+                    {tile.action_text && (
+                      <button
+                        type="button"
+                        onClick={() => handleTileChange(tile.tile_index, 'action_text', '')}
+                        className="text-[9px] text-amber-400/60 hover:text-amber-200"
+                      >
+                        ล้างคำสั่ง
+                      </button>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <textarea
+                      value={tile.action_text}
+                      onChange={(e) =>
+                        handleTileChange(tile.tile_index, 'action_text', e.target.value)
+                      }
+                      placeholder="คำสั่งบทลงโทษ..."
+                      rows={3}
+                      maxLength={300}
+                      className="w-full bg-[#1b0801] border-2 border-[#54240a] rounded-xl p-2.5 text-xs text-amber-100 font-semibold focus:outline-none focus:border-amber-400 resize-y shadow-inner select-text"
+                    />
+                  </div>
+                  <div className="flex justify-between items-center text-[10px] text-amber-300/40 px-1">
+                    <span>{tile.action_text ? '' : 'กรอกคำสั่งบทลงโทษของช่องนี้'}</span>
+                    <span>{tile.action_text.length}/300 ตัวอักษร</span>
                   </div>
                 </div>
               ) : (
