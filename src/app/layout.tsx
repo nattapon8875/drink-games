@@ -12,6 +12,11 @@ const chakraPetch = Chakra_Petch({
 export const metadata: Metadata = {
   title: 'Buffy Party Drink 🐃 | ศูนย์รวมเกมวงเหล้าออนไลน์',
   description: 'Buffy Party Drink ศูนย์รวมเกมวงเหล้าออนไลน์ เล่นหลายคนแบบเรียลไทม์ รองรับ LINE LIFF, Discord Activity และ Web Browser',
+  icons: {
+    icon: '/buffy-mascot.png?v=4_1',
+    shortcut: '/buffy-mascot.png?v=4_1',
+    apple: '/buffy-mascot.png?v=4_1',
+  },
 };
 
 export const viewport: Viewport = {
