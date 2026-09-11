@@ -7,6 +7,7 @@ import { Button } from '@/components/common/Button';
 import { Avatar } from '@/components/common/Avatar';
 import { Modal } from '@/components/common/Modal';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
+import { THAI_PARTY_NICKNAMES } from '@/lib/platforms/adapter';
 import {
   Sparkles,
   Gamepad2,
@@ -449,14 +450,27 @@ export default function HomePage() {
 
           <div>
             <label className="text-xs font-bold text-amber-200 block mb-1">ชื่อเล่นประจำวง</label>
-            <input
-              type="text"
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              maxLength={20}
-              placeholder="กรอกชื่อเล่นของคุณ"
-              className="w-full bg-[#200c02] border-2 border-[#54240a] rounded-2xl p-3 text-amber-100 font-bold focus:outline-none focus:border-amber-400 shadow-inner"
-            />
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                maxLength={20}
+                placeholder="กรอกชื่อเล่นของคุณ"
+                className="flex-1 bg-[#200c02] border-2 border-[#54240a] rounded-2xl p-3 text-amber-100 font-bold focus:outline-none focus:border-amber-400 shadow-inner"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const randomName = THAI_PARTY_NICKNAMES[Math.floor(Math.random() * THAI_PARTY_NICKNAMES.length)];
+                  setEditName(randomName);
+                }}
+                className="p-3 rounded-2xl bg-[#381604] hover:bg-[#522207] border-2 border-[#6b2e0a] text-yellow-400 text-sm font-bold transition active:scale-95 shrink-0 shadow"
+                title="สุ่มชื่อใหม่"
+              >
+                <Dice5 className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           <div className="flex gap-2">
@@ -466,13 +480,15 @@ export default function HomePage() {
               fullWidth
               onClick={() => {
                 const randomSeed = Math.random().toString(36).substring(2, 8);
+                const randomName = THAI_PARTY_NICKNAMES[Math.floor(Math.random() * THAI_PARTY_NICKNAMES.length)];
+                setEditName(randomName);
                 updateUserProfile(
-                  editName,
+                  randomName,
                   `https://api.dicebear.com/7.x/bottts/svg?seed=${randomSeed}`
                 );
               }}
             >
-              สุ่มรูปใหม่
+              <Dice5 className="w-4 h-4 mr-1.5 inline" /> สุ่มรูป + ชื่อ
             </Button>
             <Button
               variant="wood-gold"

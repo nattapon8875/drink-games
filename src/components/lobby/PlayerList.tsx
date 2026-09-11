@@ -7,6 +7,7 @@ import { PlatformType } from '@/lib/platforms/types';
 import { showConfirm } from '@/lib/alerts';
 import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
+import { THAI_PARTY_NICKNAMES } from '@/lib/platforms/adapter';
 
 interface PlayerListProps {
   players: PlayerRecord[];
@@ -20,23 +21,7 @@ interface PlayerListProps {
   onUpdateMyName?: (newName: string, avatarUrl?: string) => Promise<void>;
 }
 
-const RANDOM_NAMES = [
-  'สายเปย์',
-  'ตับเหล็ก',
-  'น้องแนน',
-  'พี่เบิ้ม',
-  'สายแข็ง',
-  'แก้วเดียวจอด',
-  'เจ้าถิ่น',
-  'เด็กดริ้งค์',
-  'บอสใหญ่',
-  'หวานเจี๊ยบ',
-  'สมชาย',
-  'ผู้พิชิต',
-  'สายยกหมด',
-  'น้องส้ม',
-  'เจ๊หมวย',
-];
+const RANDOM_NAMES = THAI_PARTY_NICKNAMES;
 
 export const PlayerList: React.FC<PlayerListProps> = ({
   players,
@@ -354,21 +339,34 @@ export const PlayerList: React.FC<PlayerListProps> = ({
             <label className="text-xs font-bold text-amber-200 block mb-1">
               ชื่อเล่นในวงเหล้า
             </label>
-            <input
-              type="text"
-              value={editNameInput}
-              onChange={(e) => setEditNameInput(e.target.value)}
-              maxLength={20}
-              placeholder="กรอกชื่อของคุณ"
-              autoFocus
-              className="w-full bg-[#200c02] border-2 border-[#54240a] rounded-2xl p-3 text-amber-100 font-bold focus:outline-none focus:border-amber-400 shadow-inner text-sm"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleSaveName();
-                }
-              }}
-            />
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={editNameInput}
+                onChange={(e) => setEditNameInput(e.target.value)}
+                maxLength={20}
+                placeholder="กรอกชื่อของคุณ"
+                autoFocus
+                className="flex-1 bg-[#200c02] border-2 border-[#54240a] rounded-2xl p-3 text-amber-100 font-bold focus:outline-none focus:border-amber-400 shadow-inner text-sm"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleSaveName();
+                  }
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const randomName = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
+                  setEditNameInput(randomName);
+                }}
+                className="p-3 rounded-2xl bg-[#381604] hover:bg-[#522207] border-2 border-[#6b2e0a] text-yellow-400 text-sm font-bold transition active:scale-95 shrink-0 shadow"
+                title="สุ่มชื่อใหม่"
+              >
+                <Dice5 className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           <div className="flex gap-2">
@@ -380,10 +378,12 @@ export const PlayerList: React.FC<PlayerListProps> = ({
               disabled={isSavingName}
               onClick={() => {
                 const randomSeed = Math.random().toString(36).substring(2, 8);
+                const randomName = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
                 setEditAvatarInput(`https://api.dicebear.com/7.x/bottts/svg?seed=${randomSeed}`);
+                setEditNameInput(randomName);
               }}
             >
-              <Dice5 className="w-4 h-4 mr-1.5 inline" /> สุ่มรูปใหม่
+              <Dice5 className="w-4 h-4 mr-1.5 inline" /> สุ่มรูป + ชื่อ
             </Button>
             <Button
               variant="wood-gold"

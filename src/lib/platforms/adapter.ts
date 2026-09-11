@@ -2,7 +2,7 @@ import { initLiff, shareLiffInvite } from './liff';
 import { initDiscord, isDiscordActivity, channelIdToRoomCode } from './discord';
 import { PlatformType, UnifiedUser } from './types';
 
-const THAI_PARTY_NICKNAMES = [
+export const THAI_PARTY_NICKNAMES = [
   'เสี่ยสายเปย์',
   'ตับเหล็กทองคำ',
   'เทพเจ้าหมดแก้ว',
@@ -13,6 +13,21 @@ const THAI_PARTY_NICKNAMES = [
   'คนดีประจำวง',
   'พี่เบิ้มเทกระจาด',
   'นักชนแก้วในตำนาน',
+  'สายเปย์',
+  'ตับเหล็ก',
+  'น้องแนน',
+  'พี่เบิ้ม',
+  'สายแข็ง',
+  'แก้วเดียวจอด',
+  'เจ้าถิ่น',
+  'เด็กดริ้งค์',
+  'บอสใหญ่',
+  'หวานเจี๊ยบ',
+  'สมชาย',
+  'ผู้พิชิต',
+  'สายยกหมด',
+  'น้องส้ม',
+  'เจ๊หมวย',
 ];
 
 export function getRandomGuestUser(): UnifiedUser {
