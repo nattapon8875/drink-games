@@ -36,13 +36,13 @@ export const CustomTilesModal: React.FC<CustomTilesModalProps> = ({
   }, [isOpen, currentTiles]);
 
   const handleTileChange = (
-    index: number,
+    tileIndex: number,
     field: keyof MonopolyTileRecord,
     value: string
   ) => {
     if (!isHost) return;
     setTiles((prev) =>
-      prev.map((tile, i) => (i === index ? { ...tile, [field]: value } : tile))
+      prev.map((tile) => (tile.tile_index === tileIndex ? { ...tile, [field]: value } : tile))
     );
   };
 
@@ -183,7 +183,7 @@ export const CustomTilesModal: React.FC<CustomTilesModalProps> = ({
                         handleTileChange(tile.tile_index, 'title', e.target.value)
                       }
                       placeholder="ชื่อช่อง"
-                      maxLength={30}
+                      maxLength={50}
                       className="w-full bg-[#1b0801] border-2 border-[#54240a] rounded-xl px-2.5 py-1.5 text-xs sm:text-sm font-bold text-white focus:outline-none focus:border-amber-400"
                     />
                   </div>
@@ -214,18 +214,22 @@ export const CustomTilesModal: React.FC<CustomTilesModalProps> = ({
                 </div>
               )}
 
-              {/* Action Text Area */}
               {isHost ? (
-                <textarea
-                  value={tile.action_text}
-                  onChange={(e) =>
-                    handleTileChange(tile.tile_index, 'action_text', e.target.value)
-                  }
-                  placeholder="คำสั่งบทลงโทษ..."
-                  rows={2}
-                  maxLength={120}
-                  className="w-full bg-[#1b0801] border-2 border-[#54240a] rounded-xl p-2.5 text-xs text-amber-100 font-semibold focus:outline-none focus:border-amber-400 resize-none shadow-inner"
-                />
+                <div>
+                  <textarea
+                    value={tile.action_text}
+                    onChange={(e) =>
+                      handleTileChange(tile.tile_index, 'action_text', e.target.value)
+                    }
+                    placeholder="คำสั่งบทลงโทษ..."
+                    rows={3}
+                    maxLength={300}
+                    className="w-full bg-[#1b0801] border-2 border-[#54240a] rounded-xl p-2.5 text-xs text-amber-100 font-semibold focus:outline-none focus:border-amber-400 resize-y shadow-inner"
+                  />
+                  <div className="text-[10px] text-amber-300/40 text-right pr-1">
+                    {tile.action_text.length}/300 ตัวอักษร
+                  </div>
+                </div>
               ) : (
                 <p className="text-xs text-amber-200/90 font-medium">{tile.action_text}</p>
               )}
