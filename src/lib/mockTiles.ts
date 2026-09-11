@@ -14,7 +14,7 @@ export const DEFAULT_MONOPOLY_TILES: MonopolyTileRecord[] = [
   { tile_index: 10, title: 'ชายล้วน', action_text: 'ผู้ชายทุกคนในวง ดื่มคนละ 1 จิบ', tile_type: 'drink', icon: '⚔️' },
   { tile_index: 11, title: 'ยืมมือเพื่อน', action_text: 'ให้เพื่อนทางขวาทอยเต๋าแทน เลขคู่คนสั่งดื่ม คี่เพื่อนดื่ม', tile_type: 'challenge', icon: '🤝' },
   { tile_index: 12, title: 'หญิงแกร่ง', action_text: 'ผู้หญิงทุกคนในวง ดื่มคนละ 1 จิบ', tile_type: 'drink', icon: '🌸' },
-  { tile_index: 13, title: 'ใบ้คำห้ามหลุดชื่อ', action_text: 'เพื่อนตั้งโจทย์ 1 คำ ให้คนตกกดเริ่มจับเวลา 20 วินาที แล้วใบ้ห้ามหลุดคำนั้น ถ้าหมดเวลาไม่มีใครทายถูก โดน 1 ช็อต', tile_type: 'challenge', icon: '🎭' },
+  { tile_index: 13, title: 'ทายชื่อสัตว์', action_text: 'คนตกเริ่มพูดชื่อสัตว์ 1 ชนิด แล้ววนให้ทุกคนพูดชื่อสัตว์ห้ามซ้ำ ภายใน 3 วิ ใครคิดไม่ออกหรือซ้ำ ดื่ม 1 จิบ', tile_type: 'challenge', icon: '🦁' },
   { tile_index: 14, title: 'จุดจอดพักรถ', action_text: 'ช่องฟรี นั่งชิลล์ คุยเล่นได้ตามสบาย', tile_type: 'safe', icon: '⛺' },
   { tile_index: 15, title: 'สั่งคูณสอง', action_text: 'สั่งเพื่อน 1 คนดื่ม 2 จิบ หรือสั่ง 2 คน คนละ 1 จิบ', tile_type: 'order_others', icon: '✌️' },
   { tile_index: 16, title: '7-Up ล้มโต๊ะ', action_text: 'วนนับเลขตั้งแต่ 1 ไปเรื่อยๆ หากถึงเลขที่ลงท้ายด้วย 7 (7, 17, 27) หรือเลขที่ 7 หารลงตัว (14, 21, 28) ต้องพูดคำว่า "อัป!" ห้ามออกเสียงตัวเลขเด็ดขาด ใครพูดเลข หลุด หรือคิดช้าเกิน 3 วินาที ดื่ม 1 จิบ', tile_type: 'challenge', icon: '🆙' },
@@ -65,6 +65,7 @@ export function getTileIcon(tile: MonopolyTileRecord): string {
   if (text.includes('จมูก')) return '👃';
   if (text.includes('ตา') || text.includes('สบตา')) return '👀';
   if (text.includes('ใบ้')) return '🎭';
+  if (text.includes('สัตว์')) return '🦁';
 
   // 2. Fallback based on tile_type
   switch (tile.tile_type) {
