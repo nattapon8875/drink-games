@@ -19,6 +19,7 @@ export interface RoomRecord {
     lastActionPlayerId?: string;
     isRolling?: boolean;
     activeActionModal?: boolean;
+    kicked_player_ids?: string[];
     [key: string]: any;
   } | null;
   created_at: string;

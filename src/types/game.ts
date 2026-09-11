@@ -8,6 +8,7 @@ export interface BaseGameProps {
   onUpdateGameState: (partialState: Record<string, any>) => Promise<void>;
   onUpdatePlayerDrink: (playerId: string, incrementBy: number) => Promise<void>;
   onNextTurn: (nextPlayerId: string) => Promise<void>;
+  onKickPlayer?: (playerId: string) => Promise<void>;
 }
 
 export interface GameInfo {

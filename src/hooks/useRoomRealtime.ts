@@ -196,6 +196,9 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
           const data = await res.json();
           if (data.room) setRoom(data.room);
           if (data.players) setPlayers(data.players);
+        } else if (res.status === 403) {
+          const errData = await res.json().catch(() => ({}));
+          setError(errData.error || 'คุณถูกเตะออกจากห้องนี้แล้ว');
         }
       } catch (err) {
         console.error('[Mock API] Join error:', err);
@@ -628,6 +631,77 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
     [leaveRoom]
   );
 
+  // Kick Player by Host (Works in lobby and during game, marks kicked_player_ids)
+  const kickPlayer = useCallback(
+    async (targetPlayerId: string) => {
+      if (!roomCode || !targetPlayerId) return;
+
+      // Optimistically remove from local list
+      setPlayers((prev) => prev.filter((p) => p.id !== targetPlayerId));
+
+      if (!isSupabaseConfigured()) {
+        try {
+          const res = await fetch('/api/room', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'kick',
+              code: roomCode,
+              playerId: targetPlayerId,
+            }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.room) setRoom(data.room);
+            if (data.players) setPlayers(data.players);
+          }
+        } catch (err) {
+          console.error('[Mock API] Kick error:', err);
+        }
+        return;
+      }
+
+      try {
+        await supabase
+          .from('players')
+          .delete()
+          .eq('room_code', roomCode)
+          .eq('id', targetPlayerId);
+
+        if (room) {
+          const positions = { ...(room.game_state?.positions || {}) };
+          delete positions[targetPlayerId];
+
+          const currentKicked = room.game_state?.kicked_player_ids || [];
+          const newKicked = Array.from(new Set([...currentKicked, targetPlayerId]));
+
+          const updatedPlayers = players.filter((p) => p.id !== targetPlayerId);
+          let nextTurnId = room.current_turn_player_id;
+          if (room.current_turn_player_id === targetPlayerId && updatedPlayers.length > 0) {
+            nextTurnId = updatedPlayers[0].id;
+          }
+
+          await supabase
+            .from('rooms')
+            .update({
+              current_turn_player_id: nextTurnId,
+              game_state: {
+                ...room.game_state,
+                positions,
+                kicked_player_ids: newKicked,
+                activeActionModal: false,
+                isRolling: false,
+              },
+            })
+            .eq('code', roomCode);
+        }
+      } catch (err) {
+        console.error('[Realtime] Kick player error:', err);
+      }
+    },
+    [roomCode, room, players]
+  );
+
   return {
     room,
     players,
@@ -637,6 +711,7 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
     leaveRoom,
     addBotPlayer,
     removePlayer,
+    kickPlayer,
     startGame,
     returnToLobby,
     closeRoom,

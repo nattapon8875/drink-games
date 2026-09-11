@@ -32,6 +32,7 @@ export default function LobbyPage() {
     leaveRoom,
     addBotPlayer,
     removePlayer,
+    kickPlayer,
     startGame,
     returnToLobby,
     closeRoom,
@@ -80,14 +81,23 @@ export default function LobbyPage() {
 
   // When room status turns to 'playing', redirect to /play/[roomCode]
   useEffect(() => {
-    if (room && room.status === 'playing') {
+    if (!room) return;
+
+    // Check if current user has been kicked by host
+    if (user && room.game_state?.kicked_player_ids?.includes(user.id)) {
+      showToast('คุณถูกหัวหน้าห้องเตะออกจากห้องแล้ว', 'warning');
+      router.push('/');
+      return;
+    }
+
+    if (room.status === 'playing') {
       router.push(`/play/${roomCode}`);
     }
-    if (room && room.status === 'finished') {
+    if (room.status === 'finished') {
       showToast('หัวหน้าห้องได้ทำการปิดห้องเกมแล้ว', 'info');
       router.push('/');
     }
-  }, [room, roomCode, router]);
+  }, [room, roomCode, router, user]);
 
   const isHost = Boolean(room && user && room.host_id === user.id);
 
@@ -227,7 +237,7 @@ export default function LobbyPage() {
           costumes={room?.game_state?.costumes}
           onReorderPlayers={reorderPlayers}
           onAddBotPlayer={addBotPlayer}
-          onRemovePlayer={removePlayer}
+          onRemovePlayer={kickPlayer}
         />
 
         {/* Custom Rules Button */}

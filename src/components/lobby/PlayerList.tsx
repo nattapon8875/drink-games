@@ -4,6 +4,7 @@ import { Avatar } from '@/components/common/Avatar';
 import { DrinkCounter } from '@/components/common/DrinkCounter';
 import { Crown, Users, UserPlus, Trash2, Bot, Dice5, Sparkles } from 'lucide-react';
 import { PlatformType } from '@/lib/platforms/types';
+import { showConfirm } from '@/lib/alerts';
 
 interface PlayerListProps {
   players: PlayerRecord[];
@@ -204,7 +205,18 @@ export const PlayerList: React.FC<PlayerListProps> = ({
                 {isHostUser && !isMe && onRemovePlayer && (
                   <button
                     type="button"
-                    onClick={() => onRemovePlayer(p.id)}
+                    onClick={async () => {
+                      const confirmed = await showConfirm(
+                        isBot ? `ลบบอท "${p.display_name}"?` : `เตะ "${p.display_name}" ออกจากห้อง?`,
+                        isBot ? 'บอทตัวนี้จะถูกลบออกจากวง' : 'ผู้เล่นนี้จะถูกส่งกลับสู่หน้าหลักทันที และไม่สามารถกลับเข้าห้องนี้ได้อีก',
+                        isBot ? 'ลบเลย' : 'เตะออกจากห้อง',
+                        'ยกเลิก',
+                        'warning'
+                      );
+                      if (confirmed) {
+                        await onRemovePlayer(p.id);
+                      }
+                    }}
                     className="w-7 h-7 flex items-center justify-center rounded-xl bg-red-950/60 hover:bg-red-900 border border-red-800/60 text-red-300 hover:text-red-100 transition active:scale-95 shrink-0"
                     title={isBot ? 'ลบบอทตัวนี้ออก' : 'เตะผู้เล่นนี้ออกจากห้อง'}
                   >

@@ -84,6 +84,16 @@ export async function POST(req: Request) {
 
         case 'join': {
           const { player } = body;
+          const room = serverStore.rooms.get(roomCode);
+
+          // Check if player was kicked by host
+          if (room?.game_state?.kicked_player_ids?.includes(player.id)) {
+            return NextResponse.json(
+              { error: 'คุณถูกหัวหน้าห้องเตะออกจากห้องนี้แล้ว' },
+              { status: 403 }
+            );
+          }
+
           const currentPlayers = serverStore.players.get(roomCode) || [];
           const existingIdx = currentPlayers.findIndex((p) => p.id === player.id);
 
@@ -106,7 +116,6 @@ export async function POST(req: Request) {
             updatedPlayers = [...cleaned, newPlayer];
 
             // If room host was guest-init, make this player host
-            const room = serverStore.rooms.get(roomCode);
             if (room) {
               // Assign a random costume (0..19) not yet taken if possible
               const costumes = { ...(room.game_state?.costumes || {}) };
@@ -262,6 +271,48 @@ export async function POST(req: Request) {
                 room.status = 'finished';
               }
             }
+            serverStore.rooms.set(roomCode, room);
+          }
+
+          return NextResponse.json({
+            success: true,
+            room: serverStore.rooms.get(roomCode),
+            players: updatedPlayers,
+          });
+        }
+
+        case 'kick': {
+          const { playerId } = body;
+          const currentPlayers = serverStore.players.get(roomCode) || [];
+          const updatedPlayers = currentPlayers.filter((p) => p.id !== playerId);
+          serverStore.players.set(roomCode, updatedPlayers);
+
+          const room = serverStore.rooms.get(roomCode);
+          if (room) {
+            // Add to kicked list so they cannot re-join this session
+            const currentKicked = room.game_state?.kicked_player_ids || [];
+            const newKicked = Array.from(new Set([...currentKicked, playerId]));
+
+            // Clean up positions
+            const positions = { ...(room.game_state?.positions || {}) };
+            delete positions[playerId];
+
+            // If current turn belonged to kicked player, advance to next
+            let nextTurnPlayerId = room.current_turn_player_id;
+            let resetModals = false;
+            if (room.current_turn_player_id === playerId && updatedPlayers.length > 0) {
+              nextTurnPlayerId = updatedPlayers[0].id;
+              resetModals = true;
+            }
+
+            room.current_turn_player_id = nextTurnPlayerId;
+            room.game_state = {
+              ...room.game_state,
+              positions,
+              kicked_player_ids: newKicked,
+              ...(resetModals ? { activeActionModal: false, isRolling: false } : {}),
+            };
+
             serverStore.rooms.set(roomCode, room);
           }
 
