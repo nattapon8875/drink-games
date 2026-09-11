@@ -378,12 +378,10 @@ export const PlayerList: React.FC<PlayerListProps> = ({
               disabled={isSavingName}
               onClick={() => {
                 const randomSeed = Math.random().toString(36).substring(2, 8);
-                const randomName = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
                 setEditAvatarInput(`https://api.dicebear.com/7.x/bottts/svg?seed=${randomSeed}`);
-                setEditNameInput(randomName);
               }}
             >
-              <Dice5 className="w-4 h-4 mr-1.5 inline" /> สุ่มรูป + ชื่อ
+              <Sparkles className="w-4 h-4 mr-1.5 inline text-amber-300" /> สุ่มรูปใหม่
             </Button>
             <Button
               variant="wood-gold"

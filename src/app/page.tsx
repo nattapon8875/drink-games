@@ -480,15 +480,13 @@ export default function HomePage() {
               fullWidth
               onClick={() => {
                 const randomSeed = Math.random().toString(36).substring(2, 8);
-                const randomName = THAI_PARTY_NICKNAMES[Math.floor(Math.random() * THAI_PARTY_NICKNAMES.length)];
-                setEditName(randomName);
                 updateUserProfile(
-                  randomName,
+                  editName,
                   `https://api.dicebear.com/7.x/bottts/svg?seed=${randomSeed}`
                 );
               }}
             >
-              <Dice5 className="w-4 h-4 mr-1.5 inline" /> สุ่มรูป + ชื่อ
+              <Sparkles className="w-4 h-4 mr-1.5 inline text-amber-300" /> สุ่มรูปใหม่
             </Button>
             <Button
               variant="wood-gold"
