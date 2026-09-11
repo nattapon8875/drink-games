@@ -79,9 +79,8 @@ export default function HomePage() {
   const router = useRouter();
   const { user, platform, discordRoomCode, isLoading, updateUserProfile } = usePlatform();
 
-  const [selectedGame, setSelectedGame] = useState<string>('monopoly');
   const [joinCode, setJoinCode] = useState<string>('');
-  const [isCreating, setIsCreating] = useState<boolean>(false);
+  const [isCreatingGameId, setIsCreatingGameId] = useState<string | null>(null);
   const [isJoining, setIsJoining] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -112,9 +111,9 @@ export default function HomePage() {
     return code;
   };
 
-  // Handle Create Room
-  const handleCreateRoom = async () => {
-    setIsCreating(true);
+  // Handle Create Room for a specific game
+  const handleCreateRoom = async (gameId: string) => {
+    setIsCreatingGameId(gameId);
     setErrorMsg(null);
 
     // Ensure we have a persistent user ID (not initial placeholder)
@@ -135,7 +134,7 @@ export default function HomePage() {
         const { error: roomError } = await supabase.from('rooms').insert({
           code: roomCode,
           host_id: hostUser.id,
-          game_type: selectedGame,
+          game_type: gameId,
           status: 'waiting',
           current_turn_player_id: hostUser.id,
           game_state: { positions: { [hostUser.id]: 0 } },
@@ -160,7 +159,7 @@ export default function HomePage() {
         const initialRoom = {
           code: roomCode,
           host_id: hostUser.id,
-          game_type: selectedGame,
+          game_type: gameId,
           status: 'waiting',
           current_turn_player_id: hostUser.id,
           game_state: { positions: { [hostUser.id]: 0 } },
@@ -193,7 +192,7 @@ export default function HomePage() {
     } catch (err: any) {
       console.error('Create room error:', err);
       setErrorMsg(err.message || 'เกิดข้อผิดพลาดในการสร้างห้อง');
-      setIsCreating(false);
+      setIsCreatingGameId(null);
     }
   };
 
@@ -273,22 +272,63 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section */}
-      <section className="text-center my-3 w-full">
-        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#381604] border border-[#78370b] text-amber-300 text-xs font-black mb-3 shadow-inner">
+      <section className="text-center my-2 w-full">
+        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#381604] border border-[#78370b] text-amber-300 text-xs font-black mb-2 shadow-inner">
           <Sparkles className="w-3.5 h-3.5 text-yellow-400 animate-spin" />
           <span>Multi-platform (LINE + Discord + Web)</span>
         </div>
-        <h2 className="text-3xl sm:text-4xl font-black rpg-text-gold tracking-tight mb-2">
+        <h2 className="text-2xl sm:text-3xl font-black rpg-text-gold tracking-tight mb-1">
           ชนแก้ว เปิดตี้ เริ่มเกม!
         </h2>
-        <p className="text-xs sm:text-sm text-amber-200/80 font-bold max-w-sm mx-auto">
-          ชวนสหายร่วมวงมาประลองแบบ Real-time ไม่ต้องติดตั้งแอป เปิดบนเว็บลุยได้ทันที
+        <p className="text-xs text-amber-200/80 font-bold max-w-sm mx-auto">
+          ชวนสหายร่วมวงมาประลองแบบ Real-time บนเว็บได้ทันที
         </p>
+      </section>
+
+      {/* Error Alert */}
+      {errorMsg && (
+        <div className="w-full p-2.5 bg-red-950/80 border-2 border-red-700 rounded-2xl text-xs text-rose-200 text-center font-bold shadow-md my-1">
+          {errorMsg}
+        </div>
+      )}
+
+      {/* Top Section: Join Room (Moved to the Top!) */}
+      <section className="w-full wood-panel p-3.5 rounded-3xl relative shadow-xl my-2 border-2 border-[#54240a]">
+        <div className="wood-rivet absolute top-2 left-2" />
+        <div className="wood-rivet absolute top-2 right-2" />
+        <div className="wood-rivet absolute bottom-2 left-2" />
+        <div className="wood-rivet absolute bottom-2 right-2" />
+
+        <div className="flex items-center gap-1.5 mb-2 px-1">
+          <Users className="w-4 h-4 text-amber-400" />
+          <span className="text-xs font-black text-amber-300">มีรหัสห้องอยู่แล้ว? เข้าร่วมห้อง</span>
+        </div>
+
+        <form onSubmit={handleJoinRoom} className="flex gap-2">
+          <input
+            type="text"
+            maxLength={4}
+            value={joinCode}
+            onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+            placeholder="รหัสห้อง 4 หลัก"
+            className="flex-1 bg-[#1a0802] border-2 border-[#5c2709] rounded-2xl px-3 py-2.5 text-center text-lg font-mono font-black tracking-widest text-yellow-300 placeholder:text-amber-800/80 focus:outline-none focus:border-amber-400 uppercase transition shadow-inner"
+          />
+          <Button
+            type="submit"
+            variant="wood-green"
+            size="md"
+            disabled={isJoining || joinCode.length < 4}
+            className="px-5 font-black flex-shrink-0"
+          >
+            <span>{isJoining ? '...' : 'เข้าร่วม'}</span>
+            <ArrowRight className="w-4 h-4 ml-1" />
+          </Button>
+        </form>
       </section>
 
       {/* Discord Quick Join Banner if detected */}
       {discordRoomCode && (
-        <div className="w-full bg-[#5865F2]/20 border-2 border-[#5865F2]/60 p-3.5 rounded-3xl mb-4 text-center shadow-lg">
+        <div className="w-full bg-[#5865F2]/20 border-2 border-[#5865F2]/60 p-3.5 rounded-3xl mb-3 text-center shadow-lg">
           <p className="text-xs text-indigo-300 font-black mb-1">
             🎮 ตรวจพบ Discord Voice Channel
           </p>
@@ -306,123 +346,89 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Game Selector Catalog */}
+      {/* Game Selector Catalog with Direct Create Buttons */}
       <section className="w-full space-y-3 my-2">
         <div className="flex items-center justify-between text-xs font-black text-amber-300 px-1">
-          <span>เลือกมินิเกมในโรงเตี๊ยม</span>
+          <span>เลือกมินิเกม &amp; สร้างห้อง</span>
           <span className="rpg-text-gold">{AVAILABLE_GAMES.filter((g) => g.badge === 'ready').length} เกมพร้อมเปิดศึก</span>
         </div>
 
         <div className="space-y-3">
           {AVAILABLE_GAMES.map((game) => {
-            const isSelected = selectedGame === game.id;
             const isReady = game.badge === 'ready';
+            const isThisGameCreating = isCreatingGameId === game.id;
 
             return (
               <div
                 key={game.id}
-                onClick={() => isReady && setSelectedGame(game.id)}
                 className={`p-4 rounded-3xl border-2 transition-all select-none relative ${
                   !isReady
-                    ? 'opacity-50 bg-[#1c0a02] border-[#361302] cursor-not-allowed'
-                    : isSelected
-                    ? 'wood-panel border-[#451a03] ring-2 ring-yellow-400/80 shadow-[0_10px_20px_rgba(0,0,0,0.8)] cursor-pointer scale-[1.02]'
-                    : 'bg-[#2b1104] border-[#572408] hover:border-amber-500/60 shadow-md cursor-pointer'
+                    ? 'opacity-50 bg-[#1c0a02] border-[#361302]'
+                    : 'bg-[#2b1104] border-[#572408] hover:border-amber-500/60 shadow-md'
                 }`}
               >
-                {isSelected && isReady && (
-                  <div className="rpg-corner-gold rpg-corner-tr" />
-                )}
+                <div className="flex items-start gap-3 mb-3">
+                  <div
+                    className={`p-3 rounded-2xl border-2 shadow-inner shrink-0 ${
+                      isReady
+                        ? 'bg-[#3b1704] border-[#703209] text-amber-300'
+                        : 'bg-[#1e0a02] border-[#421703] text-amber-200/50'
+                    }`}
+                  >
+                    {game.icon === 'dice' && <Dice5 className="w-6 h-6" />}
+                    {game.icon === 'bottle' && <Disc className="w-6 h-6" />}
+                    {game.icon === 'cards' && <Layers className="w-6 h-6" />}
+                    {game.icon === 'wheel' && <Disc className="w-6 h-6 animate-spin-slow" />}
+                    {game.icon === 'crocodile' && <span className="text-2xl leading-none select-none">🐃</span>}
+                  </div>
 
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3">
-                    <div
-                      className={`p-3 rounded-2xl border-2 shadow-inner ${
-                        isSelected
-                          ? 'bg-[#3b1704] border-[#703209] text-amber-300'
-                          : 'bg-[#1e0a02] border-[#421703] text-amber-200/50'
-                      }`}
-                    >
-                      {game.icon === 'dice' && <Dice5 className="w-6 h-6" />}
-                      {game.icon === 'bottle' && <Disc className="w-6 h-6" />}
-                      {game.icon === 'cards' && <Layers className="w-6 h-6" />}
-                      {game.icon === 'wheel' && <Disc className="w-6 h-6 animate-spin-slow" />}
-                      {game.icon === 'crocodile' && <span className="text-2xl leading-none select-none">🐃</span>}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-black text-sm sm:text-base text-amber-100 drop-shadow">
+                        {game.title}
+                      </h3>
+                      <span
+                        className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border shrink-0 ${
+                          isReady
+                            ? 'bg-emerald-950 text-emerald-300 border-emerald-600'
+                            : 'bg-stone-900 text-stone-400 border-stone-700'
+                        }`}
+                      >
+                        {isReady ? 'พร้อมลุย' : 'เร็วๆ นี้'}
+                      </span>
                     </div>
-
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-black text-sm sm:text-base text-amber-100 drop-shadow">
-                          {game.title}
-                        </h3>
-                        <span
-                          className={`text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full border ${
-                            isReady
-                              ? 'bg-emerald-950 text-emerald-300 border-emerald-600'
-                              : 'bg-stone-900 text-stone-400 border-stone-700'
-                          }`}
-                        >
-                          {isReady ? 'เปิดให้เล่น' : 'เร็วๆ นี้'}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-amber-200/70 font-semibold mt-1 leading-snug">
-                        {game.description}
-                      </p>
-                      <div className="flex items-center gap-2 text-[10px] text-amber-300/80 font-black mt-2">
-                        <Users className="w-3 h-3 text-amber-400" />
-                        <span>รองรับ {game.minPlayers}-{game.maxPlayers} คน</span>
-                      </div>
+                    <p className="text-[11px] text-amber-200/70 font-semibold mt-1 leading-snug">
+                      {game.description}
+                    </p>
+                    <div className="flex items-center gap-2 text-[10px] text-amber-300/80 font-black mt-1.5">
+                      <Users className="w-3 h-3 text-amber-400" />
+                      <span>รองรับ {game.minPlayers}-{game.maxPlayers} คน</span>
                     </div>
                   </div>
                 </div>
+
+                {/* Direct Create Room Button for each game */}
+                {isReady && (
+                  <Button
+                    variant="wood-gold"
+                    size="md"
+                    fullWidth
+                    disabled={Boolean(isCreatingGameId)}
+                    onClick={() => handleCreateRoom(game.id)}
+                    className="text-xs sm:text-sm font-black py-2.5 shadow-md flex items-center justify-center gap-2"
+                  >
+                    <Gamepad2 className="w-4 h-4" />
+                    <span>
+                      {isThisGameCreating
+                        ? 'กำลังเปิดโต๊ะ...'
+                        : `เปิดโต๊ะเล่น "${game.title}"`}
+                    </span>
+                  </Button>
+                )}
               </div>
             );
           })}
         </div>
-      </section>
-
-      {/* Action Zone: Create Room or Join Room */}
-      <section className="w-full space-y-3 mt-4">
-        {errorMsg && (
-          <div className="p-2.5 bg-red-950/80 border-2 border-red-700 rounded-2xl text-xs text-rose-200 text-center font-bold shadow-md">
-            {errorMsg}
-          </div>
-        )}
-
-        {/* Create Room Button */}
-        <Button
-          variant="wood-gold"
-          size="lg"
-          fullWidth
-          onClick={handleCreateRoom}
-          disabled={isCreating}
-          className="text-base py-3.5 shadow-xl tracking-wider"
-        >
-          <Gamepad2 className="w-5 h-5 mr-2" />
-          <span>{isCreating ? 'กำลังสร้างห้อง...' : 'สร้างห้องใหม่ (เป็น Host)'}</span>
-        </Button>
-
-        {/* Join Code Input Form */}
-        <form onSubmit={handleJoinRoom} className="flex gap-2">
-          <input
-            type="text"
-            maxLength={4}
-            value={joinCode}
-            onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-            placeholder="รหัสห้อง 4 หลัก"
-            className="flex-1 bg-[#250e03] border-2 border-[#5c2709] rounded-2xl px-4 py-3 text-center text-lg font-mono font-black tracking-widest text-yellow-300 placeholder:text-amber-800 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 uppercase transition shadow-inner"
-          />
-          <Button
-            type="submit"
-            variant="wood-green"
-            size="md"
-            disabled={isJoining || joinCode.length < 4}
-            className="px-6 font-black flex-shrink-0"
-          >
-            <span>{isJoining ? '...' : 'เข้าร่วม'}</span>
-            <ArrowRight className="w-4 h-4 ml-1" />
-          </Button>
-        </form>
       </section>
 
       {/* Footer */}
