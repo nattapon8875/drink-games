@@ -1,6 +1,60 @@
 // Simple Web Audio API sound synthesizer for party games
 class SoundEffects {
   private ctx: AudioContext | null = null;
+  private isUnlocked: boolean = false;
+
+  constructor() {
+    this.setupMobileUnlock();
+  }
+
+  private setupMobileUnlock() {
+    if (typeof window === 'undefined') return;
+
+    const unlock = () => {
+      this.unlockAudio();
+      // Remove listeners once unlocked
+      ['touchstart', 'touchend', 'click', 'pointerdown', 'keydown'].forEach((evt) => {
+        window.removeEventListener(evt, unlock, true);
+      });
+    };
+
+    ['touchstart', 'touchend', 'click', 'pointerdown', 'keydown'].forEach((evt) => {
+      window.addEventListener(evt, unlock, { capture: true, passive: true, once: false });
+    });
+  }
+
+  public unlockAudio(): void {
+    if (typeof window === 'undefined') return;
+    try {
+      if (!this.ctx) {
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioCtx) {
+          this.ctx = new AudioCtx();
+        }
+      }
+
+      if (this.ctx) {
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume().then(() => {
+            this.isUnlocked = true;
+          }).catch(() => {});
+        } else if (this.ctx.state === 'running') {
+          this.isUnlocked = true;
+        }
+
+        // iOS Safari trick: play a silent 1-sample buffer on user gesture to fully unlock audio pipeline
+        try {
+          const buffer = this.ctx.createBuffer(1, 1, 22050);
+          const source = this.ctx.createBufferSource();
+          source.buffer = buffer;
+          source.connect(this.ctx.destination);
+          source.start(0);
+        } catch {}
+      }
+    } catch {
+      // Ignore mobile autoplay restrictions until next touch
+    }
+  }
 
   private getContext(): AudioContext | null {
     if (typeof window === 'undefined') return null;
@@ -11,7 +65,7 @@ class SoundEffects {
       }
     }
     if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume();
+      this.ctx.resume().catch(() => {});
     }
     return this.ctx;
   }
