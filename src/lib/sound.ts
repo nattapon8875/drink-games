@@ -12,14 +12,11 @@ class SoundEffects {
 
     const unlock = () => {
       this.unlockAudio();
-      // Remove listeners once unlocked
-      ['touchstart', 'touchend', 'click', 'pointerdown', 'keydown'].forEach((evt) => {
-        window.removeEventListener(evt, unlock, true);
-      });
     };
 
-    ['touchstart', 'touchend', 'click', 'pointerdown', 'keydown'].forEach((evt) => {
-      window.addEventListener(evt, unlock, { capture: true, passive: true, once: false });
+    // Keep listening on touch & click throughout user interaction so iOS Chrome never suspends
+    ['touchstart', 'touchend', 'click', 'pointerdown'].forEach((evt) => {
+      window.addEventListener(evt, unlock, { capture: true, passive: true });
     });
   }
 
@@ -34,15 +31,15 @@ class SoundEffects {
       }
 
       if (this.ctx) {
-        if (this.ctx.state === 'suspended') {
+        if (this.ctx.state !== 'running') {
           this.ctx.resume().then(() => {
             this.isUnlocked = true;
           }).catch(() => {});
-        } else if (this.ctx.state === 'running') {
+        } else {
           this.isUnlocked = true;
         }
 
-        // iOS Safari trick: play a silent 1-sample buffer on user gesture to fully unlock audio pipeline
+        // iOS Chrome/Safari specific: play a silent 1-sample buffer on user gesture
         try {
           const buffer = this.ctx.createBuffer(1, 1, 22050);
           const source = this.ctx.createBufferSource();
@@ -52,7 +49,7 @@ class SoundEffects {
         } catch {}
       }
     } catch {
-      // Ignore mobile autoplay restrictions until next touch
+      // Ignore mobile autoplay restrictions
     }
   }
 
@@ -64,7 +61,7 @@ class SoundEffects {
         this.ctx = new AudioCtx();
       }
     }
-    if (this.ctx && this.ctx.state === 'suspended') {
+    if (this.ctx && this.ctx.state !== 'running') {
       this.ctx.resume().catch(() => {});
     }
     return this.ctx;
