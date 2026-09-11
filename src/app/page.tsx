@@ -304,24 +304,23 @@ export default function HomePage() {
           <span className="text-xs font-black text-amber-300">มีรหัสห้องอยู่แล้ว? เข้าร่วมห้อง</span>
         </div>
 
-        <form onSubmit={handleJoinRoom} className="flex gap-2">
+        <form onSubmit={handleJoinRoom} className="flex items-center gap-2">
           <input
             type="text"
             maxLength={4}
             value={joinCode}
             onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
             placeholder="รหัสห้อง 4 หลัก"
-            className="flex-1 bg-[#1a0802] border-2 border-[#5c2709] rounded-2xl px-3 py-2.5 text-center text-lg font-mono font-black tracking-widest text-yellow-300 placeholder:text-amber-800/80 focus:outline-none focus:border-amber-400 uppercase transition shadow-inner"
+            className="flex-1 min-w-0 h-12 bg-[#1a0802] border-2 border-[#5c2709] rounded-2xl px-3 text-center text-lg font-mono font-black tracking-widest text-yellow-300 placeholder:text-amber-800/80 focus:outline-none focus:border-amber-400 uppercase transition shadow-inner"
           />
           <Button
             type="submit"
-            variant="wood-green"
-            size="md"
+            variant="wood-gold"
             disabled={isJoining || joinCode.length < 4}
-            className="px-5 font-black flex-shrink-0"
+            className="h-12 px-4 sm:px-5 text-sm font-black flex-shrink-0 flex items-center justify-center gap-1.5 shadow-md"
           >
             <span>{isJoining ? '...' : 'เข้าร่วม'}</span>
-            <ArrowRight className="w-4 h-4 ml-1" />
+            <ArrowRight className="w-4 h-4" />
           </Button>
         </form>
       </section>
