@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { PlayerRecord } from '@/types/database';
 import { Avatar } from '@/components/common/Avatar';
 import { DrinkCounter } from '@/components/common/DrinkCounter';
-import { Crown, Users, UserPlus, Trash2, Bot, Dice5, Sparkles } from 'lucide-react';
+import { Crown, Users, UserPlus, Trash2, Bot, Dice5, Sparkles, Edit2 } from 'lucide-react';
 import { PlatformType } from '@/lib/platforms/types';
 import { showConfirm } from '@/lib/alerts';
+import { Modal } from '@/components/common/Modal';
+import { Button } from '@/components/common/Button';
 
 interface PlayerListProps {
   players: PlayerRecord[];
@@ -15,6 +17,7 @@ interface PlayerListProps {
   onReorderPlayers?: (newOrderedIds: string[]) => void;
   onAddBotPlayer?: (name: string) => Promise<void>;
   onRemovePlayer?: (playerId: string) => Promise<void>;
+  onUpdateMyName?: (newName: string, avatarUrl?: string) => Promise<void>;
 }
 
 const RANDOM_NAMES = [
@@ -44,10 +47,35 @@ export const PlayerList: React.FC<PlayerListProps> = ({
   onReorderPlayers,
   onAddBotPlayer,
   onRemovePlayer,
+  onUpdateMyName,
 }) => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [botNameInput, setBotNameInput] = useState('');
   const [isAdding, setIsAdding] = useState(false);
+
+  // Edit Name Modal State
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editNameInput, setEditNameInput] = useState('');
+  const [editAvatarInput, setEditAvatarInput] = useState('');
+  const [isSavingName, setIsSavingName] = useState(false);
+
+  const openEditModal = (currentName: string, currentAvatar?: string) => {
+    setEditNameInput(currentName);
+    setEditAvatarInput(currentAvatar || '');
+    setShowEditModal(true);
+  };
+
+  const handleSaveName = async () => {
+    const trimmed = editNameInput.trim();
+    if (!trimmed || !onUpdateMyName || isSavingName) return;
+    setIsSavingName(true);
+    try {
+      await onUpdateMyName(trimmed, editAvatarInput || undefined);
+      setShowEditModal(false);
+    } finally {
+      setIsSavingName(false);
+    }
+  };
 
   const handleRandomName = () => {
     const random = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
@@ -178,9 +206,21 @@ export const PlayerList: React.FC<PlayerListProps> = ({
                   <div className="flex items-center gap-1.5 font-black text-sm text-amber-100">
                     <span className="truncate max-w-[130px] sm:max-w-[170px] drop-shadow">{p.display_name}</span>
                     {isMe && (
-                      <span className="text-[9px] bg-amber-500 text-[#301103] font-black px-1.5 py-0.2 rounded-md shrink-0">
-                        คุณ
-                      </span>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <span className="text-[9px] bg-amber-500 text-[#301103] font-black px-1.5 py-0.2 rounded-md">
+                          คุณ
+                        </span>
+                        {onUpdateMyName && (
+                          <button
+                            type="button"
+                            onClick={() => openEditModal(p.display_name, p.avatar_url || undefined)}
+                            className="p-1 rounded-md bg-[#381604] hover:bg-[#592306] border border-[#6b2e0a] text-yellow-300 hover:text-white transition active:scale-90"
+                            title="เปลี่ยนชื่อของคุณ"
+                          >
+                            <Edit2 className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
                     )}
                     {isBot && (
                       <span className="text-[9px] bg-[#3a1d6e] border border-purple-400/50 text-purple-200 font-black px-1.5 py-0.2 rounded-md shrink-0 flex items-center gap-0.5">
@@ -293,6 +333,71 @@ export const PlayerList: React.FC<PlayerListProps> = ({
           )}
         </div>
       )}
+
+      {/* Edit My Name Modal */}
+      <Modal
+        isOpen={showEditModal}
+        onClose={() => !isSavingName && setShowEditModal(false)}
+        title="เปลี่ยนชื่อของคุณ"
+      >
+        <div className="space-y-4">
+          <div className="flex justify-center my-2">
+            <Avatar
+              src={editAvatarInput}
+              name={editNameInput || 'คุณ'}
+              size="xl"
+              platform="web"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-amber-200 block mb-1">
+              ชื่อเล่นในวงเหล้า
+            </label>
+            <input
+              type="text"
+              value={editNameInput}
+              onChange={(e) => setEditNameInput(e.target.value)}
+              maxLength={20}
+              placeholder="กรอกชื่อของคุณ"
+              autoFocus
+              className="w-full bg-[#200c02] border-2 border-[#54240a] rounded-2xl p-3 text-amber-100 font-bold focus:outline-none focus:border-amber-400 shadow-inner text-sm"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSaveName();
+                }
+              }}
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              variant="wood-brown"
+              size="md"
+              fullWidth
+              type="button"
+              disabled={isSavingName}
+              onClick={() => {
+                const randomSeed = Math.random().toString(36).substring(2, 8);
+                setEditAvatarInput(`https://api.dicebear.com/7.x/bottts/svg?seed=${randomSeed}`);
+              }}
+            >
+              <Dice5 className="w-4 h-4 mr-1.5 inline" /> สุ่มรูปใหม่
+            </Button>
+            <Button
+              variant="wood-gold"
+              size="md"
+              fullWidth
+              type="button"
+              disabled={!editNameInput.trim() || isSavingName}
+              onClick={handleSaveName}
+            >
+              {isSavingName ? 'กำลังบันทึก...' : 'บันทึก'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

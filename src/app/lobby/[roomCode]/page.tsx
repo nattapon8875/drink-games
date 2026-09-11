@@ -22,7 +22,7 @@ export default function LobbyPage() {
   const router = useRouter();
   const roomCode = (params?.roomCode as string)?.toUpperCase();
 
-  const { user, platform, isLoading: platformLoading } = usePlatform();
+  const { user, platform, isLoading: platformLoading, updateUserProfile } = usePlatform();
   const {
     room,
     players,
@@ -33,6 +33,7 @@ export default function LobbyPage() {
     addBotPlayer,
     removePlayer,
     kickPlayer,
+    updatePlayerProfile,
     startGame,
     returnToLobby,
     closeRoom,
@@ -238,6 +239,10 @@ export default function LobbyPage() {
           onReorderPlayers={reorderPlayers}
           onAddBotPlayer={addBotPlayer}
           onRemovePlayer={kickPlayer}
+          onUpdateMyName={async (newName, avatarUrl) => {
+            await updatePlayerProfile(newName, avatarUrl);
+            updateUserProfile(newName, avatarUrl);
+          }}
         />
 
         {/* Custom Rules Button */}

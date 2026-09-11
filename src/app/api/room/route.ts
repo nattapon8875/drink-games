@@ -188,6 +188,22 @@ export async function POST(req: Request) {
           return NextResponse.json({ success: true, room });
         }
 
+        case 'update_player': {
+          const { playerId, displayName, avatarUrl } = body;
+          const currentPlayers = serverStore.players.get(roomCode) || [];
+          const updatedPlayers = currentPlayers.map((p) =>
+            p.id === playerId
+              ? {
+                  ...p,
+                  display_name: displayName !== undefined ? displayName : p.display_name,
+                  avatar_url: avatarUrl !== undefined ? avatarUrl : p.avatar_url,
+                }
+              : p
+          );
+          serverStore.players.set(roomCode, updatedPlayers);
+          return NextResponse.json({ success: true, players: updatedPlayers });
+        }
+
         case 'drink': {
           const { playerId, amount } = body;
           const players = serverStore.players.get(roomCode) || [];

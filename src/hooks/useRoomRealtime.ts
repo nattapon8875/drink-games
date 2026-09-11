@@ -702,6 +702,59 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
     [roomCode, room, players]
   );
 
+  // Update Player Profile in Room
+  const updatePlayerProfile = useCallback(
+    async (displayName: string, avatarUrl?: string) => {
+      if (!roomCode || !currentUser?.id) return;
+
+      // Optimistically update local player record
+      setPlayers((prev) =>
+        prev.map((p) =>
+          p.id === currentUser.id
+            ? {
+                ...p,
+                display_name: displayName,
+                avatar_url: avatarUrl || p.avatar_url,
+              }
+            : p
+        )
+      );
+
+      if (!isSupabaseConfigured()) {
+        try {
+          await fetch('/api/room', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'update_player',
+              code: roomCode,
+              playerId: currentUser.id,
+              displayName,
+              avatarUrl,
+            }),
+          });
+        } catch (err) {
+          console.error('[Mock API] Update player error:', err);
+        }
+        return;
+      }
+
+      try {
+        await supabase
+          .from('players')
+          .update({
+            display_name: displayName,
+            avatar_url: avatarUrl || currentUser.avatarUrl,
+          })
+          .eq('room_code', roomCode)
+          .eq('id', currentUser.id);
+      } catch (err) {
+        console.error('[Realtime] Update player profile error:', err);
+      }
+    },
+    [roomCode, currentUser]
+  );
+
   return {
     room,
     players,
@@ -712,6 +765,7 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
     addBotPlayer,
     removePlayer,
     kickPlayer,
+    updatePlayerProfile,
     startGame,
     returnToLobby,
     closeRoom,
