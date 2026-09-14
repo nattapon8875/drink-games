@@ -35,6 +35,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     hasRolledThisTurn,
     isRolling,
     isMoving,
+    activeStepTileIndex,
     isMyTurn,
     isBotTurn,
     currentTurnPlayer,
@@ -255,6 +256,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               properties={properties}
               players={players}
               currentTurnPlayerId={currentTurnPlayer?.id || null}
+              activeStepTileIndex={activeStepTileIndex}
               onTileClick={(tile) => setInspectTile(tile)}
             />
           ) : (
@@ -263,6 +265,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               properties={properties}
               players={players}
               currentTurnPlayerId={currentTurnPlayer?.id || null}
+              activeStepTileIndex={activeStepTileIndex}
               onTileClick={(tile) => setInspectTile(tile)}
             />
           )}

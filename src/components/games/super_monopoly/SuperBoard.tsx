@@ -9,6 +9,7 @@ interface SuperBoardProps {
   properties: Record<number, PropertyOwnership>;
   players: PlayerRecord[];
   currentTurnPlayerId: string | null;
+  activeStepTileIndex?: number | null;
   onTileClick: (tile: SuperPropertyTile) => void;
 }
 
@@ -17,6 +18,7 @@ export const SuperBoard: React.FC<SuperBoardProps> = ({
   properties,
   players,
   currentTurnPlayerId,
+  activeStepTileIndex,
   onTileClick,
 }) => {
   // Tile Coordinate Mapping: 32 Tiles (9 on each side)
@@ -70,7 +72,9 @@ export const SuperBoard: React.FC<SuperBoardProps> = ({
                 gridRow: row,
               }}
               className={`relative flex flex-col justify-between p-0.5 sm:p-1 rounded-lg border transition-all cursor-pointer hover:border-yellow-300 hover:scale-[1.03] hover:z-20 ${
-                isCorner
+                activeStepTileIndex === tile.index
+                  ? 'ring-4 ring-yellow-400 ring-offset-2 ring-offset-amber-950 scale-105 z-30 shadow-[0_0_20px_rgba(250,204,21,0.9)] bg-yellow-200'
+                  : isCorner
                   ? 'bg-[#ffe494] border-[#663b05] text-[#2e1302]'
                   : 'bg-[#fffdec] border-[#d4b465] text-[#1f0c02]'
               } shadow-sm overflow-hidden`}

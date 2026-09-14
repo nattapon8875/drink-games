@@ -26,6 +26,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   const [dice, setDice] = useState<[number, number]>([1, 1]);
   const [isRolling, setIsRolling] = useState<boolean>(false);
   const [isMoving, setIsMoving] = useState<boolean>(false);
+  const [activeStepTileIndex, setActiveStepTileIndex] = useState<number | null>(null);
   const [activePropertyModal, setActivePropertyModal] = useState<SuperPropertyTile | null>(null);
   const [activeCard, setActiveCard] = useState<CardAction | null>(null);
   const [hasRolledThisTurn, setHasRolledThisTurn] = useState<boolean>(false);
@@ -52,6 +53,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     setIsDouble(false);
     setActivePropertyModal(null);
     setActiveCard(null);
+    setActiveStepTileIndex(null);
   }, [room.current_turn_player_id]);
 
   // Ensure cash initialized for all players
@@ -95,6 +97,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     setActiveCard(null);
     setHasRolledThisTurn(false);
     setIsDouble(false);
+    setActiveStepTileIndex(null);
 
     if (players.length === 0) return;
 
@@ -108,7 +111,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     await onNextTurn(nextPlayer.id);
   }, [players, currentTurnPlayer, addLog, onUpdateGameState, onNextTurn]);
 
-  // Roll 2 Dice & Move (For Human Player)
+  // Roll 2 Dice with Step-by-Step Walk Animation & Delayed Modal (Human)
   const rollDice = useCallback(async () => {
     if (!isMyTurn || isRolling || isMoving || hasRolledThisTurn || !currentTurnPlayer) return;
 
@@ -124,143 +127,150 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     setIsDouble(isDoubleRoll);
     setHasRolledThisTurn(true);
 
+    // 1. Wait 1.0s for dice roll animation
     setTimeout(async () => {
       setIsRolling(false);
-      setIsMoving(true);
-      sfx.playTileLand();
 
-      const currentPos = positions[currentTurnPlayer.id] ?? 0;
-      let newPos = currentPos + totalRoll;
-      let passedGo = false;
+      // 2. Pause 700ms so player sees dice result
+      setTimeout(async () => {
+        setIsMoving(true);
 
-      if (newPos >= 32) {
-        newPos = newPos % 32;
-        passedGo = true;
-      }
+        const startPos = positions[currentTurnPlayer.id] ?? 0;
+        let stepCount = 0;
+        let currentStepPos = startPos;
+        let playerCash = cash[currentTurnPlayer.id] ?? INITIAL_CASH_M;
+        let passedGoInWalk = false;
 
-      let playerCash = cash[currentTurnPlayer.id] ?? INITIAL_CASH_M;
-      const targetTile = SUPER_MONOPOLY_TILES[newPos];
-      let moveLog = `${currentTurnPlayer.display_name} ทอยได้ [${d1}][${d2}] (${totalRoll} แต้ม) เดินไปที่ [${targetTile.name}]`;
+        // 3. Step-by-step walking interval
+        const stepInterval = setInterval(async () => {
+          stepCount++;
+          currentStepPos = (currentStepPos + 1) % 32;
 
-      if (passedGo) {
-        playerCash += SALARY_M;
-        sfx.playSuccess();
-        moveLog += ` (ผ่านจุดเริ่มต้น รับ +${formatMoneyM(SALARY_M)})`;
-      }
+          sfx.playStep();
+          setActiveStepTileIndex(currentStepPos);
 
-      if (isDoubleRoll) {
-        moveLog += ' 🎉 แต้มคู่ (Double)! ได้ทอยต่ออีกรอบ!';
-      }
-
-      const updatedPositions = { ...positions, [currentTurnPlayer.id]: newPos };
-      const updatedCash = { ...cash, [currentTurnPlayer.id]: playerCash };
-      let newLogs = addLog(moveLog, '#f59e0b');
-
-      let requiresUserModalAction = false;
-
-      // 1. Property Tile
-      if (targetTile.type === 'property') {
-        const ownership = properties[newPos];
-        if (!ownership) {
-          // Unowned -> Open modal for human to buy or skip
-          setActivePropertyModal(targetTile);
-          requiresUserModalAction = true;
-        } else if (ownership.ownerId !== currentTurnPlayer.id) {
-          // Pay rent to owner
-          const owner = players.find((p) => p.id === ownership.ownerId);
-          let rentAmount = targetTile.baseRent || 0.2;
-          if (ownership.houses === 1) rentAmount = targetTile.rent1House || 0.5;
-          if (ownership.houses === 2) rentAmount = targetTile.rent2House || 1.2;
-          if (ownership.houses === 3) rentAmount = targetTile.rent3House || 2.5;
-          if (ownership.houses === 4) rentAmount = targetTile.rentHotel || 5.0;
-
-          const actualRent = Math.min(playerCash, rentAmount);
-          updatedCash[currentTurnPlayer.id] = Math.max(0, playerCash - rentAmount);
-          if (owner) {
-            updatedCash[owner.id] = (updatedCash[owner.id] ?? INITIAL_CASH_M) + actualRent;
+          if (currentStepPos === 0) {
+            passedGoInWalk = true;
+            playerCash += SALARY_M;
+            sfx.playSuccess();
           }
 
-          sfx.playDrinkPenalty();
-          newLogs = addLog(
-            `💸 ${currentTurnPlayer.display_name} จ่ายค่าผ่านทางให้ ${owner?.display_name || 'เจ้าของ'} จำนวน ${formatMoneyM(rentAmount)}`,
-            '#ef4444'
-          );
-        }
-      }
-
-      // 2. Chest Card
-      if (targetTile.type === 'chest') {
-        const card = CHEST_CARDS[Math.floor(Math.random() * CHEST_CARDS.length)];
-        setActiveCard(card);
-        requiresUserModalAction = true;
-        sfx.playCardDraw();
-        if (card.rewardMoney) {
-          updatedCash[currentTurnPlayer.id] += card.rewardMoney;
-        }
-        if (card.collectFromAll) {
-          players.forEach((other) => {
-            if (other.id !== currentTurnPlayer.id) {
-              updatedCash[other.id] = Math.max(0, (updatedCash[other.id] ?? INITIAL_CASH_M) - card.collectFromAll!);
-              updatedCash[currentTurnPlayer.id] += card.collectFromAll!;
-            }
+          const walkPositions = { ...positions, [currentTurnPlayer.id]: currentStepPos };
+          await onUpdateGameState({
+            positions: walkPositions,
+            cash: { ...cash, [currentTurnPlayer.id]: playerCash },
           });
-        }
-        newLogs = addLog(`🎁 ${currentTurnPlayer.display_name} เปิดหีบสมบัติ: [${card.title}]`, '#ec4899');
-      }
 
-      // 3. Chance Card
-      if (targetTile.type === 'chance') {
-        const card = CHANCE_CARDS[Math.floor(Math.random() * CHANCE_CARDS.length)];
-        setActiveCard(card);
-        requiresUserModalAction = true;
-        sfx.playCardDraw();
-        if (card.rewardMoney) {
-          updatedCash[currentTurnPlayer.id] += card.rewardMoney;
-        }
-        if (card.teleportToIndex !== undefined) {
-          updatedPositions[currentTurnPlayer.id] = card.teleportToIndex;
-        }
-        if (card.goJail) {
-          updatedPositions[currentTurnPlayer.id] = 8;
-        }
-        newLogs = addLog(`⛩️ ${currentTurnPlayer.display_name} เปิดประตูดวง: [${card.title}]`, '#eab308');
-      }
+          // Destination reached!
+          if (stepCount >= totalRoll) {
+            clearInterval(stepInterval);
+            sfx.playTileLand();
 
-      // 4. Tax
-      if (targetTile.type === 'tax') {
-        const taxAmount = 1.0;
-        updatedCash[currentTurnPlayer.id] = Math.max(0, playerCash - taxAmount);
-        sfx.playDrinkPenalty();
-        newLogs = addLog(`💰 ${currentTurnPlayer.display_name} จ่ายภาษี ${formatMoneyM(taxAmount)}`, '#f97316');
-      }
+            const finalPos = currentStepPos;
+            const targetTile = SUPER_MONOPOLY_TILES[finalPos];
 
-      // 5. Go to Jail
-      if (targetTile.type === 'go_to_jail') {
-        updatedPositions[currentTurnPlayer.id] = 8;
-        sfx.playDrinkPenalty();
-        newLogs = addLog(`⛓️ ${currentTurnPlayer.display_name} โดนจับส่งเข้าห้องขัง!`, '#dc2626');
-      }
+            let moveLog = `${currentTurnPlayer.display_name} ทอยได้ [${d1}][${d2}] (${totalRoll} แต้ม) เดินไปที่ [${targetTile.name}]`;
+            if (passedGoInWalk) {
+              moveLog += ` (ผ่านจุดเริ่มต้น รับ +${formatMoneyM(SALARY_M)})`;
+            }
+            if (isDoubleRoll) {
+              moveLog += ' 🎉 แต้มคู่ (Double)!';
+            }
 
-      setIsMoving(false);
+            let newLogs = addLog(moveLog, '#f59e0b');
+            const updatedPositions = { ...positions, [currentTurnPlayer.id]: finalPos };
+            const updatedCash = { ...cash, [currentTurnPlayer.id]: playerCash };
 
-      await onUpdateGameState({
-        positions: updatedPositions,
-        cash: updatedCash,
-        gameLogs: newLogs,
-      });
+            // 4. WAIT 600ms on the final tile BEFORE popping up buy modal!
+            setTimeout(async () => {
+              setIsMoving(false);
+              setActiveStepTileIndex(null);
 
-      // If no modal is required (e.g. rent, tax, visit jail, start):
-      if (!requiresUserModalAction) {
-        if (isDoubleRoll && targetTile.type !== 'go_to_jail') {
-          showToast('🎉 ได้แต้มคู่! คุณมีสิทธิ์ทอยเต๋าต่ออีก 1 รอบ', 'success');
-          setHasRolledThisTurn(false); // allow rolling again
-        } else {
-          // Automatically advance turn after 2.5 seconds!
-          setTimeout(() => {
-            handleEndTurn();
-          }, 2500);
-        }
-      }
+              let requiresUserModalAction = false;
+
+              // Action on final tile:
+              if (targetTile.type === 'property') {
+                const ownership = properties[finalPos];
+                if (!ownership) {
+                  // UNOWNED PROPERTY -> NOW SHOW BUY MODAL!
+                  setActivePropertyModal(targetTile);
+                  requiresUserModalAction = true;
+                } else if (ownership.ownerId !== currentTurnPlayer.id) {
+                  // Pay Rent!
+                  const owner = players.find((p) => p.id === ownership.ownerId);
+                  let rentAmount = targetTile.baseRent || 0.2;
+                  if (ownership.houses === 1) rentAmount = targetTile.rent1House || 0.5;
+                  if (ownership.houses === 2) rentAmount = targetTile.rent2House || 1.2;
+                  if (ownership.houses === 3) rentAmount = targetTile.rent3House || 2.5;
+                  if (ownership.houses === 4) rentAmount = targetTile.rentHotel || 5.0;
+
+                  const actualRent = Math.min(playerCash, rentAmount);
+                  updatedCash[currentTurnPlayer.id] = Math.max(0, playerCash - rentAmount);
+                  if (owner) {
+                    updatedCash[owner.id] = (updatedCash[owner.id] ?? INITIAL_CASH_M) + actualRent;
+                  }
+
+                  sfx.playDrinkPenalty();
+                  newLogs = addLog(
+                    `💸 ${currentTurnPlayer.display_name} จ่ายค่าผ่านทางให้ ${owner?.display_name || 'เจ้าของ'} จำนวน ${formatMoneyM(rentAmount)}`,
+                    '#ef4444'
+                  );
+                }
+              } else if (targetTile.type === 'chest') {
+                const card = CHEST_CARDS[Math.floor(Math.random() * CHEST_CARDS.length)];
+                setActiveCard(card);
+                requiresUserModalAction = true;
+                sfx.playCardDraw();
+                if (card.rewardMoney) updatedCash[currentTurnPlayer.id] += card.rewardMoney;
+                if (card.collectFromAll) {
+                  players.forEach((other) => {
+                    if (other.id !== currentTurnPlayer.id) {
+                      updatedCash[other.id] = Math.max(0, (updatedCash[other.id] ?? INITIAL_CASH_M) - card.collectFromAll!);
+                      updatedCash[currentTurnPlayer.id] += card.collectFromAll!;
+                    }
+                  });
+                }
+                newLogs = addLog(`🎁 ${currentTurnPlayer.display_name} เปิดหีบสมบัติ: [${card.title}]`, '#ec4899');
+              } else if (targetTile.type === 'chance') {
+                const card = CHANCE_CARDS[Math.floor(Math.random() * CHANCE_CARDS.length)];
+                setActiveCard(card);
+                requiresUserModalAction = true;
+                sfx.playCardDraw();
+                if (card.rewardMoney) updatedCash[currentTurnPlayer.id] += card.rewardMoney;
+                if (card.teleportToIndex !== undefined) updatedPositions[currentTurnPlayer.id] = card.teleportToIndex;
+                if (card.goJail) updatedPositions[currentTurnPlayer.id] = 8;
+                newLogs = addLog(`⛩️ ${currentTurnPlayer.display_name} เปิดประตูดวง: [${card.title}]`, '#eab308');
+              } else if (targetTile.type === 'tax') {
+                updatedCash[currentTurnPlayer.id] = Math.max(0, playerCash - 1.0);
+                sfx.playDrinkPenalty();
+                newLogs = addLog(`💰 ${currentTurnPlayer.display_name} จ่ายภาษี ${formatMoneyM(1.0)}`, '#f97316');
+              } else if (targetTile.type === 'go_to_jail') {
+                updatedPositions[currentTurnPlayer.id] = 8;
+                sfx.playDrinkPenalty();
+                newLogs = addLog(`⛓️ ${currentTurnPlayer.display_name} โดนจับส่งเข้าห้องขัง!`, '#dc2626');
+              }
+
+              await onUpdateGameState({
+                positions: updatedPositions,
+                cash: updatedCash,
+                gameLogs: newLogs,
+              });
+
+              // If no modal required:
+              if (!requiresUserModalAction) {
+                if (isDoubleRoll && targetTile.type !== 'go_to_jail') {
+                  showToast('🎉 ได้แต้มคู่! คุณมีสิทธิ์ทอยเต๋าต่ออีก 1 รอบ', 'success');
+                  setHasRolledThisTurn(false);
+                } else {
+                  setTimeout(() => {
+                    handleEndTurn();
+                  }, 2500);
+                }
+              }
+            }, 600);
+          }
+        }, 320); // 320ms per step walk
+      }, 700);
     }, 1000);
   }, [
     isMyTurn,
@@ -315,7 +325,6 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       showToast('🎉 ได้แต้มคู่! คุณมีสิทธิ์ทอยเต๋าต่ออีกรอบ', 'success');
       setHasRolledThisTurn(false);
     } else {
-      // Auto advance to next player after buying!
       setTimeout(() => {
         handleEndTurn();
       }, 1200);
@@ -384,7 +393,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   };
 
   // -------------------------------------------------------------
-  // BOT AUTO-PLAY ENGINE (Rock-solid, self-executing)
+  // BOT AUTO-PLAY ENGINE (Step-by-Step Walking & Sound Effects)
   // -------------------------------------------------------------
   useEffect(() => {
     if (!isHost || !isBotTurn || botActionRunningRef.current) return;
@@ -393,11 +402,11 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     let isMounted = true;
 
     const executeBotTurn = async () => {
-      // 1. Wait a moment so players see whose turn it is
-      await new Promise((resolve) => setTimeout(resolve, 1400));
+      // 1. Wait a moment
+      await new Promise((resolve) => setTimeout(resolve, 1200));
       if (!isMounted) return;
 
-      // 2. Roll 2 dice for bot
+      // 2. Roll 2 dice
       setIsRolling(true);
       sfx.playDiceRoll();
 
@@ -413,48 +422,68 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       if (!isMounted) return;
 
       setIsRolling(false);
+      await new Promise((resolve) => setTimeout(resolve, 700));
+      if (!isMounted) return;
+
       setIsMoving(true);
-      sfx.playTileLand();
 
-      const currentPos = positions[currentTurnPlayer.id] ?? 0;
-      let newPos = currentPos + totalRoll;
-      let passedGo = false;
+      const startPos = positions[currentTurnPlayer.id] ?? 0;
+      let currentStepPos = startPos;
+      let botCash = cash[currentTurnPlayer.id] ?? INITIAL_CASH_M;
+      let passedGoInWalk = false;
 
-      if (newPos >= 32) {
-        newPos = newPos % 32;
-        passedGo = true;
+      // 3. Step-by-step walk for bot!
+      for (let s = 1; s <= totalRoll; s++) {
+        if (!isMounted) return;
+        currentStepPos = (currentStepPos + 1) % 32;
+        sfx.playStep();
+        setActiveStepTileIndex(currentStepPos);
+
+        if (currentStepPos === 0) {
+          passedGoInWalk = true;
+          botCash += SALARY_M;
+          sfx.playSuccess();
+        }
+
+        const walkPositions = { ...positions, [currentTurnPlayer.id]: currentStepPos };
+        await onUpdateGameState({
+          positions: walkPositions,
+          cash: { ...cash, [currentTurnPlayer.id]: botCash },
+        });
+
+        await new Promise((resolve) => setTimeout(resolve, 320));
       }
 
-      let botCash = cash[currentTurnPlayer.id] ?? INITIAL_CASH_M;
-      const targetTile = SUPER_MONOPOLY_TILES[newPos];
+      sfx.playTileLand();
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      if (!isMounted) return;
+
+      setIsMoving(false);
+      setActiveStepTileIndex(null);
+
+      const finalPos = currentStepPos;
+      const targetTile = SUPER_MONOPOLY_TILES[finalPos];
       let logText = `🤖 ${currentTurnPlayer.display_name} ทอยได้ [${d1}][${d2}] (${totalRoll} แต้ม) เดินไปที่ [${targetTile.name}]`;
 
-      if (passedGo) {
-        botCash += SALARY_M;
+      if (passedGoInWalk) {
         logText += ` (ผ่านจุดเริ่มต้น รับ +${formatMoneyM(SALARY_M)})`;
       }
-
       if (isDoubleRoll) {
         logText += ' 🎉 แต้มคู่!';
       }
 
-      const updatedPositions = { ...positions, [currentTurnPlayer.id]: newPos };
+      const updatedPositions = { ...positions, [currentTurnPlayer.id]: finalPos };
       const updatedCash = { ...cash, [currentTurnPlayer.id]: botCash };
       const updatedProperties = { ...properties };
-
       let newLogs = addLog(logText, '#93c5fd');
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      if (!isMounted) return;
-      setIsMoving(false);
-
-      // 3. Bot Tile Decision
+      // 4. Bot Tile Decision after landing:
       if (targetTile.type === 'property') {
-        const ownership = updatedProperties[newPos];
+        const ownership = updatedProperties[finalPos];
         if (!ownership && targetTile.cost && botCash > targetTile.cost * 1.2) {
           // Bot buys property!
           updatedCash[currentTurnPlayer.id] = botCash - targetTile.cost;
-          updatedProperties[newPos] = { ownerId: currentTurnPlayer.id, houses: 0 };
+          updatedProperties[finalPos] = { ownerId: currentTurnPlayer.id, houses: 0 };
           newLogs = addLog(
             `🏡 🤖 ${currentTurnPlayer.display_name} ตัดสินใจซื้อที่ดิน [${targetTile.name}] (${formatMoneyM(targetTile.cost)})`,
             '#10b981'
@@ -464,14 +493,14 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
           const cost = ownership.houses === 3 ? (targetTile.hotelCost || 2.0) : (targetTile.houseCost || 0.8);
           if (botCash > cost * 1.5) {
             updatedCash[currentTurnPlayer.id] = botCash - cost;
-            updatedProperties[newPos] = { ...ownership, houses: ownership.houses + 1 };
+            updatedProperties[finalPos] = { ...ownership, houses: ownership.houses + 1 };
             newLogs = addLog(
               `🏨 🤖 ${currentTurnPlayer.display_name} สร้างบ้านเพิ่มบน [${targetTile.name}]`,
               '#06b6d4'
             );
           }
         } else if (ownership && ownership.ownerId !== currentTurnPlayer.id) {
-          // Bot pays rent to human/owner
+          // Bot pays rent
           const owner = players.find((p) => p.id === ownership.ownerId);
           let rent = targetTile.baseRent || 0.2;
           if (ownership.houses === 1) rent = targetTile.rent1House || 0.5;
@@ -514,15 +543,14 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
         gameLogs: newLogs,
       });
 
-      // 4. If bot rolled Double, bot gets another roll!
+      // 5. If bot rolled Double, bot rolls again!
       if (isDoubleRoll && targetTile.type !== 'go_to_jail') {
         await new Promise((resolve) => setTimeout(resolve, 1800));
         botActionRunningRef.current = false;
-        // Re-runs for bot because current turn is still bot!
         return;
       }
 
-      // 5. Automatically pass turn to next player!
+      // 6. Pass turn to next player
       await new Promise((resolve) => setTimeout(resolve, 2000));
       if (!isMounted) return;
 
@@ -538,7 +566,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     };
 
     executeBotTurn().catch((err) => {
-      console.error('Bot turn execution error:', err);
+      console.error('Bot turn error:', err);
       botActionRunningRef.current = false;
     });
 
@@ -554,6 +582,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     hasRolledThisTurn,
     isRolling,
     isMoving,
+    activeStepTileIndex,
     isMyTurn,
     isBotTurn,
     currentTurnPlayer,

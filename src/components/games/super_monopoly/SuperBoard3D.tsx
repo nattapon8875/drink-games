@@ -13,6 +13,7 @@ interface SuperBoard3DProps {
   properties: Record<number, PropertyOwnership>;
   players: PlayerRecord[];
   currentTurnPlayerId: string | null;
+  activeStepTileIndex?: number | null;
   onTileClick: (tile: SuperPropertyTile) => void;
 }
 
@@ -170,8 +171,9 @@ const Tile3D: React.FC<{
   tile: SuperPropertyTile;
   ownership: PropertyOwnership | null;
   ownerColor: string | null;
+  isStepActive?: boolean;
   onClick: () => void;
-}> = ({ tile, ownership, ownerColor, onClick }) => {
+}> = ({ tile, ownership, ownerColor, isStepActive, onClick }) => {
   const [hovered, setHovered] = useState(false);
   const [x, y, z] = getSuperTile3DPosition(tile.index);
   const isCorner = tile.index % 8 === 0;
@@ -209,9 +211,9 @@ const Tile3D: React.FC<{
           map={topTexture || undefined}
           roughness={0.4}
           metalness={0.1}
-          color={hovered ? '#ffffff' : '#f8f4eb'}
-          emissive={hovered ? '#fef08a' : '#000000'}
-          emissiveIntensity={hovered ? 0.3 : 0}
+          color={isStepActive ? '#fffbeb' : hovered ? '#ffffff' : '#f8f4eb'}
+          emissive={isStepActive ? '#fbbf24' : hovered ? '#fef08a' : '#000000'}
+          emissiveIntensity={isStepActive ? 0.6 : hovered ? 0.3 : 0}
         />
       </mesh>
 
@@ -221,6 +223,17 @@ const Tile3D: React.FC<{
           <boxGeometry args={[1.0, 0.12, 1.0]} />
           <meshStandardMaterial color={ownerColor} roughness={0.3} metalness={0.4} />
         </mesh>
+      )}
+
+      {/* Step Shockwave Ring Effect */}
+      {isStepActive && (
+        <group position={[0, 0.13, 0]}>
+          <pointLight color="#fde047" intensity={3.5} distance={1.8} />
+          <mesh rotation={[-Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[0.25, 0.45, 24]} />
+            <meshBasicMaterial color="#fde047" transparent opacity={0.8} />
+          </mesh>
+        </group>
       )}
 
       {/* 3D Houses / Hotel sitting on Tile */}
@@ -383,6 +396,7 @@ export const SuperBoard3D: React.FC<SuperBoard3DProps> = ({
   properties,
   players,
   currentTurnPlayerId,
+  activeStepTileIndex,
   onTileClick,
 }) => {
   return (
@@ -432,6 +446,7 @@ export const SuperBoard3D: React.FC<SuperBoard3DProps> = ({
               tile={tile}
               ownership={ownership}
               ownerColor={ownerColor}
+              isStepActive={activeStepTileIndex === tile.index}
               onClick={() => onTileClick(tile)}
             />
           );
