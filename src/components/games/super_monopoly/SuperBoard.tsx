@@ -21,21 +21,21 @@ export const SuperBoard: React.FC<SuperBoardProps> = ({
   activeStepTileIndex,
   onTileClick,
 }) => {
-  // Tile Coordinate Mapping: 32 Tiles (9 on each side)
-  // Grid: 9 columns x 9 rows
+  // Tile Coordinate Mapping: 40 Tiles (11 on each side)
+  // Grid: 11 columns x 11 rows
   const getGridPosition = (index: number): { col: number; row: number } => {
-    if (index >= 0 && index <= 8) {
-      // Bottom side: col 9 -> 1, row 9
-      return { col: 9 - index, row: 9 };
-    } else if (index >= 9 && index <= 16) {
-      // Left side: col 1, row 9 -> 1
-      return { col: 1, row: 9 - (index - 8) };
-    } else if (index >= 17 && index <= 24) {
-      // Top side: col 1 -> 9, row 1
-      return { col: 1 + (index - 16), row: 1 };
+    if (index >= 0 && index <= 10) {
+      // Bottom side: col 11 -> 1, row 11
+      return { col: 11 - index, row: 11 };
+    } else if (index >= 11 && index <= 20) {
+      // Left side: col 1, row 11 -> 1
+      return { col: 1, row: 11 - (index - 10) };
+    } else if (index >= 21 && index <= 30) {
+      // Top side: col 1 -> 11, row 1
+      return { col: 1 + (index - 20), row: 1 };
     } else {
-      // Right side: col 9, row 1 -> 9
-      return { col: 9, row: 1 + (index - 24) };
+      // Right side: col 11, row 1 -> 11
+      return { col: 11, row: 1 + (index - 30) };
     }
   };
 
@@ -49,8 +49,8 @@ export const SuperBoard: React.FC<SuperBoardProps> = ({
 
   return (
     <div className="relative w-full max-w-[620px] aspect-square bg-[#f5e6a2] border-4 border-[#3d1904] rounded-2xl shadow-2xl p-1 sm:p-2 select-none">
-      {/* Grid Container (9x9) */}
-      <div className="grid grid-cols-9 grid-rows-9 w-full h-full gap-0.5 sm:gap-1 relative bg-[#2a1306] p-0.5 sm:p-1 rounded-xl">
+      {/* Grid Container (11x11) */}
+      <div className="grid grid-cols-11 grid-rows-11 w-full h-full gap-0.5 sm:gap-1 relative bg-[#2a1306] p-0.5 sm:p-1 rounded-xl">
         {/* Render 32 Tiles */}
         {SUPER_MONOPOLY_TILES.map((tile) => {
           const { col, row } = getGridPosition(tile.index);
@@ -58,7 +58,7 @@ export const SuperBoard: React.FC<SuperBoardProps> = ({
           const ownerPlayer = ownership ? players.find((p) => p.id === ownership.ownerId) : null;
           const ownerIdx = ownerPlayer ? players.indexOf(ownerPlayer) : -1;
           const ownerColor = ownerIdx >= 0 ? getPlayerColor(ownerIdx) : '#f59e0b';
-          const isCorner = tile.index === 0 || tile.index === 8 || tile.index === 16 || tile.index === 24;
+          const isCorner = tile.index === 0 || tile.index === 10 || tile.index === 20 || tile.index === 30;
 
           // Players on this tile
           const playersHere = players.filter((p) => {

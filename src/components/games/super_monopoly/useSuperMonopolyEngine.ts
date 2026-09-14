@@ -135,7 +135,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       // Local step animation (No server flooding on every step!)
       const stepInterval = setInterval(async () => {
         stepCount++;
-        currentStepPos = (currentStepPos + 1) % 32;
+        currentStepPos = (currentStepPos + 1) % 40;
 
         sfx.playStep();
         setActiveStepTileIndex(currentStepPos);
@@ -186,10 +186,10 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                 const owner = players.find((p) => p.id === ownership.ownerId);
                 let rentAmount = targetTile.baseRent || 0.2;
                 if (targetTile.isUtility) {
-                  // Utility rent: check if owner owns both utilities (4: การประปา, 12: โรงไฟฟ้า)
-                  const ownsWater = properties[4]?.ownerId === ownership.ownerId;
-                  const ownsElectric = properties[12]?.ownerId === ownership.ownerId;
-                  rentAmount = (ownsWater && ownsElectric) ? 1.2 : 0.5;
+                  // Hotel chain bonus: count how many hotels (4, 5, 15, 25, 26, 35) this owner owns
+                  const hotelIndices = [4, 5, 15, 25, 26, 35];
+                  const ownedHotelsCount = hotelIndices.filter((hIdx) => properties[hIdx]?.ownerId === ownership.ownerId).length;
+                  rentAmount = (targetTile.baseRent || 0.4) * Math.max(1, ownedHotelsCount);
                 } else {
                   if (ownership.houses === 1) rentAmount = targetTile.rent1House || 0.5;
                   if (ownership.houses === 2) rentAmount = targetTile.rent2House || 1.2;
@@ -240,7 +240,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               if (card.rewardMoney) updatedCash[currentTurnPlayer.id] += card.rewardMoney;
               if (card.teleportToIndex !== undefined) updatedPositions[currentTurnPlayer.id] = card.teleportToIndex;
               if (card.goJail) {
-                updatedPositions[currentTurnPlayer.id] = 8;
+                updatedPositions[currentTurnPlayer.id] = 10;
                 updatedJail[currentTurnPlayer.id] = 1;
               }
               let chanceDesc = `⛩️ ${currentTurnPlayer.display_name} เปิดดวง: [${card.title}]`;
@@ -260,7 +260,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               sfx.playDrinkPenalty();
               newLogs = addLog(`💰 ${currentTurnPlayer.display_name} จ่ายภาษี ${formatMoneyM(1.0)}`, '#f97316');
             } else if (targetTile.type === 'go_to_jail') {
-              updatedPositions[currentTurnPlayer.id] = 8;
+              updatedPositions[currentTurnPlayer.id] = 10;
               updatedJail[currentTurnPlayer.id] = 1;
               sfx.playDrinkPenalty();
               newLogs = addLog(`⛓️ ${currentTurnPlayer.display_name} โดนจับส่งเข้าห้องขัง!`, '#dc2626');
@@ -696,7 +696,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
           // 3. Step-by-step local walk (No network request on every step!)
           for (let s = 1; s <= totalRoll; s++) {
             if (!isMounted) return;
-            stepPos = (stepPos + 1) % 32;
+            stepPos = (stepPos + 1) % 40;
             sfx.playStep();
             setActiveStepTileIndex(stepPos);
 
@@ -766,9 +766,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               const owner = players.find((p) => p.id === ownership.ownerId);
               let rent = targetTile.baseRent || 0.2;
               if (targetTile.isUtility) {
-                const ownsWater = updatedProperties[4]?.ownerId === ownership.ownerId;
-                const ownsElectric = updatedProperties[12]?.ownerId === ownership.ownerId;
-                rent = (ownsWater && ownsElectric) ? 1.2 : 0.5;
+                const hotelIndices = [4, 5, 15, 25, 26, 35];
+                const ownedHotelsCount = hotelIndices.filter((hIdx) => updatedProperties[hIdx]?.ownerId === ownership.ownerId).length;
+                rent = (targetTile.baseRent || 0.4) * Math.max(1, ownedHotelsCount);
               } else {
                 if (ownership.houses === 1) rent = targetTile.rent1House || 0.5;
                 if (ownership.houses === 2) rent = targetTile.rent2House || 1.2;
@@ -801,7 +801,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             if (card.rewardMoney) updatedCash[turnPlayerId] += card.rewardMoney;
             if (card.teleportToIndex !== undefined) updatedPositions[turnPlayerId] = card.teleportToIndex;
             if (card.goJail) {
-              updatedPositions[turnPlayerId] = 8;
+              updatedPositions[turnPlayerId] = 10;
               updatedJail[turnPlayerId] = 1;
             }
             let botChanceDesc = `⛩️ 🤖 ${currentTurnPlayer.display_name} เปิดดวง: [${card.title}]`;
@@ -820,7 +820,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             updatedCash[turnPlayerId] = Math.max(0, botCash - 1.0);
             newLogs = addLog(`💰 🤖 ${currentTurnPlayer.display_name} จ่ายภาษี 1.0M`, '#f97316');
           } else if (targetTile.type === 'go_to_jail') {
-            updatedPositions[turnPlayerId] = 8;
+            updatedPositions[turnPlayerId] = 10;
             updatedJail[turnPlayerId] = 1;
             newLogs = addLog(`⛓️ 🤖 ${currentTurnPlayer.display_name} โดนจับส่งเข้าห้องขัง!`, '#dc2626');
           } else if (targetTile.type === 'jail') {

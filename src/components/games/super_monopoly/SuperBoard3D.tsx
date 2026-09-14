@@ -28,23 +28,23 @@ export const PLAYER_3D_COLORS = [
   '#84cc16', // Lime
 ];
 
-// Coordinate mapping for 32 tiles around 9x9 perimeter
+// Coordinate mapping for 40 tiles around 11x11 perimeter
 export function getSuperTile3DPosition(index: number): [number, number, number] {
-  const step = 1.0;
-  const half = 4.0;
+  const step = 0.82;
+  const half = 4.1;
 
-  if (index >= 0 && index <= 8) {
-    // Bottom row (0 -> 8): right to left
+  if (index >= 0 && index <= 10) {
+    // Bottom row (0 -> 10): right to left
     return [half - index * step, 0, half];
-  } else if (index >= 8 && index <= 16) {
-    // Left col (8 -> 16): bottom to top
-    return [-half, 0, half - (index - 8) * step];
-  } else if (index >= 16 && index <= 24) {
-    // Top row (16 -> 24): left to right
-    return [-half + (index - 16) * step, 0, -half];
+  } else if (index >= 10 && index <= 20) {
+    // Left col (10 -> 20): bottom to top
+    return [-half, 0, half - (index - 10) * step];
+  } else if (index >= 20 && index <= 30) {
+    // Top row (20 -> 30): left to right
+    return [-half + (index - 20) * step, 0, -half];
   } else {
-    // Right col (24 -> 31): top to bottom
-    return [half, 0, -half + (index - 24) * step];
+    // Right col (30 -> 39): top to bottom
+    return [half, 0, -half + (index - 30) * step];
   }
 }
 
