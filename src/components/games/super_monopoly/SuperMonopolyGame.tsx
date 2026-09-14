@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { BaseGameProps } from '@/types/game';
 import { useSuperMonopolyEngine } from './useSuperMonopolyEngine';
 import { SuperBoard } from './SuperBoard';
+import { SuperBoard3D } from './SuperBoard3D';
 import { PropertyCardModal } from './PropertyCardModal';
 import { ChanceChestModal } from './ChanceChestModal';
 import { SUPER_MONOPOLY_TILES, formatMoneyM } from './superMonopolyData';
@@ -53,6 +54,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
   } = useSuperMonopolyEngine(props);
 
   const [inspectTile, setInspectTile] = useState<SuperPropertyTile | null>(null);
+  const [is3DMode, setIs3DMode] = useState<boolean>(true);
 
   const myCash = currentPlayer ? cash[currentPlayer.id] ?? 15.0 : 15.0;
 
@@ -212,15 +214,58 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           </div>
         </div>
 
-        {/* Center Column: Square Super Monopoly Classic Board (6 cols) */}
-        <div className="lg:col-span-6 flex flex-col items-center justify-center order-1 lg:order-2">
-          <SuperBoard
-            positions={positions}
-            properties={properties}
-            players={players}
-            currentTurnPlayerId={currentTurnPlayer?.id || null}
-            onTileClick={(tile) => setInspectTile(tile)}
-          />
+        {/* Center Column: 3D / 2D Super Monopoly Classic Board (6 cols) */}
+        <div className="lg:col-span-6 flex flex-col items-center justify-center order-1 lg:order-2 w-full">
+          {/* 3D / 2D Toggle Button Bar */}
+          <div className="w-full flex items-center justify-between pb-1.5 px-1">
+            <span className="text-[11px] font-bold text-amber-300/80 flex items-center gap-1">
+              <span>กระดานซุปเปอร์เศรษฐี</span>
+            </span>
+
+            <div className="flex items-center gap-1 bg-[#1c0801] p-0.5 rounded-xl border border-[#4d1d05]">
+              <button
+                type="button"
+                onClick={() => setIs3DMode(true)}
+                className={`px-3 py-1 rounded-lg text-xs font-black transition ${
+                  is3DMode
+                    ? 'bg-gradient-to-r from-amber-600 to-yellow-500 text-amber-950 shadow'
+                    : 'text-amber-300/70 hover:text-white'
+                }`}
+              >
+                🧊 โหมด 3D
+              </button>
+              <button
+                type="button"
+                onClick={() => setIs3DMode(false)}
+                className={`px-3 py-1 rounded-lg text-xs font-black transition ${
+                  !is3DMode
+                    ? 'bg-gradient-to-r from-amber-600 to-yellow-500 text-amber-950 shadow'
+                    : 'text-amber-300/70 hover:text-white'
+                }`}
+              >
+                📜 โหมด 2D
+              </button>
+            </div>
+          </div>
+
+          {/* Active Board Display */}
+          {is3DMode ? (
+            <SuperBoard3D
+              positions={positions}
+              properties={properties}
+              players={players}
+              currentTurnPlayerId={currentTurnPlayer?.id || null}
+              onTileClick={(tile) => setInspectTile(tile)}
+            />
+          ) : (
+            <SuperBoard
+              positions={positions}
+              properties={properties}
+              players={players}
+              currentTurnPlayerId={currentTurnPlayer?.id || null}
+              onTileClick={(tile) => setInspectTile(tile)}
+            />
+          )}
         </div>
 
         {/* Right Column: 2 Dice Roll Controls & Live Game Logs (3 cols) */}
