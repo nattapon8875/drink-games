@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import { BaseGameProps } from '@/types/game';
@@ -20,16 +20,22 @@ import {
   Sparkles,
   Award,
   Scroll,
+  Bot,
+  Zap,
 } from 'lucide-react';
 
 export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
   const { room, players, currentPlayer, isHost } = props;
 
   const {
-    diceResult,
+    dice,
+    diceTotal,
+    isDouble,
+    hasRolledThisTurn,
     isRolling,
     isMoving,
     isMyTurn,
+    isBotTurn,
     currentTurnPlayer,
     positions,
     properties,
@@ -43,15 +49,47 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     handleBuyLand,
     handleBuildHouse,
     handleEndTurn,
+    handleCloseActiveModal,
   } = useSuperMonopolyEngine(props);
 
   const [inspectTile, setInspectTile] = useState<SuperPropertyTile | null>(null);
 
   const myCash = currentPlayer ? cash[currentPlayer.id] ?? 15.0 : 15.0;
 
-  // Calculate net worth or property count per player
   const getPlayerPropertiesCount = (playerId: string) => {
     return Object.values(properties).filter((p) => p.ownerId === playerId).length;
+  };
+
+  // Render authentic 3D dice faces (Red dot for 1, black dots for 2-6)
+  const renderDiceFace = (val: number, isRollingAnim: boolean) => {
+    const dots: Record<number, string[]> = {
+      1: ['col-start-2 row-start-2'],
+      2: ['col-start-1 row-start-1', 'col-start-3 row-start-3'],
+      3: ['col-start-1 row-start-1', 'col-start-2 row-start-2', 'col-start-3 row-start-3'],
+      4: ['col-start-1 row-start-1', 'col-start-3 row-start-1', 'col-start-1 row-start-3', 'col-start-3 row-start-3'],
+      5: ['col-start-1 row-start-1', 'col-start-3 row-start-1', 'col-start-2 row-start-2', 'col-start-1 row-start-3', 'col-start-3 row-start-3'],
+      6: ['col-start-1 row-start-1', 'col-start-3 row-start-1', 'col-start-1 row-start-2', 'col-start-3 row-start-2', 'col-start-1 row-start-3', 'col-start-3 row-start-3'],
+    };
+    const dotClasses = dots[val] || dots[1];
+
+    return (
+      <div
+        className={`w-14 h-14 rounded-2xl bg-gradient-to-b from-[#ffffff] via-[#f7f5e8] to-[#e8dec0] border-2 border-b-4 border-[#826131] shadow-xl flex items-center justify-center transition-all ${
+          isRollingAnim ? 'animate-spin' : 'hover:scale-105'
+        }`}
+      >
+        <div className="grid grid-cols-3 grid-rows-3 w-10 h-10 p-1 gap-0.5 pointer-events-none">
+          {dotClasses.map((cls, idx) => (
+            <span
+              key={idx}
+              className={`w-2.5 h-2.5 rounded-full ${
+                val === 1 ? 'bg-red-600 ring-1 ring-red-400' : 'bg-[#1c0802]'
+              } shadow-inner justify-self-center self-center ${cls}`}
+            />
+          ))}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -65,7 +103,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               ซุปเปอร์เศรษฐี คลาสสิก • SUPER MONOPOLY
             </h2>
             <p className="text-[10px] text-amber-300/80 font-bold">
-              ห้อง: <span className="font-mono text-yellow-400">{room.code}</span> | ทุนเริ่มต้น 15M
+              ห้อง: <span className="font-mono text-yellow-400">{room.code}</span> | ทุนเริ่มต้น 15M | ลูกเต๋า 2 ลูก 🎲🎲
             </p>
           </div>
         </div>
@@ -80,9 +118,9 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           />
           <div className="text-right">
             <span className="text-[10px] text-amber-400/80 block leading-tight font-bold">
-              {isMyTurn ? 'ตาของคุณ!' : 'ตากำลังเล่น:'}
+              {isMyTurn ? 'ตาของคุณ!' : isBotTurn ? 'บอทกำลังเล่น:' : 'ตากำลังเล่น:'}
             </span>
-            <span className="text-xs font-black text-amber-100 truncate max-w-[100px] block">
+            <span className="text-xs font-black text-amber-100 truncate max-w-[110px] block">
               {currentTurnPlayer?.display_name}
             </span>
           </div>
@@ -91,21 +129,22 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
 
       {/* Main 3-Column Landscape Grid (Discord Widescreen Layout) */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 items-start my-auto">
-        {/* Left Column: Player Leaderboard & Net Worth (3 cols on large screen) */}
+        {/* Left Column: Player Leaderboard & Net Worth (3 cols) */}
         <div className="lg:col-span-3 flex flex-col gap-2 order-2 lg:order-1">
           <div className="bg-[#240e03] border-2 border-[#54240a] rounded-2xl p-3 shadow-xl">
             <h3 className="text-xs font-black text-amber-300 uppercase tracking-wider mb-2 flex items-center gap-1.5 border-b border-[#451803] pb-1.5">
               <Award className="w-4 h-4 text-yellow-400" />
-              <span>มหาเศรษฐีในวง ({players.length} คน)</span>
+              <span>ผู้เล่นในกระดาน ({players.length} คน)</span>
             </h3>
 
             <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto scrollbar-none pr-0.5">
-              {players.map((p, idx) => {
+              {players.map((p) => {
                 const playerCash = cash[p.id] ?? 15.0;
                 const propCount = getPlayerPropertiesCount(p.id);
                 const isCurrent = p.id === currentTurnPlayer?.id;
                 const isMe = p.id === currentPlayer?.id;
                 const isBankrupt = playerCash <= 0;
+                const isBot = p.line_user_id === 'bot' || p.id.startsWith('bot-');
 
                 return (
                   <div
@@ -127,6 +166,11 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                         {isMe && (
                           <span className="absolute -bottom-1 -right-1 text-[8px] font-black bg-amber-500 text-amber-950 px-1 rounded-full border border-white">
                             คุณ
+                          </span>
+                        )}
+                        {isBot && (
+                          <span className="absolute -top-1 -right-1 text-[7px] font-black bg-purple-950 text-purple-200 px-1 rounded border border-purple-700">
+                            BOT
                           </span>
                         )}
                       </div>
@@ -168,7 +212,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           </div>
         </div>
 
-        {/* Center Column: Square Super Monopoly Classic Board (6 cols on large screen) */}
+        {/* Center Column: Square Super Monopoly Classic Board (6 cols) */}
         <div className="lg:col-span-6 flex flex-col items-center justify-center order-1 lg:order-2">
           <SuperBoard
             positions={positions}
@@ -179,38 +223,70 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           />
         </div>
 
-        {/* Right Column: Dice Roll Controls & Live Game Logs (3 cols on large screen) */}
+        {/* Right Column: 2 Dice Roll Controls & Live Game Logs (3 cols) */}
         <div className="lg:col-span-3 flex flex-col gap-2 order-3">
-          {/* Action & Dice Control Box */}
+          {/* Action & 2 Dice Control Box */}
           <div className="bg-[#240e03] border-2 border-[#54240a] rounded-2xl p-3.5 shadow-xl text-center">
             <h3 className="text-xs font-black text-amber-300 uppercase tracking-wider mb-2 flex items-center justify-center gap-1.5 border-b border-[#451803] pb-1.5">
               <Dices className="w-4 h-4 text-yellow-400" />
-              <span>ทอยลูกเต๋าเดินกระดาน</span>
+              <span>ทอยลูกเต๋า 2 ลูก (2 DICE)</span>
             </h3>
 
-            {/* Big Dice Result Display */}
-            <div className="flex items-center justify-center my-3">
-              <div
-                className={`w-16 h-16 rounded-2xl bg-gradient-to-b from-[#fffef0] via-[#f7efd2] to-[#e6d8b3] border-2 border-b-4 border-[#8c6735] shadow-lg flex flex-col items-center justify-center text-amber-950 transition-transform ${
-                  isRolling ? 'animate-spin' : ''
-                }`}
-              >
-                <span className="text-3xl font-black font-mono">{diceResult}</span>
-                <span className="text-[9px] font-black text-[#613b14]">แต้มเต๋า</span>
+            {/* 2 Physical 3D Dice Display */}
+            <div className="flex flex-col items-center justify-center my-3">
+              <div className="flex items-center justify-center gap-3">
+                {/* Die 1 */}
+                <div className="flex flex-col items-center gap-1">
+                  {renderDiceFace(dice[0], isRolling)}
+                  <span className="text-[9px] font-bold text-amber-400/70">ลูกที่ 1</span>
+                </div>
+
+                <span className="text-xl font-black text-yellow-400/80">+</span>
+
+                {/* Die 2 */}
+                <div className="flex flex-col items-center gap-1">
+                  {renderDiceFace(dice[1], isRolling)}
+                  <span className="text-[9px] font-bold text-amber-400/70">ลูกที่ 2</span>
+                </div>
               </div>
+
+              {/* Total Roll Result */}
+              <div className="mt-2.5 flex items-center justify-center gap-2">
+                <span className="text-xs text-amber-300/80 font-bold">รวมแต้มเต๋า:</span>
+                <span className="text-2xl font-black font-mono text-yellow-400 drop-shadow">
+                  {diceTotal}
+                </span>
+                <span className="text-xs text-amber-300/80 font-bold">ช่อง</span>
+              </div>
+
+              {/* Double Roll Badge */}
+              {isDouble && (
+                <div className="mt-1 px-3 py-0.5 rounded-full bg-yellow-500/20 border border-yellow-400 text-yellow-300 text-[11px] font-black animate-bounce flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>ได้แต้มคู่ ({dice[0]}-{dice[1]}) ได้ทอยต่ออีกรอบ!</span>
+                </div>
+              )}
             </div>
 
-            {/* Turn Buttons */}
+            {/* Turn Buttons & Prompts */}
             {isMyTurn ? (
               <div className="flex flex-col gap-2">
                 <button
                   type="button"
-                  disabled={isRolling || isMoving}
+                  disabled={isRolling || isMoving || hasRolledThisTurn}
                   onClick={rollDice}
-                  className="wood-btn-gold w-full py-3 rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-lg active:scale-95 disabled:opacity-50"
+                  className="wood-btn-gold w-full py-3.5 rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-lg active:scale-95 disabled:opacity-40"
                 >
                   <Dices className="w-5 h-5" />
-                  <span>{isRolling ? 'กำลังทอยลูกเต๋า...' : isMoving ? 'กำลังเดิน...' : 'กดทอยลูกเต๋า!'}</span>
+                  <span>
+                    {isRolling
+                      ? 'กำลังทอยลูกเต๋า...'
+                      : isMoving
+                      ? 'กำลังเดินบนกระดาน...'
+                      : hasRolledThisTurn
+                      ? 'ทอยไปแล้วในรอบนี้'
+                      : 'กดทอยลูกเต๋า 2 ลูก!'}
+                  </span>
                 </button>
 
                 <button
@@ -219,9 +295,14 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                   onClick={handleEndTurn}
                   className="wood-btn-brown w-full py-2 rounded-xl font-bold text-xs text-amber-200 border border-[#54240a] flex items-center justify-center gap-1 active:scale-95 transition"
                 >
-                  <span>จบรอบตาเดิน</span>
+                  <span>จบรอบตาเดิน (ส่งตา)</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
+              </div>
+            ) : isBotTurn ? (
+              <div className="py-3 px-2 rounded-xl bg-[#2a0e03] border border-yellow-600/40 text-xs text-yellow-300 font-bold flex items-center justify-center gap-2 animate-pulse">
+                <Bot className="w-4 h-4 text-yellow-400" />
+                <span>🤖 {currentTurnPlayer?.display_name} กำลังคิดและทอยเต๋า...</span>
               </div>
             ) : (
               <div className="py-3 px-2 rounded-xl bg-[#1c0801] border border-[#3d1503] text-xs text-amber-300/70 font-bold animate-pulse">
@@ -268,8 +349,11 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
         currentCash={myCash}
         isMyTurn={Boolean(isMyTurn && activePropertyModal)}
         onClose={() => {
-          setActivePropertyModal(null);
-          setInspectTile(null);
+          if (activePropertyModal) {
+            handleCloseActiveModal();
+          } else {
+            setInspectTile(null);
+          }
         }}
         onBuyLand={handleBuyLand}
         onBuildHouse={handleBuildHouse}
@@ -280,7 +364,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
         isOpen={Boolean(activeCard)}
         card={activeCard}
         isMyTurn={isMyTurn}
-        onClose={() => setActiveCard(null)}
+        onClose={handleCloseActiveModal}
       />
     </div>
   );
