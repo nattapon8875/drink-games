@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { MonopolyTileRecord, PlayerRecord } from '@/types/database';
-import { Wine, Award, HelpCircle, ShieldCheck, CheckCircle, Sparkles, Dices, RotateCw, Timer, Play, RotateCcw } from 'lucide-react';
+import { Wine, Award, HelpCircle, ShieldCheck, CheckCircle, Sparkles, Dices, RotateCw, Timer, Play, RotateCcw, Eye, EyeOff, Hash } from 'lucide-react';
 import { sfx } from '@/lib/sound';
 import confetti from 'canvas-confetti';
 
@@ -383,6 +383,111 @@ const InteractiveCountdownTimer: React.FC<{
   );
 };
 
+// 🔢 Interactive 0-99 Number Guesser Component
+const InteractiveNumberGuesser: React.FC<{
+  isMyTurn: boolean;
+}> = ({ isMyTurn }) => {
+  const [secretNumber, setSecretNumber] = useState<number | null>(null);
+  const [showNumber, setShowNumber] = useState(false);
+  const [isRolling, setIsRolling] = useState(false);
+
+  const generateSecret = () => {
+    if (!isMyTurn || isRolling) return;
+    setIsRolling(true);
+    sfx.playDiceRoll();
+    setShowNumber(false);
+
+    let count = 0;
+    const interval = setInterval(() => {
+      count++;
+      setSecretNumber(Math.floor(Math.random() * 100));
+      if (count >= 10) {
+        clearInterval(interval);
+        const finalNum = Math.floor(Math.random() * 100);
+        setSecretNumber(finalNum);
+        setIsRolling(false);
+        sfx.playTileLand();
+      }
+    }, 80);
+  };
+
+  return (
+    <div className="flex flex-col items-center w-full my-2 bg-[#250e03] border-2 border-[#592607] rounded-2xl p-3.5 shadow-inner">
+      <div className="text-xs font-black text-amber-300 mb-1 flex items-center gap-1.5">
+        <Hash className="w-4 h-4 text-yellow-400" />
+        <span>มินิเกม: สุ่มตัวเลขลับ 0 - 99</span>
+      </div>
+
+      <p className="text-[11px] text-amber-200/80 mb-2 leading-tight">
+        {isMyTurn
+          ? 'กดสุ่มเลข แล้วแอบดูคนเดียว! เพื่อนทายทีละคน คุณบอกแค่ "มากกว่า" หรือ "น้อยกว่า"'
+          : 'คนตกกำลังสุ่มเลขลับ... รอทายทีละคน ใครพูดโดนเลขจริง ดื่ม 1 จิบ!'}
+      </p>
+
+      {/* Secret Number Display Box */}
+      <div className="my-1.5 p-3 w-full max-w-[200px] rounded-2xl bg-[#341404] border border-[#6b2c08] flex flex-col items-center justify-center shadow-inner">
+        {secretNumber === null ? (
+          <span className="text-2xl font-black text-amber-500/50 font-mono">??</span>
+        ) : !isMyTurn ? (
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-2xl font-black text-yellow-400 font-mono tracking-widest">🔒 ??</span>
+            <span className="text-[10px] text-amber-300/70 font-bold">(มีเลขลับอยู่ในระบบแล้ว)</span>
+          </div>
+        ) : showNumber ? (
+          <div className="flex flex-col items-center animate-fadeIn">
+            <span className="text-3xl sm:text-4xl font-black text-yellow-300 font-mono drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+              {secretNumber}
+            </span>
+            <span className="text-[10px] text-rose-300 font-black mt-0.5 animate-pulse">
+              🤫 ห้ามให้เพื่อนเห็น!
+            </span>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center">
+            <span className="text-3xl font-black text-amber-400/60 font-mono">••</span>
+            <span className="text-[10px] text-amber-200/80 font-bold">สุ่มแล้ว (แตะตาเพื่อดู)</span>
+          </div>
+        )}
+      </div>
+
+      {/* Controls for current player */}
+      {isMyTurn && (
+        <div className="flex items-center gap-2 mt-2">
+          <button
+            type="button"
+            onClick={generateSecret}
+            disabled={isRolling}
+            className="wood-btn-gold px-3.5 py-1.5 rounded-xl font-black text-xs flex items-center gap-1.5 shadow active:scale-95 transition disabled:opacity-50"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>{secretNumber === null ? 'กดสุ่มเลข 0-99' : 'สุ่มเลขใหม่'}</span>
+          </button>
+
+          {secretNumber !== null && (
+            <button
+              type="button"
+              onClick={() => setShowNumber(!showNumber)}
+              className="wood-btn-brown px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 text-amber-200 border border-[#522207] shadow active:scale-95 transition"
+            >
+              {showNumber ? (
+                <>
+                  <EyeOff className="w-3.5 h-3.5 text-rose-400" />
+                  <span>ซ่อนเลข</span>
+                </>
+              ) : (
+                <>
+                  <Eye className="w-3.5 h-3.5 text-yellow-300" />
+                  <span>ดูเลขลับ</span>
+                </>
+              )}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const ActionCard: React.FC<ActionCardProps> = ({
   isOpen,
   tile,
@@ -411,6 +516,11 @@ export const ActionCard: React.FC<ActionCardProps> = ({
     tile.action_text.includes('จับเวลา') ||
     tile.title.includes('ใบ้คำ') ||
     tile.action_text.includes('20 วินาที');
+
+  const isNumberGuessGame =
+    tile.title.includes('0-99') ||
+    tile.action_text.includes('0-99') ||
+    tile.title.includes('ทายตัวเลข');
 
   const timerSeconds = tile.action_text.includes('20 วินาที') || tile.action_text.includes('20 วิ') ? 20 : 15;
 
@@ -538,6 +648,10 @@ export const ActionCard: React.FC<ActionCardProps> = ({
               setMinigameDrinks(1);
             }}
           />
+        )}
+
+        {isNumberGuessGame && (
+          <InteractiveNumberGuesser isMyTurn={isMyTurn} />
         )}
 
         {/* Target player info ribbon */}
