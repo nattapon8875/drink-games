@@ -1,8 +1,8 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { SuperPropertyTile, PropertyOwnership } from '@/types/database';
 import { formatMoneyM } from './superMonopolyData';
 import { Modal } from '@/components/common/Modal';
-import { Home, Building2, Shield, Check, X } from 'lucide-react';
+import { Home, Building2, Shield, Check, X, Wallet, Coins } from 'lucide-react';
 
 interface PropertyCardModalProps {
   isOpen: boolean;
@@ -54,15 +54,11 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
   };
 
   const canAffordLand = tile.cost ? currentCash >= tile.cost : false;
-  const canAffordHouse = hasHotel
-    ? false
-    : houses === 3
-    ? tile.hotelCost
-      ? currentCash >= tile.hotelCost
-      : false
-    : tile.houseCost
-    ? currentCash >= tile.houseCost
-    : false;
+  const houseCost = houses === 3 ? (tile.hotelCost || 2.0) : (tile.houseCost || 0.8);
+  const canAffordHouse = hasHotel ? false : currentCash >= houseCost;
+
+  const remainingAfterBuy = tile.cost ? currentCash - tile.cost : currentCash;
+  const remainingAfterBuild = currentCash - houseCost;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`โฉนดที่ดิน: ${tile.name}`}>
@@ -121,6 +117,60 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
           </div>
         </div>
 
+        {/* Cash Balance & Remaining After Purchase Bar */}
+        {isMyTurn && (
+          <div className="bg-[#180902] border-2 border-[#5c2709] rounded-2xl p-2.5 flex items-center justify-between shadow-lg">
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-lg shadow">
+                💵
+              </div>
+              <div>
+                <span className="text-[10px] text-amber-300/80 font-bold block leading-tight">
+                  เงินสดในกระเป๋าคุณ:
+                </span>
+                <span className="text-sm sm:text-base font-black font-mono text-yellow-400">
+                  {formatMoneyM(currentCash)}
+                </span>
+              </div>
+            </div>
+
+            {/* Remaining Amount After Transaction */}
+            {!isOwner && tile.cost && (
+              <div className="text-right">
+                <span className="text-[10px] text-amber-300/80 font-bold block leading-tight">
+                  เงินคงเหลือหลังซื้อ:
+                </span>
+                <span
+                  className={`text-sm sm:text-base font-black font-mono ${
+                    canAffordLand ? 'text-emerald-400' : 'text-red-400'
+                  }`}
+                >
+                  {canAffordLand
+                    ? formatMoneyM(remainingAfterBuy)
+                    : `ขาดอีก ${formatMoneyM(tile.cost - currentCash)}`}
+                </span>
+              </div>
+            )}
+
+            {isOwner && !hasHotel && (
+              <div className="text-right">
+                <span className="text-[10px] text-amber-300/80 font-bold block leading-tight">
+                  เงินคงเหลือหลังสร้าง:
+                </span>
+                <span
+                  className={`text-sm sm:text-base font-black font-mono ${
+                    canAffordHouse ? 'text-emerald-400' : 'text-red-400'
+                  }`}
+                >
+                  {canAffordHouse
+                    ? formatMoneyM(remainingAfterBuild)
+                    : `ขาดอีก ${formatMoneyM(houseCost - currentCash)}`}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Action Buttons */}
         {isMyTurn && (
           <div className="flex gap-2 mt-1">
@@ -129,13 +179,13 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
                 type="button"
                 disabled={loading || !canAffordLand}
                 onClick={handleBuy}
-                className="wood-btn-gold flex-1 py-2.5 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 shadow active:scale-95 disabled:opacity-40"
+                className="wood-btn-gold flex-1 py-3 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-lg active:scale-95 disabled:opacity-40"
               >
                 <Check className="w-4 h-4" />
                 <span>
                   {canAffordLand
                     ? `ซื้อที่ดิน (${tile.cost ? formatMoneyM(tile.cost) : ''})`
-                    : `เงินไม่พอ (ขาด ${(tile.cost! - currentCash).toFixed(1)}M)`}
+                    : `เงินไม่พอ (ขาด ${formatMoneyM(tile.cost! - currentCash)})`}
                 </span>
               </button>
             ) : !hasHotel ? (
@@ -143,7 +193,7 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
                 type="button"
                 disabled={loading || !canAffordHouse}
                 onClick={handleBuild}
-                className="wood-btn-gold flex-1 py-2.5 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 shadow active:scale-95 disabled:opacity-40"
+                className="wood-btn-gold flex-1 py-3 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-lg active:scale-95 disabled:opacity-40"
               >
                 {houses === 3 ? (
                   <>
@@ -166,7 +216,7 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="wood-btn-brown px-4 py-2.5 rounded-xl font-bold text-xs text-amber-200 border border-[#522207]"
+              className="wood-btn-brown px-5 py-3 rounded-xl font-bold text-xs sm:text-sm text-amber-200 border border-[#522207]"
             >
               ข้าม / ปิด
             </button>

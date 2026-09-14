@@ -468,6 +468,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
       <ChanceChestModal
         isOpen={Boolean(activeCard)}
         card={activeCard}
+        currentCash={myCash}
         isMyTurn={isMyTurn}
         onClose={handleCloseActiveModal}
       />

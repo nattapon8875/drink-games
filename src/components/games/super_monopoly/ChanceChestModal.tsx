@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { CardAction } from '@/types/database';
 import { formatMoneyM } from './superMonopolyData';
 import { Modal } from '@/components/common/Modal';
@@ -7,6 +7,7 @@ import { Gift, Sparkles, AlertTriangle, ArrowRight } from 'lucide-react';
 interface ChanceChestModalProps {
   card: CardAction | null;
   isOpen: boolean;
+  currentCash?: number;
   isMyTurn: boolean;
   onClose: () => void;
 }
@@ -14,6 +15,7 @@ interface ChanceChestModalProps {
 export const ChanceChestModal: React.FC<ChanceChestModalProps> = ({
   card,
   isOpen,
+  currentCash,
   isMyTurn,
   onClose,
 }) => {
@@ -79,12 +81,20 @@ export const ChanceChestModal: React.FC<ChanceChestModalProps> = ({
           </div>
         )}
 
+        {/* Current Cash Bar */}
+        {currentCash !== undefined && (
+          <div className="w-full bg-[#180902] border border-[#522005] rounded-xl py-2 px-3 flex items-center justify-between shadow-inner">
+            <span className="text-xs text-amber-300/80 font-bold">💵 เงินสดปัจจุบันของคุณ:</span>
+            <span className="text-sm font-black font-mono text-yellow-400">{formatMoneyM(currentCash)}</span>
+          </div>
+        )}
+
         {/* Close / Proceed Button */}
         {isMyTurn && (
           <button
             type="button"
             onClick={onClose}
-            className="wood-btn-gold w-full py-2.5 rounded-xl font-black text-sm flex items-center justify-center gap-2 mt-2 shadow active:scale-95 transition"
+            className="wood-btn-gold w-full py-2.5 rounded-xl font-black text-sm flex items-center justify-center gap-2 mt-1 shadow active:scale-95 transition"
           >
             <span>รับทราบ / ดำเนินการต่อ</span>
             <ArrowRight className="w-4 h-4" />
