@@ -44,3 +44,59 @@ export interface MonopolyTileRecord {
   tile_type: 'drink' | 'order_others' | 'challenge' | 'safe';
   icon?: string;
 }
+
+export type SuperTileType =
+  | 'start'
+  | 'property'
+  | 'chest'
+  | 'chance'
+  | 'jail'
+  | 'parking'
+  | 'go_to_jail'
+  | 'tax';
+
+export interface SuperPropertyTile {
+  index: number;
+  name: string;
+  type: SuperTileType;
+  color?: string;
+  cost?: number; // Price in Millions (M)
+  houseCost?: number; // in M
+  hotelCost?: number; // in M
+  baseRent?: number; // in M
+  rent1House?: number; // in M
+  rent2House?: number; // in M
+  rent3House?: number; // in M
+  rentHotel?: number; // in M
+  icon?: string;
+  description?: string;
+}
+
+export interface PropertyOwnership {
+  ownerId: string;
+  houses: number; // 0 = empty land, 1-3 = houses, 4 = hotel
+}
+
+export interface CardAction {
+  id: string;
+  type: 'chest' | 'chance';
+  title: string;
+  description: string;
+  rewardMoney?: number; // in M
+  teleportToIndex?: number;
+  goJail?: boolean;
+  collectFromAll?: number; // in M
+}
+
+export interface SuperMonopolyGameState {
+  cash: Record<string, number>;
+  positions: Record<string, number>;
+  properties: Record<number, PropertyOwnership>;
+  inJailTurns: Record<string, number>;
+  isBankrupt: Record<string, boolean>;
+  activeCard?: CardAction | null;
+  activePropertyModal?: number | null;
+  gameLogs: Array<{ text: string; time: string; color?: string }>;
+  costumes?: Record<string, number>;
+}
+

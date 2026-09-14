@@ -25,6 +25,16 @@ import { GameInfo } from '@/types/game';
 
 const AVAILABLE_GAMES: GameInfo[] = [
   {
+    id: 'super-monopoly',
+    title: 'ซุปเปอร์เศรษฐี คลาสสิก 🏠',
+    subtitle: 'Classic Super Monopoly (Discord & Web)',
+    description: 'บอร์ดเกมซุปเปอร์เศรษฐียุค 90s ซื้อขายที่ดินทั่วไทย ปลูกบ้าน-โรงแรม ยูนิตเงินหลักล้าน (M) จอเต็มตาสไตล์คลาสสิก!',
+    minPlayers: 2,
+    maxPlayers: 8,
+    badge: 'ready',
+    icon: 'super-monopoly',
+  },
+  {
     id: 'monopoly',
     title: 'เกมเศรษฐีวงเหล้า',
     subtitle: 'Drinking Board Game',
@@ -375,6 +385,7 @@ export default function HomePage() {
                         : 'bg-[#1e0a02] border-[#421703] text-amber-200/50'
                     }`}
                   >
+                    {game.icon === 'super-monopoly' && <span className="text-2xl leading-none select-none">🏠</span>}
                     {game.icon === 'dice' && <Dice5 className="w-6 h-6" />}
                     {game.icon === 'bottle' && <Disc className="w-6 h-6" />}
                     {game.icon === 'cards' && <Layers className="w-6 h-6" />}

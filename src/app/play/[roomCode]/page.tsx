@@ -9,6 +9,7 @@ import { SpinBottleGame } from '@/components/games/spin-bottle/SpinBottleGame';
 import { DoraemonCardGame } from '@/components/games/doraemon_card/DoraemonCardGame';
 import { WheelGame } from '@/components/games/wheel/WheelGame';
 import { CrocodileGame } from '@/components/games/crocodile/CrocodileGame';
+import { SuperMonopolyGame } from '@/components/games/super_monopoly/SuperMonopolyGame';
 import { Loader2, AlertCircle, ArrowLeft, Users, Trash2, Bot, Crown } from 'lucide-react';
 import { BuffaloLogo } from '@/components/common/BuffaloLogo';
 import { Button } from '@/components/common/Button';
@@ -161,6 +162,8 @@ export default function PlayPage() {
   // Modular Game Dynamic Switcher
   const renderGame = () => {
     switch (room.game_type) {
+      case 'super-monopoly':
+        return <SuperMonopolyGame {...baseGameProps} />;
       case 'crocodile':
         return <CrocodileGame {...baseGameProps} />;
       case 'wheel':

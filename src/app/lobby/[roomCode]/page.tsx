@@ -239,7 +239,9 @@ export default function LobbyPage() {
         {/* Game Title Badge / Quest Header */}
         <div className="text-center py-2">
           <span className="text-[10px] font-black tracking-widest uppercase text-amber-300 px-3 py-1 rounded-full bg-[#351505] border border-[#6b2f0a] shadow-inner">
-              {room?.game_type === 'monopoly'
+              {room?.game_type === 'super-monopoly'
+                ? 'ซุปเปอร์เศรษฐี คลาสสิก'
+                : room?.game_type === 'monopoly'
                 ? 'เกมเศรษฐีวงเหล้า'
                 : room?.game_type === 'spin-bottle'
                 ? 'หมุนขวดวัดใจ'
