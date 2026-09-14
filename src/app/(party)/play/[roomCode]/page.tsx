@@ -71,6 +71,11 @@ export default function PlayPage() {
       return;
     }
 
+    if (room.game_type === 'super-monopoly') {
+      router.replace(`/super/play/${roomCode}`);
+      return;
+    }
+
     if (room.status === 'waiting') {
       router.push(`/lobby/${roomCode}`);
     }

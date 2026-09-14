@@ -206,7 +206,11 @@ export default function HomePage() {
         });
       }
 
-      router.push(`/lobby/${roomCode}`);
+      if (gameId === 'super-monopoly') {
+        router.push(`/super/lobby/${roomCode}`);
+      } else {
+        router.push(`/lobby/${roomCode}`);
+      }
     } catch (err: any) {
       console.error('Create room error:', err);
       setErrorMsg(err.message || 'เกิดข้อผิดพลาดในการสร้างห้อง');
@@ -469,21 +473,33 @@ export default function HomePage() {
 
                 {/* Direct Create Room Button for each game */}
                 {isReady && (
-                  <Button
-                    variant="wood-gold"
-                    size="md"
-                    fullWidth
-                    disabled={Boolean(isCreatingGameId)}
-                    onClick={() => handleCreateRoom(game.id)}
-                    className="text-xs sm:text-sm font-black py-2.5 shadow-md flex items-center justify-center gap-2"
-                  >
-                    <Gamepad2 className="w-4 h-4" />
-                    <span>
-                      {isThisGameCreating
-                        ? 'กำลังเปิดโต๊ะ...'
-                        : `เปิดโต๊ะเล่น "${game.title}"`}
-                    </span>
-                  </Button>
+                  <div className="flex flex-col gap-1.5 w-full">
+                    {game.id === 'super-monopoly' && (
+                      <button
+                        type="button"
+                        onClick={() => router.push('/super')}
+                        className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 text-amber-950 font-black text-xs flex items-center justify-center gap-1.5 shadow-md hover:brightness-110 active:scale-95 transition"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>เข้าสู่โหมดเต็มจอ Discord & Web (/super)</span>
+                      </button>
+                    )}
+                    <Button
+                      variant={game.id === 'super-monopoly' ? 'wood-brown' : 'wood-gold'}
+                      size="md"
+                      fullWidth
+                      disabled={Boolean(isCreatingGameId)}
+                      onClick={() => handleCreateRoom(game.id)}
+                      className="text-xs sm:text-sm font-black py-2.5 shadow-md flex items-center justify-center gap-2"
+                    >
+                      <Gamepad2 className="w-4 h-4" />
+                      <span>
+                        {isThisGameCreating
+                          ? 'กำลังเปิดโต๊ะ...'
+                          : `เปิดโต๊ะเล่น "${game.title}"`}
+                      </span>
+                    </Button>
+                  </div>
                 )}
               </div>
             );

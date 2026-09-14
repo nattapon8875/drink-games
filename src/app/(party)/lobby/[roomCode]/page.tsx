@@ -123,6 +123,11 @@ export default function LobbyPage() {
       return;
     }
 
+    if (room.game_type === 'super-monopoly') {
+      router.replace(`/super/lobby/${roomCode}`);
+      return;
+    }
+
     if (room.status === 'playing') {
       router.push(`/play/${roomCode}`);
     }
