@@ -210,25 +210,47 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
 
         {/* Rent & Building Rates Table */}
         {tile.isUtility ? (
-          <div className="bg-[#102336] border-2 border-cyan-700/60 rounded-2xl p-3 text-xs space-y-2 shadow-inner">
-            <div className="flex items-center gap-2 pb-1 border-b border-cyan-800">
-              <span className="text-xl">🏨</span>
-              <div>
-                <span className="text-xs font-black text-cyan-200 block">โรงแรมระดับแลนด์มาร์ก</span>
-                <span className="text-[10px] text-cyan-300/70">โรงแรมสำเร็จรูป ไม่ต้องสร้างบ้านเพิ่ม</span>
+          tile.index === 5 || tile.index === 12 ? (
+            <div className="bg-[#102336] border-2 border-yellow-600/70 rounded-2xl p-3 text-xs space-y-2 shadow-inner">
+              <div className="flex items-center gap-2 pb-1 border-b border-yellow-700/60">
+                <span className="text-xl">{tile.icon || '⚡'}</span>
+                <div>
+                  <span className="text-xs font-black text-yellow-300 block">กิจการสาธารณูปโภค (Utilities)</span>
+                  <span className="text-[10px] text-amber-200/80">การประปานครหลวง & โรงไฟฟ้านครหลวง</span>
+                </div>
+              </div>
+              <div className="flex justify-between items-center text-amber-100">
+                <span>ค่าผ่านทาง (ถือครอง 1 แห่ง):</span>
+                <span className="font-bold font-mono text-yellow-400">0.50M</span>
+              </div>
+              <div className="flex justify-between items-center text-amber-100 font-bold border-t border-yellow-700/60 pt-1.5">
+                <span className="text-yellow-300">ถือครองครบ 2 แห่ง (ประปา + ไฟฟ้า):</span>
+                <span className="font-mono text-emerald-400 text-xs text-right">
+                  1.20M 🔥
+                </span>
               </div>
             </div>
-            <div className="flex justify-between items-center text-amber-100">
-              <span>ค่าผ่านทาง (ถือครอง 1 แห่ง):</span>
-              <span className="font-bold font-mono text-yellow-400">{formatMoneyM(tile.baseRent || 0.4)}</span>
+          ) : (
+            <div className="bg-[#102336] border-2 border-cyan-700/60 rounded-2xl p-3 text-xs space-y-2 shadow-inner">
+              <div className="flex items-center gap-2 pb-1 border-b border-cyan-800">
+                <span className="text-xl">🏨</span>
+                <div>
+                  <span className="text-xs font-black text-cyan-200 block">โรงแรมระดับพรีเมียม (Hotel Chain)</span>
+                  <span className="text-[10px] text-cyan-300/70">โรงแรมสำเร็จรูป ไม่ต้องสร้างบ้านเพิ่ม</span>
+                </div>
+              </div>
+              <div className="flex justify-between items-center text-amber-100">
+                <span>ค่าผ่านทาง (ถือครอง 1 แห่ง):</span>
+                <span className="font-bold font-mono text-yellow-400">{formatMoneyM(tile.baseRent || 0.4)}</span>
+              </div>
+              <div className="flex justify-between items-center text-amber-100 font-bold border-t border-cyan-800/80 pt-1.5">
+                <span className="text-yellow-300">โบนัสเครือข่ายโรงแรม:</span>
+                <span className="font-mono text-emerald-400 text-xs text-right">
+                  คูณตามจำนวนโรงแรมในเครือที่ครอบครอง (สูงสุด 2.00M) 🔥
+                </span>
+              </div>
             </div>
-            <div className="flex justify-between items-center text-amber-100 font-bold border-t border-cyan-800/80 pt-1.5">
-              <span className="text-yellow-300">โบนัสเครือข่ายโรงแรม:</span>
-              <span className="font-mono text-emerald-400 text-xs text-right">
-                คูณตามจำนวนโรงแรมในเครือที่ครอบครอง 🔥
-              </span>
-            </div>
-          </div>
+          )
         ) : (
           <>
             <div className="bg-[#200c02] border border-[#522005] rounded-2xl p-3 text-xs space-y-1.5 shadow-inner">

@@ -192,10 +192,17 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                 const owner = players.find((p) => p.id === ownership.ownerId);
                 let rentAmount = targetTile.baseRent || 0.2;
                 if (targetTile.isUtility) {
-                  // Hotel chain bonus: count how many hotels (4, 5, 15, 25, 26, 35) this owner owns
-                  const hotelIndices = [4, 5, 15, 25, 26, 35];
-                  const ownedHotelsCount = hotelIndices.filter((hIdx) => properties[hIdx]?.ownerId === ownership.ownerId).length;
-                  rentAmount = (targetTile.baseRent || 0.4) * Math.max(1, ownedHotelsCount);
+                  if (finalPos === 5 || finalPos === 12) {
+                    // Utility: การประปานครหลวง (5) & โรงไฟฟ้านครหลวง (12)
+                    const utilityIndices = [5, 12];
+                    const ownedUtilCount = utilityIndices.filter((uIdx) => properties[uIdx]?.ownerId === ownership.ownerId).length;
+                    rentAmount = ownedUtilCount >= 2 ? 1.2 : 0.5;
+                  } else {
+                    // Hotel chain bonus: count how many hotels (4, 15, 25, 26, 35) this owner owns
+                    const hotelIndices = [4, 15, 25, 26, 35];
+                    const ownedHotelsCount = hotelIndices.filter((hIdx) => properties[hIdx]?.ownerId === ownership.ownerId).length;
+                    rentAmount = (targetTile.baseRent || 0.4) * Math.max(1, ownedHotelsCount);
+                  }
                 } else {
                   if (ownership.houses === 1) rentAmount = targetTile.rent1House || 0.5;
                   if (ownership.houses === 2) rentAmount = targetTile.rent2House || 1.2;
@@ -860,9 +867,17 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               const owner = players.find((p) => p.id === ownership.ownerId);
               let rent = targetTile.baseRent || 0.2;
               if (targetTile.isUtility) {
-                const hotelIndices = [4, 5, 15, 25, 26, 35];
-                const ownedHotelsCount = hotelIndices.filter((hIdx) => botProperties[hIdx]?.ownerId === ownership.ownerId).length;
-                rent = (targetTile.baseRent || 0.4) * Math.max(1, ownedHotelsCount);
+                if (finalPos === 5 || finalPos === 12) {
+                  // Utility: การประปานครหลวง (5) & โรงไฟฟ้านครหลวง (12)
+                  const utilityIndices = [5, 12];
+                  const ownedUtilCount = utilityIndices.filter((uIdx) => botProperties[uIdx]?.ownerId === ownership.ownerId).length;
+                  rent = ownedUtilCount >= 2 ? 1.2 : 0.5;
+                } else {
+                  // Hotel chain bonus: count how many hotels (4, 15, 25, 26, 35) this owner owns
+                  const hotelIndices = [4, 15, 25, 26, 35];
+                  const ownedHotelsCount = hotelIndices.filter((hIdx) => botProperties[hIdx]?.ownerId === ownership.ownerId).length;
+                  rent = (targetTile.baseRent || 0.4) * Math.max(1, ownedHotelsCount);
+                }
               } else {
                 if (ownership.houses === 1) rent = targetTile.rent1House || 0.5;
                 if (ownership.houses === 2) rent = targetTile.rent2House || 1.2;
