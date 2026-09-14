@@ -94,6 +94,7 @@ export interface SuperMonopolyGameState {
   positions: Record<string, number>;
   properties: Record<number, PropertyOwnership>;
   inJailTurns: Record<string, number>;
+  restTurns?: Record<string, number>;
   isBankrupt: Record<string, boolean>;
   activeCard?: CardAction | null;
   activePropertyModal?: number | null;

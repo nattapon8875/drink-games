@@ -43,6 +43,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   const properties: Record<number, PropertyOwnership> = rawState.properties || {};
   const cash: Record<string, number> = rawState.cash || {};
   const inJailTurns: Record<string, number> = rawState.inJailTurns || {};
+  const restTurns: Record<string, number> = rawState.restTurns || {};
   const gameLogs: Array<{ text: string; time: string; color?: string }> = rawState.gameLogs || [];
 
   const currentTurnPlayer = players.find((p) => p.id === room.current_turn_player_id) || players[0];
@@ -53,6 +54,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
   const isCurrentPlayerInJail = Boolean(
     currentPlayer && (inJailTurns[currentPlayer.id] ?? 0) > 0
+  );
+  const isCurrentPlayerResting = Boolean(
+    currentPlayer && (restTurns[currentPlayer.id] ?? 0) > 0
   );
 
   // Reset turn state when current turn player changes
@@ -167,6 +171,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
           const updatedPositions = { ...positions, [currentTurnPlayer.id]: finalPos };
           const updatedCash = { ...cash, [currentTurnPlayer.id]: playerCash };
           const updatedJail = { ...inJailTurns, [currentTurnPlayer.id]: 0 };
+          const updatedRest = { ...restTurns, [currentTurnPlayer.id]: 0 };
 
           // Wait 500ms on final tile before showing action/modal
           setTimeout(async () => {
@@ -270,8 +275,13 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               sfx.playSuccess();
               newLogs = addLog(`⛓️ ${currentTurnPlayer.display_name} แวะเยี่ยมคุก (เป็นผู้มาเยือน ปลอดภัย)`, '#a855f7', newLogs);
             } else if (targetTile.type === 'parking') {
+              updatedRest[currentTurnPlayer.id] = 1;
               sfx.playSuccess();
-              newLogs = addLog(`🅿️ ${currentTurnPlayer.display_name} ถึงจุดพักผ่อน ปลอดภัย ไม่มีค่าใช้จ่าย`, '#38bdf8', newLogs);
+              newLogs = addLog(
+                `🏖️ ${currentTurnPlayer.display_name} เดินมาตก [${targetTile.name}] (จุดพักผ่อน) ➔ ต้องหยุดทอยลูกเต๋า 1 ตาในรอบถัดไป!`,
+                '#38bdf8',
+                newLogs
+              );
             } else if (targetTile.type === 'start') {
               sfx.playSuccess();
               newLogs = addLog(`🏁 ${currentTurnPlayer.display_name} อยู่ที่จุดเริ่มต้น รับเงินทุน 2.0M`, '#22c55e', newLogs);
@@ -282,6 +292,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               positions: updatedPositions,
               cash: updatedCash,
               inJailTurns: updatedJail,
+              restTurns: updatedRest,
               gameLogs: newLogs,
             });
 
@@ -306,7 +317,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   // Roll 2 Dice (Human)
   const rollDice = useCallback(async () => {
     if (!isMyTurn || isRolling || isMoving || hasRolledThisTurn || !currentTurnPlayer) return;
-    if (isCurrentPlayerInJail) return; // Must resolve jail first
+    if (isCurrentPlayerInJail || isCurrentPlayerResting) return; // Must resolve jail or rest first
 
     setIsRolling(true);
     sfx.playDiceRoll();
@@ -329,7 +340,57 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     }, 1000);
   }, [isMyTurn, isRolling, isMoving, hasRolledThisTurn, currentTurnPlayer, isCurrentPlayerInJail, executeHumanWalk]);
 
-  // Jail Option 1: Pay Bail (0.5M)
+  // Jail Option 1: Serve 1 Turn in Jail (หยุดรับโทษ 1 ตา)
+  const handleServeJailTurn = useCallback(async () => {
+    if (!currentPlayer || !isMyTurn || !isCurrentPlayerInJail || isRolling || isMoving) return;
+
+    const updatedJail = { ...inJailTurns, [currentPlayer.id]: 0 };
+    sfx.playDrinkPenalty();
+
+    const newLogs = addLog(
+      `⛓️ ${currentPlayer.display_name} เลือกหยุดรับโทษในคุก 1 ตา (ข้ามตาเดิน) ➔ ในรอบถัดไปจะได้รับอิสรภาพ`,
+      '#a855f7',
+      gameLogs
+    );
+
+    showToast('คุณเลือกหยุดรับโทษ 1 ตา ในรอบถัดไปจะสามารถเดินได้ตามปกติ', 'info');
+
+    await onUpdateGameState({
+      inJailTurns: updatedJail,
+      gameLogs: newLogs,
+    });
+
+    setTimeout(() => {
+      handleEndTurn();
+    }, 1500);
+  }, [currentPlayer, isMyTurn, isCurrentPlayerInJail, isRolling, isMoving, inJailTurns, addLog, gameLogs, onUpdateGameState, handleEndTurn]);
+
+  // Rest Option: Serve 1 Turn of Rest at Parking (หยุดทอย 1 ตา)
+  const handleServeRestTurn = useCallback(async () => {
+    if (!currentPlayer || !isMyTurn || !isCurrentPlayerResting || isRolling || isMoving) return;
+
+    const updatedRest = { ...restTurns, [currentPlayer.id]: 0 };
+    sfx.playSuccess();
+
+    const newLogs = addLog(
+      `🏖️ ${currentPlayer.display_name} หยุดพักผ่อน 1 ตาตามกฎจุดพัก (ข้ามตาเดิน) ➔ ในรอบถัดไปจะสามารถเดินได้ตามปกติ`,
+      '#38bdf8',
+      gameLogs
+    );
+
+    showToast('คุณได้หยุดพักผ่อน 1 ตาแล้ว ในรอบถัดไปสามารถทอยเต๋าได้ตามปกติ', 'info');
+
+    await onUpdateGameState({
+      restTurns: updatedRest,
+      gameLogs: newLogs,
+    });
+
+    setTimeout(() => {
+      handleEndTurn();
+    }, 1500);
+  }, [currentPlayer, isMyTurn, isCurrentPlayerResting, isRolling, isMoving, restTurns, addLog, gameLogs, onUpdateGameState, handleEndTurn]);
+
+  // Jail Option 2: Pay Fine (0.5M) to leave immediately (จ่ายค่าปรับเพื่อออก)
   const handlePayJailBail = useCallback(async () => {
     if (!currentPlayer || !isMyTurn || !isCurrentPlayerInJail || isRolling || isMoving) return;
     const currentMoney = cash[currentPlayer.id] ?? INITIAL_CASH_M;
@@ -610,9 +671,11 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
         let botTurnLogs = gameLogs;
         let botCash: number = cash[turnPlayerId] ?? INITIAL_CASH_M;
         let botJailTurns: number = inJailTurns[turnPlayerId] ?? 0;
+        let botRestTurns: number = restTurns[turnPlayerId] ?? 0;
         let currentPos: number = positions[turnPlayerId] ?? 0;
         let botProperties = { ...properties };
         let botJailState = { ...inJailTurns };
+        let botRestState = { ...restTurns };
 
         while (shouldRollAgain && rollsThisTurn < 2 && isMounted) {
           rollsThisTurn++;
@@ -622,15 +685,31 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
           await new Promise((resolve) => setTimeout(resolve, 1000));
           if (!isMounted) return;
 
-          // Check if bot is currently in jail:
+          // Check if bot is resting at parking spot (หยุดทอย 1 ตา):
+          if (botRestTurns > 0) {
+            botRestState[turnPlayerId] = 0;
+            botTurnLogs = addLog(
+              `🏖️ 🤖 ${currentTurnPlayer.display_name} กำลังหยุดพักผ่อนที่จุดพัก ต้องหยุดทอย 1 ตา (ข้ามตานี้)`,
+              '#38bdf8',
+              botTurnLogs
+            );
+            await onUpdateGameState({
+              restTurns: botRestState,
+              gameLogs: botTurnLogs,
+            });
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+            break; // exit while loop to end turn
+          }
+
+          // Check if bot is currently in jail (หยุดรับโทษ 1 ตา หรือ จ่ายค่าปรับเพื่อออก):
           if (botJailTurns > 0) {
             if (botCash >= 1.0) {
-              // Bot pays 0.5M bail to get out immediately!
+              // Bot pays 0.5M fine to leave jail immediately!
               botCash -= JAIL_BAIL_M;
               botJailTurns = 0;
               botJailState[turnPlayerId] = 0;
               botTurnLogs = addLog(
-                `👮 🤖 ${currentTurnPlayer.display_name} จ่ายค่าประกันตัว 0.5M หลุดออกจากคุกแล้ว!`,
+                `👮 🤖 ${currentTurnPlayer.display_name} จ่ายค่าปรับ 0.5M เพื่อออกจากคุกทันที! (เงินเหลือ ${formatMoneyM(botCash)})`,
                 '#10b981',
                 botTurnLogs
               );
@@ -641,44 +720,20 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               });
               await new Promise((resolve) => setTimeout(resolve, 800));
             } else {
-              // Bot tries double roll:
-              const d1 = Math.floor(Math.random() * 6) + 1;
-              const d2 = Math.floor(Math.random() * 6) + 1;
-              setDice([d1, d2]);
-              setIsRolling(true);
-              sfx.playDiceRoll();
-
-              await new Promise((resolve) => setTimeout(resolve, 1000));
-              setIsRolling(false);
-
-              if (d1 === d2) {
-                // Free escape!
-                botJailTurns = 0;
-                botJailState[turnPlayerId] = 0;
-                botTurnLogs = addLog(
-                  `🎉 🤖 ${currentTurnPlayer.display_name} ทอยได้แต้มคู่ [${d1}][${d2}] แหกคุกสำเร็จ!`,
-                  '#10b981',
-                  botTurnLogs
-                );
-                await onUpdateGameState({
-                  inJailTurns: botJailState,
-                  gameLogs: botTurnLogs,
-                });
-              } else {
-                // Stay in jail, pass turn!
-                botJailState[turnPlayerId] = 0; // served sentence
-                botTurnLogs = addLog(
-                  `⛓️ 🤖 ${currentTurnPlayer.display_name} ทอยได้ [${d1}][${d2}] ไม่ใช่แต้มคู่ ติดคุกข้ามตานี้`,
-                  '#ef4444',
-                  botTurnLogs
-                );
-                await onUpdateGameState({
-                  inJailTurns: botJailState,
-                  gameLogs: botTurnLogs,
-                });
-                await new Promise((resolve) => setTimeout(resolve, 1500));
-                break; // exit while loop to end turn
-              }
+              // Bot stops/serves 1 turn in jail:
+              botJailTurns = 0;
+              botJailState[turnPlayerId] = 0;
+              botTurnLogs = addLog(
+                `⛓️ 🤖 ${currentTurnPlayer.display_name} ไม่มีเงินจ่ายค่าปรับ เลือกหยุดรับโทษในคุก 1 ตา (ข้ามตานี้)`,
+                '#a855f7',
+                botTurnLogs
+              );
+              await onUpdateGameState({
+                inJailTurns: botJailState,
+                gameLogs: botTurnLogs,
+              });
+              await new Promise((resolve) => setTimeout(resolve, 1500));
+              break; // exit while loop to end turn
             }
           }
 
@@ -858,7 +913,12 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
           } else if (targetTile.type === 'jail') {
             botTurnLogs = addLog(`⛓️ 🤖 ${currentTurnPlayer.display_name} แวะเยี่ยมคุก ชิลๆ ไม่ถูกขัง`, '#a855f7', botTurnLogs);
           } else if (targetTile.type === 'parking') {
-            botTurnLogs = addLog(`🅿️ 🤖 ${currentTurnPlayer.display_name} ถึงจุดพักผ่อน ปลอดภัย ไม่มีค่าใช้จ่าย`, '#38bdf8', botTurnLogs);
+            botRestState[turnPlayerId] = 1;
+            botTurnLogs = addLog(
+              `🏖️ 🤖 ${currentTurnPlayer.display_name} เดินมาตก [${targetTile.name}] (จุดพักผ่อน) ➔ ต้องหยุดทอยลูกเต๋า 1 ตาในรอบถัดไป!`,
+              '#38bdf8',
+              botTurnLogs
+            );
           } else if (targetTile.type === 'start') {
             botTurnLogs = addLog(`🏁 🤖 ${currentTurnPlayer.display_name} ถึงจุดเริ่มต้น`, '#22c55e', botTurnLogs);
           }
@@ -869,6 +929,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             cash: updatedCash,
             properties: botProperties,
             inJailTurns: botJailState,
+            restTurns: botRestState,
             gameLogs: botTurnLogs,
           });
 
@@ -930,7 +991,11 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     isMyTurn,
     isBotTurn,
     isCurrentPlayerInJail,
+    isCurrentPlayerResting,
     inJailTurns,
+    restTurns,
+    handleServeJailTurn,
+    handleServeRestTurn,
     currentTurnPlayer,
     positions,
     properties,

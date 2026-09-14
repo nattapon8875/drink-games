@@ -49,11 +49,14 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     setActiveCard,
     gameLogs,
     isCurrentPlayerInJail,
+    isCurrentPlayerResting,
     inJailTurns,
+    restTurns,
     rollDice,
+    handleServeJailTurn,
     handlePayJailBail,
-    handleTryJailDouble,
     handleDrinkForJail,
+    handleServeRestTurn,
     handleBuyLand,
     handleBuildHouse,
     handleEndTurn,
@@ -263,6 +266,11 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                             ⛓️ ในคุก
                           </span>
                         )}
+                        {restTurns && restTurns[p.id] > 0 && (
+                          <span className="text-[9px] font-bold bg-sky-950 text-sky-300 border border-sky-600 px-1.5 py-0.5 rounded-full">
+                            🏖️ จุดพัก
+                          </span>
+                        )}
                         {isBankrupt ? (
                           <span className="text-[10px] font-black text-red-400 bg-red-950 px-1.5 py-0.5 rounded border border-red-800">
                             ล้มละลาย
@@ -420,44 +428,64 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                     <span className="text-base">⛓️</span>
                     <span>คุณถูกคุมขังอยู่ในห้องขัง!</span>
                   </div>
-                  <p className="text-[10px] text-amber-200/80 font-bold">
-                    เลือกวิธีเพื่อออกจากห้องขัง:
+                  <p className="text-[10px] text-amber-200/90 font-bold">
+                    เลือกหยุดรับโทษ 1 ตา หรือจ่ายค่าปรับเพื่อออกทันที:
                   </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 mt-1">
                     <button
                       type="button"
-                      disabled={isRolling || isMoving || myCash < 0.5}
-                      onClick={handlePayJailBail}
-                      className="wood-btn-gold py-2 px-1 rounded-xl font-black text-[11px] flex flex-col items-center justify-center shadow active:scale-95 disabled:opacity-40"
-                      title="จ่ายค่าประกันตัว 0.5M เพื่อออกคุกและทอยเต๋าได้ทันที"
+                      disabled={isRolling || isMoving}
+                      onClick={handleServeJailTurn}
+                      className="wood-btn-brown py-2.5 px-1 rounded-xl font-black text-[11px] text-yellow-300 border border-yellow-500/60 flex flex-col items-center justify-center shadow active:scale-95"
+                      title="หยุดรับโทษ 1 ตา โดยข้ามการทอยในรอบนี้ รอบถัดไปจะได้รับอิสรภาพ"
                     >
-                      <span>💸 จ่ายประกัน 0.5M</span>
-                      <span className="text-[9px] text-amber-950 font-bold">(ออกคุกทันที)</span>
+                      <span>⛓️ หยุดรับโทษ 1 ตา</span>
+                      <span className="text-[9px] text-amber-300/80 font-bold">(ข้ามตาเดิน)</span>
                     </button>
 
                     <button
                       type="button"
-                      disabled={isRolling || isMoving || hasRolledThisTurn}
-                      onClick={handleTryJailDouble}
-                      className="wood-btn-brown py-2 px-1 rounded-xl font-black text-[11px] text-yellow-300 border border-yellow-500/60 flex flex-col items-center justify-center shadow active:scale-95 disabled:opacity-40"
-                      title="ทอยเสี่ยงแต้มคู่: ถ้าได้คู่หลุดคุกและเดินฟรี ถ้าไม่ได้คู่ต้องข้ามตานี้"
+                      disabled={isRolling || isMoving || myCash < 0.5}
+                      onClick={handlePayJailBail}
+                      className="wood-btn-gold py-2.5 px-1 rounded-xl font-black text-[11px] flex flex-col items-center justify-center shadow active:scale-95 disabled:opacity-40"
+                      title="จ่ายค่าปรับ 0.5M เพื่อออกจากห้องขังและทอยเต๋าได้ทันที"
                     >
-                      <span>🎲 เสี่ยงแต้มคู่</span>
-                      <span className="text-[9px] text-amber-300/80 font-bold">(ได้คู่ = ออกฟรี)</span>
+                      <span>💸 จ่ายค่าปรับ 0.5M</span>
+                      <span className="text-[9px] text-amber-950 font-bold">(ออกคุกทันที)</span>
                     </button>
 
                     <button
                       type="button"
                       disabled={isRolling || isMoving}
                       onClick={handleDrinkForJail}
-                      className="py-2 px-1 rounded-xl font-black text-[11px] bg-[#541208] hover:bg-[#70180a] border border-rose-500 text-rose-200 flex flex-col items-center justify-center shadow active:scale-95"
+                      className="py-2.5 px-1 rounded-xl font-black text-[11px] bg-[#541208] hover:bg-[#70180a] border border-rose-500 text-rose-200 flex flex-col items-center justify-center shadow active:scale-95"
                       title="ดื่ม 1 ช็อตเพื่อแหกคุกทันที (โหมดวงเหล้า)"
                     >
                       <span>🍺 ดื่ม 1 ช็อต</span>
                       <span className="text-[9px] text-rose-300/80 font-bold">(โหมดวงเหล้า)</span>
                     </button>
                   </div>
+                </div>
+              ) : isCurrentPlayerResting ? (
+                <div className="flex flex-col gap-2 p-3 rounded-2xl bg-[#0c2438] border-2 border-sky-400/80 shadow-2xl text-center">
+                  <div className="flex items-center justify-center gap-1.5 text-sky-300 font-black text-xs sm:text-sm">
+                    <span className="text-base">🏖️</span>
+                    <span>คุณกำลังหยุดพักผ่อนที่จุดพัก!</span>
+                  </div>
+                  <p className="text-[10px] text-sky-200/90 font-bold">
+                    ตามกฎจุดพักผ่อน: คุณต้องหยุดทอยลูกเต๋า 1 ตาในรอบนี้
+                  </p>
+
+                  <button
+                    type="button"
+                    disabled={isRolling || isMoving}
+                    onClick={handleServeRestTurn}
+                    className="wood-btn-gold w-full py-3 rounded-xl font-black text-xs text-amber-950 flex items-center justify-center gap-1.5 shadow-lg active:scale-95"
+                  >
+                    <span>🏖️ หยุดพักผ่อน 1 ตา (ส่งตาเดิน)</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               ) : (
                 <div className="flex flex-col gap-2">
