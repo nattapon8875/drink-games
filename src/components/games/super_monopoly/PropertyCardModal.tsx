@@ -60,6 +60,139 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
   const remainingAfterBuy = tile.cost ? currentCash - tile.cost : currentCash;
   const remainingAfterBuild = currentCash - houseCost;
 
+  // Special Non-Property Tiles (ประตูดวง, หีบสมบัติ, คุก, จุดเริ่มต้น, จุดพักผ่อน, เสียภาษี, ไปเข้าคุก)
+  if (tile.type !== 'property') {
+    const specialConfig: Record<
+      string,
+      { title: string; badge: string; bgGradient: string; description: string; details: string[] }
+    > = {
+      start: {
+        title: 'จุดเริ่มต้น (GO)',
+        badge: 'รับเงินทุน / เงินเดือน',
+        bgGradient: 'from-emerald-600 to-green-800 border-emerald-400',
+        description: 'จุดเริ่มต้นของการเดินทางรอบกระดานซุปเปอร์เศรษฐี',
+        details: [
+          'ทุกครั้งที่เดินผ่านจุดนี้ จะได้รับเงินเดือน 2.0M ทันที',
+          'หากทอยลูกเต๋ามาตกที่ช่องนี้พอดี จะได้รับเงินเดือน 2.0M เช่นกัน',
+          'นำเงินที่ได้ไปลงทุนซื้อที่ดินและพัฒนาสิ่งปลูกสร้างเพื่อเก็บค่าผ่านทาง',
+        ],
+      },
+      chance: {
+        title: 'ประตูดวง (Chance)',
+        badge: 'สุ่มการ์ดดวงชะตา',
+        bgGradient: 'from-amber-500 to-yellow-700 border-amber-300',
+        description: 'ช่องวัดดวง ลุ้นเหตุการณ์พลิกผันที่จะเปลี่ยนสถานการณ์ในเกม!',
+        details: [
+          'เมื่อเดินมาตกช่องนี้ จะได้สุ่มเปิดการ์ดประตูดวง 1 ใบ',
+          'มีโอกาสได้รับการ์ดรับเงินรางวัลพิเศษ, วาร์ปไปยังเมืองต่างๆ',
+          'หรืออาจต้องเสียเงินค่าปรับ หรือถูกตำรวจส่งตัวเข้าห้องขังทันที!',
+        ],
+      },
+      chest: {
+        title: 'หีบสมบัติ (Community Chest)',
+        badge: 'สุ่มการ์ดโชคลาภ',
+        bgGradient: 'from-pink-600 to-rose-800 border-pink-400',
+        description: 'ช่องเปิดหีบสมบัติ ลุ้นรับผลประโยชน์ โบนัส หรือการแบ่งปันในวงเพื่อน',
+        details: [
+          'เมื่อเดินมาตกช่องนี้ จะได้สุ่มเปิดการ์ดหีบสมบัติ 1 ใบ',
+          'มีโอกาสได้รับเงินปันผลหุ้น, ของขวัญวันเกิด',
+          'หรือการ์ดเก็บเงินสนับสนุนจากเพื่อนทุกคนในวง!',
+        ],
+      },
+      jail: {
+        title: 'ห้องขัง / แวะเยี่ยมคุก (Jail & Visiting)',
+        badge: 'คุกคุมขัง / ผู้มาเยือน',
+        bgGradient: 'from-purple-900 to-slate-900 border-purple-500',
+        description: 'สถานที่คุมขังผู้เล่นที่ทำผิดกฎ หรือพื้นที่แวะเยี่ยมเยียน',
+        details: [
+          'หากเดินมาตกช่องนี้ตามปกติ: คุณมาในฐานะ "ผู้มาเยี่ยม" ปลอดภัย ไม่ต้องเสียเงินและไม่ถูกขัง',
+          'หากถูกตำรวจจับส่งเข้าคุก: ต้องติดคุกจนกว่าจะจ่ายค่าประกัน 0.5M, เสี่ยงทอยแต้มคู่ หรือดื่ม 1 ช็อตเพื่อแหกคุก',
+        ],
+      },
+      parking: {
+        title: 'จุดพักผ่อน (Free Parking)',
+        badge: 'พื้นที่พักผ่อน ปลอดภัย',
+        bgGradient: 'from-sky-600 to-blue-800 border-sky-400',
+        description: 'จุดจอดพักผ่อนหย่อนใจ ปลอดภัย 100%',
+        details: [
+          'ไม่มีการเรียกเก็บเงินค่าผ่านทางใดๆ ทั้งสิ้น',
+          'ผู้เล่นสามารถพักผ่อนได้อย่างปลอดภัยเพื่อเตรียมพร้อมเดินต่อในรอบถัดไป',
+        ],
+      },
+      go_to_jail: {
+        title: 'ไปเข้าคุกทันที (Go to Jail)',
+        badge: 'คำสั่งจับกุมตัว',
+        bgGradient: 'from-red-600 to-rose-950 border-red-500',
+        description: 'จุดอันตรายที่สุดบนกระดาน!',
+        details: [
+          'หากเดินมาตกช่องนี้ ตัวหมากของคุณจะถูกจับส่งเข้าห้องขัง (ช่องที่ 8) ทันที',
+          'ไม่สามารถเดินผ่านจุดเริ่มต้น และไม่ได้รับเงินเดือน 2.0M',
+          'จบรอบตาเดินของคุณทันที',
+        ],
+      },
+      tax: {
+        title: 'เสียภาษี (Tax)',
+        badge: 'ชำระภาษีเข้ารัฐ',
+        bgGradient: 'from-orange-600 to-amber-900 border-orange-400',
+        description: 'ช่องเรียกเก็บภาษีบำรุงประเทศ',
+        details: [
+          `เมื่อเดินมาตกช่องนี้ จะต้องจ่ายภาษีเข้ารัฐทันที ${tile.index === 23 ? '1.5M (ภาษีมรดก)' : '1.0M (ภาษีรายได้)'}`,
+          'หากเงินสดไม่เพียงพอ จะถูกหักจนเหลือ 0',
+        ],
+      },
+    };
+
+    const config = specialConfig[tile.type] || {
+      title: tile.name,
+      badge: 'ช่องพิเศษ',
+      bgGradient: 'from-amber-600 to-amber-900 border-amber-500',
+      description: tile.description || 'ช่องพิเศษบนกระดาน',
+      details: [tile.description || 'ช่องกิจกรรมพิเศษ'],
+    };
+
+    return (
+      <Modal isOpen={isOpen} onClose={onClose} title={`ช่องพิเศษ: ${tile.name}`}>
+        <div className="flex flex-col gap-3 text-center">
+          {/* Header Banner */}
+          <div
+            className={`p-4 rounded-2xl text-white shadow-xl border-2 bg-gradient-to-br ${config.bgGradient} flex flex-col items-center justify-center relative`}
+          >
+            <span className="text-4xl drop-shadow mb-1">{tile.icon || '⭐'}</span>
+            <span className="text-[10px] font-black uppercase tracking-wider bg-black/40 px-2.5 py-0.5 rounded-full mb-1">
+              {config.badge}
+            </span>
+            <h3 className="text-lg font-black tracking-wide drop-shadow uppercase">{config.title}</h3>
+          </div>
+
+          {/* Description & Rules Box */}
+          <div className="bg-[#200c02] border border-[#522005] rounded-2xl p-3.5 text-xs text-left shadow-inner space-y-2.5">
+            <p className="text-amber-100 font-bold leading-relaxed">{config.description}</p>
+            <div className="border-t border-[#421703] pt-2 space-y-1.5">
+              <span className="text-[11px] font-black text-amber-300 block">📌 กฎของช่องนี้:</span>
+              <ul className="space-y-1.5 text-amber-200/90 text-[11px]">
+                {config.details.map((d, i) => (
+                  <li key={i} className="flex items-start gap-1.5">
+                    <span className="text-yellow-400 font-bold shrink-0">•</span>
+                    <span>{d}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Close Button */}
+          <button
+            type="button"
+            onClick={onClose}
+            className="wood-btn-gold w-full py-2.5 rounded-xl font-black text-xs sm:text-sm shadow active:scale-95 transition mt-1"
+          >
+            เข้าใจแล้ว / ปิดหน้าต่าง
+          </button>
+        </div>
+      </Modal>
+    );
+  }
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`โฉนดที่ดิน: ${tile.name}`}>
       <div className="flex flex-col gap-3">
