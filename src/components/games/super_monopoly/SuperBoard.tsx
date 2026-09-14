@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { SuperPropertyTile, PropertyOwnership, PlayerRecord } from '@/types/database';
 import { SUPER_MONOPOLY_TILES, formatMoneyM } from './superMonopolyData';
 import { Home, Building2 } from 'lucide-react';
@@ -61,7 +61,14 @@ export const SuperBoard: React.FC<SuperBoardProps> = ({
           const isCorner = tile.index === 0 || tile.index === 8 || tile.index === 16 || tile.index === 24;
 
           // Players on this tile
-          const playersHere = players.filter((p) => (positions[p.id] ?? 0) === tile.index);
+          const playersHere = players.filter((p) => {
+            const isTurn = p.id === currentTurnPlayerId;
+            const pPos =
+              isTurn && activeStepTileIndex !== null && activeStepTileIndex !== undefined
+                ? activeStepTileIndex
+                : positions[p.id] ?? 0;
+            return pPos === tile.index;
+          });
 
           return (
             <div

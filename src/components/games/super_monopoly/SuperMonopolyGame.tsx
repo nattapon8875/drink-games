@@ -47,7 +47,12 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     activeCard,
     setActiveCard,
     gameLogs,
+    isCurrentPlayerInJail,
+    inJailTurns,
     rollDice,
+    handlePayJailBail,
+    handleTryJailDouble,
+    handleDrinkForJail,
     handleBuyLand,
     handleBuildHouse,
     handleEndTurn,
@@ -193,8 +198,13 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                       </div>
                     </div>
 
-                    {/* Cash balance in M */}
-                    <div className="text-right shrink-0">
+                    {/* Jail status badge & Cash balance */}
+                    <div className="text-right shrink-0 flex flex-col items-end gap-0.5">
+                      {inJailTurns[p.id] > 0 && (
+                        <span className="text-[9px] font-bold bg-red-950 text-red-300 border border-red-700 px-1.5 py-0.2 rounded-full">
+                          ⛓️ ในคุก
+                        </span>
+                      )}
                       {isBankrupt ? (
                         <span className="text-[10px] font-black text-red-400 bg-red-950 px-1.5 py-0.5 rounded border border-red-800">
                           ล้มละลาย
@@ -318,35 +328,82 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
 
             {/* Turn Buttons & Prompts */}
             {isMyTurn ? (
-              <div className="flex flex-col gap-2">
-                <button
-                  type="button"
-                  disabled={isRolling || isMoving || hasRolledThisTurn}
-                  onClick={rollDice}
-                  className="wood-btn-gold w-full py-3.5 rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-lg active:scale-95 disabled:opacity-40"
-                >
-                  <Dices className="w-5 h-5" />
-                  <span>
-                    {isRolling
-                      ? 'กำลังทอยลูกเต๋า...'
-                      : isMoving
-                      ? 'กำลังเดินบนกระดาน...'
-                      : hasRolledThisTurn
-                      ? 'ทอยไปแล้วในรอบนี้'
-                      : 'กดทอยลูกเต๋า 2 ลูก!'}
-                  </span>
-                </button>
+              isCurrentPlayerInJail ? (
+                <div className="flex flex-col gap-2 p-3 rounded-2xl bg-[#360e06] border-2 border-red-600/70 shadow-2xl text-center">
+                  <div className="flex items-center justify-center gap-1.5 text-red-300 font-black text-xs sm:text-sm">
+                    <span className="text-base">⛓️</span>
+                    <span>คุณถูกคุมขังอยู่ในห้องขัง!</span>
+                  </div>
+                  <p className="text-[10px] text-amber-200/80 font-bold">
+                    เลือกวิธีเพื่อออกจากห้องขัง:
+                  </p>
 
-                <button
-                  type="button"
-                  disabled={isRolling || isMoving}
-                  onClick={handleEndTurn}
-                  className="wood-btn-brown w-full py-2 rounded-xl font-bold text-xs text-amber-200 border border-[#54240a] flex items-center justify-center gap-1 active:scale-95 transition"
-                >
-                  <span>จบรอบตาเดิน (ส่งตา)</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 mt-1">
+                    <button
+                      type="button"
+                      disabled={isRolling || isMoving || myCash < 0.5}
+                      onClick={handlePayJailBail}
+                      className="wood-btn-gold py-2 px-1 rounded-xl font-black text-[11px] flex flex-col items-center justify-center shadow active:scale-95 disabled:opacity-40"
+                      title="จ่ายค่าประกันตัว 0.5M เพื่อออกคุกและทอยเต๋าได้ทันที"
+                    >
+                      <span>💸 จ่ายประกัน 0.5M</span>
+                      <span className="text-[9px] text-amber-950 font-bold">(ออกคุกทันที)</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={isRolling || isMoving || hasRolledThisTurn}
+                      onClick={handleTryJailDouble}
+                      className="wood-btn-brown py-2 px-1 rounded-xl font-black text-[11px] text-yellow-300 border border-yellow-500/60 flex flex-col items-center justify-center shadow active:scale-95 disabled:opacity-40"
+                      title="ทอยเสี่ยงแต้มคู่: ถ้าได้คู่หลุดคุกและเดินฟรี ถ้าไม่ได้คู่ต้องข้ามตานี้"
+                    >
+                      <span>🎲 เสี่ยงแต้มคู่</span>
+                      <span className="text-[9px] text-amber-300/80 font-bold">(ได้คู่ = ออกฟรี)</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={isRolling || isMoving}
+                      onClick={handleDrinkForJail}
+                      className="py-2 px-1 rounded-xl font-black text-[11px] bg-[#541208] hover:bg-[#70180a] border border-rose-500 text-rose-200 flex flex-col items-center justify-center shadow active:scale-95"
+                      title="ดื่ม 1 ช็อตเพื่อแหกคุกทันที (โหมดวงเหล้า)"
+                    >
+                      <span>🍺 ดื่ม 1 ช็อต</span>
+                      <span className="text-[9px] text-rose-300/80 font-bold">(โหมดวงเหล้า)</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <button
+                    type="button"
+                    disabled={isRolling || isMoving || hasRolledThisTurn}
+                    onClick={rollDice}
+                    className="wood-btn-gold w-full py-3.5 rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-lg active:scale-95 disabled:opacity-40"
+                  >
+                    <Dices className="w-5 h-5" />
+                    <span>
+                      {isRolling
+                        ? 'กำลังทอยลูกเต๋า...'
+                        : isMoving
+                        ? 'กำลังเดินบนกระดาน...'
+                        : hasRolledThisTurn
+                        ? 'ทอยไปแล้วในรอบนี้'
+                        : 'กดทอยลูกเต๋า 2 ลูก!'}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isRolling || isMoving}
+                    onClick={handleEndTurn}
+                    className="wood-btn-brown w-full py-2 rounded-xl font-bold text-xs text-amber-200 border border-[#54240a] flex items-center justify-center gap-1 active:scale-95 transition"
+                  >
+                    <span>จบรอบตาเดิน (ส่งตา)</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )
             ) : isBotTurn ? (
               <div className="py-3 px-2 rounded-xl bg-[#2a0e03] border border-yellow-600/40 text-xs text-yellow-300 font-bold flex items-center justify-center gap-2 animate-pulse">
                 <Bot className="w-4 h-4 text-yellow-400" />

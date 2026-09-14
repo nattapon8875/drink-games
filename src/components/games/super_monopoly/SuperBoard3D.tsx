@@ -454,8 +454,11 @@ export const SuperBoard3D: React.FC<SuperBoard3DProps> = ({
 
         {/* 3D Animated Player Pawns */}
         {players.map((p, idx) => {
-          const targetIndex = positions[p.id] ?? 0;
           const isTurn = p.id === currentTurnPlayerId;
+          const targetIndex =
+            isTurn && activeStepTileIndex !== null && activeStepTileIndex !== undefined
+              ? activeStepTileIndex
+              : positions[p.id] ?? 0;
 
           return (
             <PlayerToken3D
