@@ -33,6 +33,7 @@ const AVAILABLE_GAMES: GameInfo[] = [
     maxPlayers: 8,
     badge: 'ready',
     icon: 'super-monopoly',
+    category: 'classic',
   },
   {
     id: 'monopoly',
@@ -43,6 +44,7 @@ const AVAILABLE_GAMES: GameInfo[] = [
     maxPlayers: 10,
     badge: 'ready',
     icon: 'dice',
+    category: 'drinking',
   },
   {
     id: 'spin-bottle',
@@ -53,6 +55,7 @@ const AVAILABLE_GAMES: GameInfo[] = [
     maxPlayers: 12,
     badge: 'ready',
     icon: 'bottle',
+    category: 'drinking',
   },
   {
     id: 'doraemon-card',
@@ -63,6 +66,7 @@ const AVAILABLE_GAMES: GameInfo[] = [
     maxPlayers: 15,
     badge: 'ready',
     icon: 'cards',
+    category: 'drinking',
   },
   {
     id: 'wheel',
@@ -73,6 +77,7 @@ const AVAILABLE_GAMES: GameInfo[] = [
     maxPlayers: 15,
     badge: 'ready',
     icon: 'wheel',
+    category: 'drinking',
   },
   {
     id: 'crocodile',
@@ -83,6 +88,7 @@ const AVAILABLE_GAMES: GameInfo[] = [
     maxPlayers: 15,
     badge: 'ready',
     icon: 'crocodile',
+    category: 'drinking',
   },
 ];
 
@@ -98,6 +104,7 @@ export default function HomePage() {
   // Profile Edit Modal
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [editName, setEditName] = useState<string>('');
+  const [activeCategory, setActiveCategory] = useState<'all' | 'classic' | 'drinking'>('all');
 
   useEffect(() => {
     if (user?.displayName) {
@@ -356,15 +363,57 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Game Selector Catalog with Direct Create Buttons */}
+      {/* Game Selector Catalog with Category Filter */}
       <section className="w-full space-y-3 my-2">
         <div className="flex items-center justify-between text-xs font-black text-amber-300 px-1">
-          <span>เลือกมินิเกม &amp; สร้างห้อง</span>
-          <span className="rpg-text-gold">{AVAILABLE_GAMES.filter((g) => g.badge === 'ready').length} เกมพร้อมเปิดศึก</span>
+          <span>เลือกเกม &amp; เปิดโต๊ะ</span>
+          <span className="rpg-text-gold">
+            {AVAILABLE_GAMES.filter((g) => g.badge === 'ready').length} เกมพร้อมเปิดศึก
+          </span>
+        </div>
+
+        {/* Category Filter Tabs */}
+        <div className="flex items-center gap-1.5 p-1 bg-[#200c02] border border-[#522005] rounded-2xl shadow-inner">
+          <button
+            type="button"
+            onClick={() => setActiveCategory('all')}
+            className={`flex-1 py-2 px-2 rounded-xl text-xs font-black transition active:scale-95 ${
+              activeCategory === 'all'
+                ? 'wood-btn-gold shadow-md text-amber-950'
+                : 'text-amber-200/80 hover:text-amber-100 hover:bg-[#381604]'
+            }`}
+          >
+            ทั้งหมด
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveCategory('classic')}
+            className={`flex-1 py-2 px-2 rounded-xl text-xs font-black flex items-center justify-center gap-1 transition active:scale-95 ${
+              activeCategory === 'classic'
+                ? 'wood-btn-gold shadow-md text-amber-950'
+                : 'text-amber-200/80 hover:text-amber-100 hover:bg-[#381604]'
+            }`}
+          >
+            <span>🏠 เกมปกติ (บอร์ดเกม)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveCategory('drinking')}
+            className={`flex-1 py-2 px-2 rounded-xl text-xs font-black flex items-center justify-center gap-1 transition active:scale-95 ${
+              activeCategory === 'drinking'
+                ? 'wood-btn-gold shadow-md text-amber-950'
+                : 'text-amber-200/80 hover:text-amber-100 hover:bg-[#381604]'
+            }`}
+          >
+            <span>🍻 เกมวงเหล้า</span>
+          </button>
         </div>
 
         <div className="space-y-3">
-          {AVAILABLE_GAMES.map((game) => {
+          {AVAILABLE_GAMES.filter((game) => {
+            if (activeCategory === 'all') return true;
+            return game.category === activeCategory;
+          }).map((game) => {
             const isReady = game.badge === 'ready';
             const isThisGameCreating = isCreatingGameId === game.id;
 

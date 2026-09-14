@@ -20,5 +20,6 @@ export interface GameInfo {
   maxPlayers: number;
   badge: 'ready' | 'coming_soon';
   icon: string;
+  category?: 'classic' | 'drinking';
   coverImage?: string;
 }
