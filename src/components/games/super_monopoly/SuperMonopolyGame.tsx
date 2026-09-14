@@ -402,17 +402,30 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                 </div>
               </div>
 
-              {/* Total Roll Result */}
-              <div className="mt-2.5 flex items-center justify-center gap-2">
-                <span className="text-xs text-amber-300/80 font-bold">รวมแต้มเต๋า:</span>
-                <span className="text-2xl font-black font-mono text-yellow-400 drop-shadow">
-                  {diceTotal}
-                </span>
-                <span className="text-xs text-amber-300/80 font-bold">ช่อง</span>
+              {/* Total Roll Result - Only shown AFTER dice finish spinning! */}
+              <div className="mt-2.5 flex items-center justify-center gap-2 min-h-[36px]">
+                {isRolling ? (
+                  <div className="flex items-center gap-1.5 text-xs text-yellow-300 font-bold animate-pulse">
+                    <span className="text-sm animate-spin">🎲</span>
+                    <span>กำลังทอยลูกเต๋า...</span>
+                  </div>
+                ) : hasRolledThisTurn || isMoving ? (
+                  <div className="flex items-center justify-center gap-2 animate-in fade-in zoom-in-95 duration-200">
+                    <span className="text-xs text-amber-300/80 font-bold">รวมแต้มเต๋า:</span>
+                    <span className="text-2xl font-black font-mono text-yellow-400 drop-shadow">
+                      {diceTotal}
+                    </span>
+                    <span className="text-xs text-amber-300/80 font-bold">ช่อง</span>
+                  </div>
+                ) : (
+                  <span className="text-[11px] text-amber-400/60 font-bold">
+                    🎲 กดทอยเพื่อสุ่มแต้มเดิน
+                  </span>
+                )}
               </div>
 
-              {/* Double Roll Badge */}
-              {isDouble && (
+              {/* Double Roll Badge - Only shown AFTER dice finish spinning! */}
+              {!isRolling && isDouble && (hasRolledThisTurn || isMoving) && (
                 <div className="mt-1 px-3 py-0.5 rounded-full bg-yellow-500/20 border border-yellow-400 text-yellow-300 text-[11px] font-black animate-bounce flex items-center gap-1">
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>ได้แต้มคู่ ({dice[0]}-{dice[1]}) ได้ทอยต่ออีกรอบ!</span>

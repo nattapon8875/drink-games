@@ -320,25 +320,35 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     if (isCurrentPlayerInJail || isCurrentPlayerResting) return; // Must resolve jail or rest first
 
     setIsRolling(true);
+    setHasRolledThisTurn(true);
+    setIsDouble(false);
     sfx.playDiceRoll();
 
     const d1 = Math.floor(Math.random() * 6) + 1;
     const d2 = Math.floor(Math.random() * 6) + 1;
 
-    setDice([d1, d2]);
-    setIsDouble(d1 === d2);
-    setHasRolledThisTurn(true);
+    // Shuffle dice numbers rapidly during 1.0s roll animation
+    const rollInterval = setInterval(() => {
+      setDice([
+        Math.floor(Math.random() * 6) + 1,
+        Math.floor(Math.random() * 6) + 1,
+      ]);
+    }, 80);
 
-    // 1. Wait 1.0s for dice roll animation
+    // 1. Wait 1.0s for dice roll animation to complete
     setTimeout(async () => {
+      clearInterval(rollInterval);
+      setDice([d1, d2]);
+      setIsDouble(d1 === d2);
       setIsRolling(false);
+      sfx.playTileLand();
 
-      // 2. Pause 600ms so player sees dice result
+      // 2. Pause 800ms so player clearly sees final dice result and total score before walk starts
       setTimeout(async () => {
         executeHumanWalk(d1, d2);
-      }, 600);
+      }, 800);
     }, 1000);
-  }, [isMyTurn, isRolling, isMoving, hasRolledThisTurn, currentTurnPlayer, isCurrentPlayerInJail, executeHumanWalk]);
+  }, [isMyTurn, isRolling, isMoving, hasRolledThisTurn, currentTurnPlayer, isCurrentPlayerInJail, isCurrentPlayerResting, executeHumanWalk]);
 
   // Jail Option 1: Serve 1 Turn in Jail (หยุดรับโทษ 1 ตา)
   const handleServeJailTurn = useCallback(async () => {
@@ -737,8 +747,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             }
           }
 
-          // 2. Roll 2 dice
+          // 2. Roll 2 dice (with live shuffle)
           setIsRolling(true);
+          setIsDouble(false);
           sfx.playDiceRoll();
 
           const d1 = Math.floor(Math.random() * 6) + 1;
@@ -746,14 +757,24 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
           const totalRoll = d1 + d2;
           const isDoubleRoll = d1 === d2;
 
-          setDice([d1, d2]);
-          setIsDouble(isDoubleRoll);
+          const botRollInterval = setInterval(() => {
+            setDice([
+              Math.floor(Math.random() * 6) + 1,
+              Math.floor(Math.random() * 6) + 1,
+            ]);
+          }, 80);
 
           await new Promise((resolve) => setTimeout(resolve, 1000));
+          clearInterval(botRollInterval);
           if (!isMounted) return;
 
+          // Reveal final dice numbers and double AFTER roll finishes
+          setDice([d1, d2]);
+          setIsDouble(isDoubleRoll);
           setIsRolling(false);
-          await new Promise((resolve) => setTimeout(resolve, 600));
+          sfx.playTileLand();
+
+          await new Promise((resolve) => setTimeout(resolve, 800));
           if (!isMounted) return;
 
           setIsMoving(true);
