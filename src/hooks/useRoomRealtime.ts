@@ -245,10 +245,14 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
               costumePool[Math.floor(Math.random() * costumePool.length)];
           }
 
+          // Clear kicked status if previously kicked
+          const currentKicked = room.game_state?.kicked_player_ids || [];
+          const updatedKicked = currentKicked.filter((id: string) => id !== currentUser.id);
+
           await supabase
             .from('rooms')
             .update({
-              game_state: { ...room.game_state, positions, costumes },
+              game_state: { ...room.game_state, positions, costumes, kicked_player_ids: updatedKicked },
             })
             .eq('code', roomCode);
         }

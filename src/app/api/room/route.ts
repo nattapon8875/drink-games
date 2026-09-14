@@ -86,12 +86,11 @@ export async function POST(req: Request) {
           const { player } = body;
           const room = serverStore.rooms.get(roomCode);
 
-          // Check if player was kicked by host
+          // If player was previously in kicked_player_ids, clear them so they can rejoin smoothly
           if (room?.game_state?.kicked_player_ids?.includes(player.id)) {
-            return NextResponse.json(
-              { error: 'คุณถูกหัวหน้าห้องเตะออกจากห้องนี้แล้ว' },
-              { status: 403 }
-            );
+            const updatedKicked = room.game_state.kicked_player_ids.filter((id) => id !== player.id);
+            room.game_state.kicked_player_ids = updatedKicked;
+            serverStore.rooms.set(roomCode, room);
           }
 
           const currentPlayers = serverStore.players.get(roomCode) || [];
