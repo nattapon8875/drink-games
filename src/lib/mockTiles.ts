@@ -7,14 +7,14 @@ export const DEFAULT_MONOPOLY_TILES: MonopolyTileRecord[] = [
   { tile_index: 3, title: 'ทายหัวก้อย', action_text: 'ทายเหรียญ ถ้าทายผิดดื่ม 2 จิบ ถ้าถูกรอด', tile_type: 'challenge', icon: '🪙' },
   { tile_index: 4, title: 'ชี้เป้า', action_text: 'สั่งใครในวงก็ได้ดื่ม 1 ช็อต/จิบ', tile_type: 'order_others', icon: '🎯' },
   { tile_index: 5, title: 'รหัสต้องห้าม', action_text: 'ห้ามพูดคำว่า "กิน/ดื่ม/ชน" จนกว่าจะถึงตาหน้า ใครหลุดดื่ม 1 จิบ', tile_type: 'challenge', icon: '🤫' },
-  { tile_index: 6, title: 'ตัวเต็งประจำโต๊ะ', action_text: 'โหวตชี้คนที่น่าจะเมาก่อนเพื่อน คนโดนชี้มากสุดดื่ม 1 จิบ', tile_type: 'order_others', icon: '👑' },
+  { tile_index: 6, title: 'ตัวเต็งประจำโต๊ะ', action_text: 'นับ 1 2 3 ให้ทุกคนชี้ใครก็ได้ ใครโดนชี้มากที่สุดดื่ม 1 จิบ', tile_type: 'order_others', icon: '👑' },
   { tile_index: 7, title: 'ห้องพยาบาล (พักยก)', action_text: 'จุดปลอดภัย นั่งพักหายใจ ไม่ต้องดื่มรอบนี้', tile_type: 'safe', icon: '🏥' },
   { tile_index: 8, title: 'ฉันไม่เคย...', action_text: 'คนตกช่องนี้พูดสิ่งที่ไม่เคยทำ 1 ข้อ ขึ้นต้นด้วย "ฉันไม่เคย..." ใครในวงที่ เคยทำ ต้องยกดื่มคนละ 1 จิบ (ถ้าไม่มีใครเคยทำเลย คนพูดต้องดื่มรับผิดชอบ 1 จิบ)', tile_type: 'challenge', icon: '🤫' },
-  { tile_index: 9, title: 'เจ้าภาพใจดี', action_text: 'คนเดินตกต้องชนแก้วกับทุกคนในวง (ดื่มพร้อมกัน 1 จิบ)', tile_type: 'drink', icon: '🥂' },
+  { tile_index: 9, title: 'เจ้าภาพใจดี', action_text: 'ทุกคนชนแก้วแล้วดื่มกันคนละ 1 จิบ', tile_type: 'drink', icon: '🥂' },
   { tile_index: 10, title: 'ชายล้วน', action_text: 'ผู้ชายทุกคนในวง ดื่มคนละ 1 จิบ', tile_type: 'drink', icon: '⚔️' },
   { tile_index: 11, title: 'ยืมมือเพื่อน', action_text: 'ให้เพื่อนทางขวาทอยเต๋าแทน เลขคู่คนสั่งดื่ม คี่เพื่อนดื่ม', tile_type: 'challenge', icon: '🤝' },
   { tile_index: 12, title: 'หญิงแกร่ง', action_text: 'ผู้หญิงทุกคนในวง ดื่มคนละ 1 จิบ', tile_type: 'drink', icon: '🌸' },
-  { tile_index: 13, title: 'ทายชื่อสัตว์', action_text: 'คนตกเริ่มพูดชื่อสัตว์ 1 ชนิด แล้ววนให้ทุกคนพูดชื่อสัตว์ห้ามซ้ำ ภายใน 3 วิ ใครคิดไม่ออกหรือซ้ำ ดื่ม 1 จิบ', tile_type: 'challenge', icon: '🦁' },
+  { tile_index: 13, title: 'เป่ายิงฉุบซ้ายขวา', action_text: 'ให้เป่ายิงฉุบกับคนซ้ายขวา ใครแพ้คนสุดท้ายดื่ม 1 จิบ', tile_type: 'challenge', icon: '✌️' },
   { tile_index: 14, title: 'จุดจอดพักรถ', action_text: 'ช่องฟรี นั่งชิลล์ คุยเล่นได้ตามสบาย', tile_type: 'safe', icon: '⛺' },
   { tile_index: 15, title: 'สั่งคูณสอง', action_text: 'สั่งเพื่อน 1 คนดื่ม 2 จิบ หรือสั่ง 2 คน คนละ 1 จิบ', tile_type: 'order_others', icon: '✌️' },
   { tile_index: 16, title: '7-Up ล้มโต๊ะ', action_text: 'วนนับเลขตั้งแต่ 1 ไปเรื่อยๆ หากถึงเลขที่ลงท้ายด้วย 7 (7, 17, 27) หรือเลขที่ 7 หารลงตัว (14, 21, 28) ต้องพูดคำว่า "อัป!" ห้ามออกเสียงตัวเลขเด็ดขาด ใครพูดเลข หลุด หรือคิดช้าเกิน 3 วินาที ดื่ม 1 จิบ', tile_type: 'challenge', icon: '🆙' },
@@ -23,7 +23,7 @@ export const DEFAULT_MONOPOLY_TILES: MonopolyTileRecord[] = [
   { tile_index: 19, title: 'ดื่มตามแต้มเต๋า', action_text: 'ทอยเต๋าอีก 1 ครั้ง แต้มออกเท่าไหร่ ดื่มเท่านั้นวินาที', tile_type: 'drink', icon: '🎲' },
   { tile_index: 20, title: 'ตกถังข้าวสาร', action_text: 'ได้สิทธิ์สั่งใครก็ได้ "หมดแก้ว" หรือเพียว 1 ฝา', tile_type: 'order_others', icon: '🏆' },
   { tile_index: 21, title: 'ด่านตรวจแอลกอฮอล์', action_text: 'โดนกักตัว 1 เทิร์น (ข้ามตาเดินรอบหน้า) เว้นแต่ยอมดื่ม 2 จิบเพื่อผ่านทาง', tile_type: 'challenge', icon: '🚨' },
-  { tile_index: 22, title: 'ต่อท้ายตายวง', action_text: 'คนตกช่องนี้เริ่มร้องเพลง 1 ท่อน แล้วส่งต่อให้คนถัดไปโดยต้องนำ "คำสุดท้าย" มาใช้เป็นคำขึ้นต้นของเพลงใหม่ (เช่น "...มาจากไหน" ➔ "ไหนว่าจะไม่หลอกกัน") ใครคิดไม่ออกใน 5 วินาที ดื่ม 1 จิบ', tile_type: 'challenge', icon: '🎵' },
+  { tile_index: 22, title: 'ทายตัวเลข 0-99', action_text: 'สุ่มเลข 0-99 ในใจ (หรือใช้ระบบ) แล้วให้ทายทีละคน ว่าน้อยกว่าหรือมากกว่าเท่าไหร่ วนไปเรื่อยๆ ใครพูดโดนตัวเลขจริงออกมา ดื่ม 1 จิบ!', tile_type: 'challenge', icon: '🔢' },
   { tile_index: 23, title: 'แก้วกักขัง (ชงให้เพื่อน)', action_text: 'คนแรกที่เดินมาตกทำหน้าที่เป็นผู้ปรุง เท/ชงเครื่องดื่มใส่แก้วช็อตกลางจอไว้ (รินเท่าไหร่หรือผสมอะไรก็ได้) ใครก็ตามที่เดินมาตกช่องนี้เป็นคนถัดไป ต้องยกดื่มแก้วนั้นจนหมด แล้วรับหน้าที่ชงแก้วใหม่ต่อ', tile_type: 'drink', icon: '🧪' },
   { tile_index: 24, title: 'หมวดหมู่สายฟ้า', action_text: 'คนตกช่องนี้ตั้งโจทย์หมวดหมู่ 1 อย่าง (เช่น ชื่อหนังผี, ยี่ห้อรถ) จากนั้นทุกคนวนตอบชื่อที่ตรงหมวดหมู่คนละ 1 คำ ห้ามซ้ำและตอบภายใน 3 วินาที ใครคิดไม่ออกหรือตอบซ้ำ ดื่ม 1 จิบ', tile_type: 'challenge', icon: '⚡' },
   { tile_index: 25, title: 'แย่งแตะจมูก', action_text: 'คนตกแตะจมูกตัวเอง ใครแตะตามช้าสุด ดื่ม 1 จิบ', tile_type: 'challenge', icon: '👃' },
@@ -65,6 +65,8 @@ export function getTileIcon(tile: MonopolyTileRecord): string {
   if (text.includes('จมูก')) return '👃';
   if (text.includes('ตา') || text.includes('สบตา')) return '👀';
   if (text.includes('ใบ้')) return '🎭';
+  if (text.includes('เป่ายิงฉุบ')) return '✌️';
+  if (text.includes('0-99') || text.includes('ทายตัวเลข')) return '🔢';
   if (text.includes('สัตว์')) return '🦁';
 
   // 2. Fallback based on tile_type
