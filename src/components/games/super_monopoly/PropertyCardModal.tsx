@@ -76,46 +76,68 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
         </div>
 
         {/* Rent & Building Rates Table */}
-        <div className="bg-[#200c02] border border-[#522005] rounded-2xl p-3 text-xs space-y-1.5 shadow-inner">
-          <div className="flex justify-between items-center text-amber-200">
-            <span>ค่าผ่านทาง (ที่ดินเปล่า):</span>
-            <span className="font-bold text-yellow-400">{tile.baseRent ? formatMoneyM(tile.baseRent) : '-'}</span>
+        {tile.isUtility ? (
+          <div className="bg-[#102336] border-2 border-cyan-700/60 rounded-2xl p-3 text-xs space-y-2 shadow-inner">
+            <div className="flex items-center gap-2 pb-1 border-b border-cyan-800">
+              <span className="text-lg">{tile.index === 4 ? '🚰' : '⚡'}</span>
+              <div>
+                <span className="text-xs font-black text-cyan-200 block">กิจการสาธารณูปโภค</span>
+                <span className="text-[10px] text-cyan-300/70">ไม่สามารถสร้างบ้านหรือโรงแรมได้</span>
+              </div>
+            </div>
+            <div className="flex justify-between items-center text-amber-100">
+              <span>ค่าบริการ (ครอบครอง 1 แห่ง):</span>
+              <span className="font-bold font-mono text-yellow-400">0.5M</span>
+            </div>
+            <div className="flex justify-between items-center text-amber-100 font-bold border-t border-cyan-800/80 pt-1.5">
+              <span className="text-yellow-300">ครอบครองทั้ง 2 แห่ง (ประปา + โรงไฟฟ้า):</span>
+              <span className="font-mono text-emerald-400 text-sm">1.2M 🔥</span>
+            </div>
           </div>
-          <div className="flex justify-between items-center text-amber-200/90">
-            <span className="flex items-center gap-1">
-              <Home className="w-3.5 h-3.5 text-cyan-400 inline" /> บ้าน 1 หลัง:
-            </span>
-            <span className="font-bold text-yellow-400">{tile.rent1House ? formatMoneyM(tile.rent1House) : '-'}</span>
-          </div>
-          <div className="flex justify-between items-center text-amber-200/90">
-            <span className="flex items-center gap-1">
-              <Home className="w-3.5 h-3.5 text-cyan-400 inline" /> บ้าน 2 หลัง:
-            </span>
-            <span className="font-bold text-yellow-400">{tile.rent2House ? formatMoneyM(tile.rent2House) : '-'}</span>
-          </div>
-          <div className="flex justify-between items-center text-amber-200/90">
-            <span className="flex items-center gap-1">
-              <Home className="w-3.5 h-3.5 text-cyan-400 inline" /> บ้าน 3 หลัง:
-            </span>
-            <span className="font-bold text-yellow-400">{tile.rent3House ? formatMoneyM(tile.rent3House) : '-'}</span>
-          </div>
-          <div className="flex justify-between items-center text-amber-200 font-bold border-t border-[#421703] pt-1">
-            <span className="flex items-center gap-1 text-rose-300">
-              <Building2 className="w-3.5 h-3.5 text-rose-400 inline" /> โรงแรม:
-            </span>
-            <span className="font-bold text-rose-300">{tile.rentHotel ? formatMoneyM(tile.rentHotel) : '-'}</span>
-          </div>
-        </div>
+        ) : (
+          <>
+            <div className="bg-[#200c02] border border-[#522005] rounded-2xl p-3 text-xs space-y-1.5 shadow-inner">
+              <div className="flex justify-between items-center text-amber-200">
+                <span>ค่าผ่านทาง (ที่ดินเปล่า):</span>
+                <span className="font-bold text-yellow-400">{tile.baseRent ? formatMoneyM(tile.baseRent) : '-'}</span>
+              </div>
+              <div className="flex justify-between items-center text-amber-200/90">
+                <span className="flex items-center gap-1">
+                  <Home className="w-3.5 h-3.5 text-cyan-400 inline" /> บ้าน 1 หลัง:
+                </span>
+                <span className="font-bold text-yellow-400">{tile.rent1House ? formatMoneyM(tile.rent1House) : '-'}</span>
+              </div>
+              <div className="flex justify-between items-center text-amber-200/90">
+                <span className="flex items-center gap-1">
+                  <Home className="w-3.5 h-3.5 text-cyan-400 inline" /> บ้าน 2 หลัง:
+                </span>
+                <span className="font-bold text-yellow-400">{tile.rent2House ? formatMoneyM(tile.rent2House) : '-'}</span>
+              </div>
+              <div className="flex justify-between items-center text-amber-200/90">
+                <span className="flex items-center gap-1">
+                  <Home className="w-3.5 h-3.5 text-cyan-400 inline" /> บ้าน 3 หลัง:
+                </span>
+                <span className="font-bold text-yellow-400">{tile.rent3House ? formatMoneyM(tile.rent3House) : '-'}</span>
+              </div>
+              <div className="flex justify-between items-center text-amber-200 font-bold border-t border-[#421703] pt-1">
+                <span className="flex items-center gap-1 text-rose-300">
+                  <Building2 className="w-3.5 h-3.5 text-rose-400 inline" /> โรงแรม:
+                </span>
+                <span className="font-bold text-rose-300">{tile.rentHotel ? formatMoneyM(tile.rentHotel) : '-'}</span>
+              </div>
+            </div>
 
-        {/* Cost to Build Info */}
-        <div className="grid grid-cols-2 gap-2 text-[11px] text-amber-200/80 bg-[#2a1003] border border-[#522207] p-2 rounded-xl text-center">
-          <div>
-            ค่าสร้างบ้าน: <strong className="text-yellow-400">{tile.houseCost ? formatMoneyM(tile.houseCost) : '-'}</strong> /หลัง
-          </div>
-          <div>
-            อัปเกรดโรงแรม: <strong className="text-rose-300">{tile.hotelCost ? formatMoneyM(tile.hotelCost) : '-'}</strong>
-          </div>
-        </div>
+            {/* Cost to Build Info */}
+            <div className="grid grid-cols-2 gap-2 text-[11px] text-amber-200/80 bg-[#2a1003] border border-[#522207] p-2 rounded-xl text-center">
+              <div>
+                ค่าสร้างบ้าน: <strong className="text-yellow-400">{tile.houseCost ? formatMoneyM(tile.houseCost) : '-'}</strong> /หลัง
+              </div>
+              <div>
+                อัปเกรดโรงแรม: <strong className="text-rose-300">{tile.hotelCost ? formatMoneyM(tile.hotelCost) : '-'}</strong>
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Cash Balance & Remaining After Purchase Bar */}
         {isMyTurn && (
@@ -184,10 +206,14 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
                 <Check className="w-4 h-4" />
                 <span>
                   {canAffordLand
-                    ? `ซื้อที่ดิน (${tile.cost ? formatMoneyM(tile.cost) : ''})`
+                    ? `ซื้อ${tile.isUtility ? 'กิจการ' : 'ที่ดิน'} (${tile.cost ? formatMoneyM(tile.cost) : ''})`
                     : `เงินไม่พอ (ขาด ${formatMoneyM(tile.cost! - currentCash)})`}
                 </span>
               </button>
+            ) : tile.isUtility ? (
+              <div className="flex-1 py-2.5 text-center text-xs font-bold text-cyan-300 bg-[#0c2438] rounded-xl border border-cyan-700/60">
+                ⚡ คุณเป็นเจ้าของกิจการนี้แล้ว (ไม่สามารถสร้างบ้านได้)
+              </div>
             ) : !hasHotel ? (
               <button
                 type="button"

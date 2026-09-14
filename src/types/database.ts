@@ -60,6 +60,7 @@ export interface SuperPropertyTile {
   name: string;
   type: SuperTileType;
   color?: string;
+  isUtility?: boolean;
   cost?: number; // Price in Millions (M)
   houseCost?: number; // in M
   hotelCost?: number; // in M

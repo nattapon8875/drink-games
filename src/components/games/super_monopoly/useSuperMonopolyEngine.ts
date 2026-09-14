@@ -185,10 +185,17 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                 // Pay Rent
                 const owner = players.find((p) => p.id === ownership.ownerId);
                 let rentAmount = targetTile.baseRent || 0.2;
-                if (ownership.houses === 1) rentAmount = targetTile.rent1House || 0.5;
-                if (ownership.houses === 2) rentAmount = targetTile.rent2House || 1.2;
-                if (ownership.houses === 3) rentAmount = targetTile.rent3House || 2.5;
-                if (ownership.houses === 4) rentAmount = targetTile.rentHotel || 5.0;
+                if (targetTile.isUtility) {
+                  // Utility rent: check if owner owns both utilities (4: การประปา, 12: โรงไฟฟ้า)
+                  const ownsWater = properties[4]?.ownerId === ownership.ownerId;
+                  const ownsElectric = properties[12]?.ownerId === ownership.ownerId;
+                  rentAmount = (ownsWater && ownsElectric) ? 1.2 : 0.5;
+                } else {
+                  if (ownership.houses === 1) rentAmount = targetTile.rent1House || 0.5;
+                  if (ownership.houses === 2) rentAmount = targetTile.rent2House || 1.2;
+                  if (ownership.houses === 3) rentAmount = targetTile.rent3House || 2.5;
+                  if (ownership.houses === 4) rentAmount = targetTile.rentHotel || 5.0;
+                }
 
                 const actualRent = Math.min(playerCash, rentAmount);
                 updatedCash[currentTurnPlayer.id] = Math.max(0, playerCash - rentAmount);
@@ -491,6 +498,10 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   // Build House or Hotel (Human)
   const handleBuildHouse = async () => {
     if (!currentTurnPlayer || !activePropertyModal) return;
+    if (activePropertyModal.isUtility) {
+      showToast('สาธารณูปโภคไม่สามารถสร้างบ้านได้', 'warning');
+      return;
+    }
     const tileIdx = activePropertyModal.index;
     const ownership = properties[tileIdx];
     if (!ownership || ownership.ownerId !== currentTurnPlayer.id) return;
@@ -738,7 +749,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                 `⏭️ 🤖 ${currentTurnPlayer.display_name} เลือก [ไม่ซื้อที่ดิน] [${targetTile.name}] (เงินเหลือ ${formatMoneyM(botCash)})`,
                 '#9ca3af'
               );
-            } else if (ownership && ownership.ownerId === turnPlayerId && ownership.houses < 4) {
+            } else if (ownership && ownership.ownerId === turnPlayerId && !targetTile.isUtility && ownership.houses < 4) {
               // Bot upgrades house
               const cost = ownership.houses === 3 ? (targetTile.hotelCost || 2.0) : (targetTile.houseCost || 0.8);
               if (botCash > cost * 1.5) {
@@ -754,10 +765,16 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               // Bot pays rent
               const owner = players.find((p) => p.id === ownership.ownerId);
               let rent = targetTile.baseRent || 0.2;
-              if (ownership.houses === 1) rent = targetTile.rent1House || 0.5;
-              if (ownership.houses === 2) rent = targetTile.rent2House || 1.2;
-              if (ownership.houses === 3) rent = targetTile.rent3House || 2.5;
-              if (ownership.houses === 4) rent = targetTile.rentHotel || 5.0;
+              if (targetTile.isUtility) {
+                const ownsWater = updatedProperties[4]?.ownerId === ownership.ownerId;
+                const ownsElectric = updatedProperties[12]?.ownerId === ownership.ownerId;
+                rent = (ownsWater && ownsElectric) ? 1.2 : 0.5;
+              } else {
+                if (ownership.houses === 1) rent = targetTile.rent1House || 0.5;
+                if (ownership.houses === 2) rent = targetTile.rent2House || 1.2;
+                if (ownership.houses === 3) rent = targetTile.rent3House || 2.5;
+                if (ownership.houses === 4) rent = targetTile.rentHotel || 5.0;
+              }
 
               const actualRent = Math.min(botCash, rent);
               updatedCash[turnPlayerId] = Math.max(0, botCash - rent);
