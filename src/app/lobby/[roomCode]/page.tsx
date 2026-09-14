@@ -12,8 +12,11 @@ import { DoraemonRulesModal } from '@/components/games/doraemon_card/DoraemonRul
 import { WheelCustomModal } from '@/components/games/wheel/WheelCustomModal';
 import { CrocodileSettingsModal } from '@/components/games/crocodile/CrocodileSettingsModal';
 import { CrocodilePenaltyConfig, DEFAULT_CROCODILE_CONFIG, getRandomTrapTeeth } from '@/components/games/crocodile/crocodileData';
-import { Wine, Play, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
+import { Wine, Play, ArrowLeft, Loader2, AlertCircle, Edit2, Sparkles, Dice5 } from 'lucide-react';
 import { BuffaloLogo } from '@/components/common/BuffaloLogo';
+import { Avatar } from '@/components/common/Avatar';
+import { Modal } from '@/components/common/Modal';
+import { THAI_PARTY_NICKNAMES } from '@/lib/platforms/adapter';
 
 import { showToast, showConfirm } from '@/lib/alerts';
 
@@ -44,6 +47,35 @@ export default function LobbyPage() {
   const [hasJoined, setHasJoined] = useState(false);
   const [starting, setStarting] = useState(false);
   const [showCustomModal, setShowCustomModal] = useState(false);
+
+  // Edit Profile Modal State
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
+  const [editName, setEditName] = useState<string>('');
+  const [editAvatar, setEditAvatar] = useState<string>('');
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  useEffect(() => {
+    if (user?.displayName) {
+      setEditName(user.displayName);
+      setEditAvatar(user.avatarUrl || '');
+    }
+  }, [user]);
+
+  const handleSaveProfile = async () => {
+    const trimmed = editName.trim();
+    if (!trimmed || isSavingProfile) return;
+    setIsSavingProfile(true);
+    try {
+      await updatePlayerProfile(trimmed, editAvatar || undefined);
+      updateUserProfile(trimmed, editAvatar || undefined);
+      setShowEditProfileModal(false);
+      showToast('อัปเดตชื่อสำเร็จ!', 'success');
+    } catch (err) {
+      console.error('Failed to update profile:', err);
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
 
   // Auto-join room when user profile is ready
   useEffect(() => {
@@ -180,21 +212,26 @@ export default function LobbyPage() {
           <span>ออกห้อง</span>
         </button>
 
-        <button
-          type="button"
-          onClick={async () => {
-            if (typeof window !== 'undefined' && roomCode) {
-              await navigator.clipboard.writeText(roomCode);
-              showToast(`คัดลอกรหัสห้อง ${roomCode} แล้ว!`, 'success');
-            }
-          }}
-          className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#280d02] hover:bg-[#381604] border border-[#54240a] hover:border-yellow-400/50 shadow-inner text-amber-300 font-mono font-black text-sm tracking-wider cursor-pointer active:scale-95 transition"
-          title="คลิกเพื่อคัดลอกรหัสห้อง"
+        {/* Profile Chip (Edit Name/Avatar) */}
+        <div
+          onClick={() => setShowEditProfileModal(true)}
+          className="flex items-center gap-2 bg-[#2d1204] border-2 border-[#572408] px-3 py-1.5 rounded-full cursor-pointer hover:border-amber-400 transition shadow-inner active:scale-95"
+          title="คลิกเพื่อแก้ไขชื่อ / รูปโปรไฟล์"
         >
-          <BuffaloLogo className="w-5 h-5" />
-          <span>BUFFY: {roomCode}</span>
-          <span className="text-[10px] text-amber-300/50">📋</span>
-        </button>
+          <Avatar
+            src={user.avatarUrl}
+            name={user.displayName}
+            size="sm"
+            platform={platform}
+          />
+          <span
+            suppressHydrationWarning
+            className="text-xs font-black text-amber-100 truncate max-w-[80px]"
+          >
+            {user.displayName}
+          </span>
+          <Edit2 className="w-3 h-3 text-amber-400" />
+        </div>
       </header>
 
       {/* Main Content */}
@@ -408,6 +445,68 @@ export default function LobbyPage() {
           }}
         />
       )}
+
+      {/* Edit Profile Modal */}
+      <Modal
+        isOpen={showEditProfileModal}
+        onClose={() => setShowEditProfileModal(false)}
+        title="แก้ไขชื่อในวงเหล้า"
+      >
+        <div className="space-y-4">
+          <div className="flex justify-center my-2">
+            <Avatar src={editAvatar || user.avatarUrl} name={editName} size="xl" platform={platform} />
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-amber-200 block mb-1">ชื่อเล่นประจำวง</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                maxLength={20}
+                placeholder="กรอกชื่อเล่นของคุณ"
+                className="flex-1 bg-[#200c02] border-2 border-[#54240a] rounded-2xl p-3 text-amber-100 font-bold focus:outline-none focus:border-amber-400 shadow-inner"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const randomName = THAI_PARTY_NICKNAMES[Math.floor(Math.random() * THAI_PARTY_NICKNAMES.length)];
+                  setEditName(randomName);
+                }}
+                className="p-3 rounded-2xl bg-[#381604] hover:bg-[#522207] border-2 border-[#6b2e0a] text-yellow-400 text-sm font-bold transition active:scale-95 shrink-0 shadow"
+                title="สุ่มชื่อใหม่"
+              >
+                <Dice5 className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              variant="wood-brown"
+              size="md"
+              fullWidth
+              onClick={() => {
+                const randomSeed = Math.random().toString(36).substring(2, 8);
+                const newAvatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${randomSeed}`;
+                setEditAvatar(newAvatar);
+              }}
+            >
+              <Sparkles className="w-4 h-4 mr-1.5 inline text-amber-300" /> สุ่มรูปใหม่
+            </Button>
+            <Button
+              variant="wood-gold"
+              size="md"
+              fullWidth
+              disabled={isSavingProfile || !editName.trim()}
+              onClick={handleSaveProfile}
+            >
+              {isSavingProfile ? 'กำลังบันทึก...' : 'บันทึก'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </main>
   );
 }

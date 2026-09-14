@@ -11,12 +11,14 @@ import { ActionCard } from './ActionCard';
 import { CustomTilesModal } from './CustomTilesModal';
 import { Avatar } from '@/components/common/Avatar';
 import { DrinkCounter } from '@/components/common/DrinkCounter';
-import { Wine, Sparkles, Settings, Eye, Box } from 'lucide-react';
+import { Modal } from '@/components/common/Modal';
+import { Wine, Sparkles, Settings, Eye, Box, Users, Crown, Bot } from 'lucide-react';
 import { PlatformType } from '@/lib/platforms/types';
 
 export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
   const { room, players, currentPlayer, isHost, onUpdateGameState } = props;
   const [showRulesModal, setShowRulesModal] = React.useState(false);
+  const [showPlayersModal, setShowPlayersModal] = React.useState(false);
   const [is3DMode, setIs3DMode] = React.useState(true);
 
   const {
@@ -43,14 +45,17 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
 
   return (
     <div className="flex flex-col w-full max-w-md mx-auto px-2 pb-8 pt-2 select-none">
-      {/* Top Header: Compact Player Ribbon with Mini Icons & Turn Indicator */}
+      {/* Top Header: Compact Player Ribbon showing ONLY Avatars */}
       <div className="w-full bg-[#2a1104]/95 border-2 border-[#54240a] rounded-2xl px-3 py-2 mb-2 relative shadow-xl">
         <div className="flex items-center justify-between gap-2">
-          {/* Left: Players mini avatar roster */}
-          <div className="flex items-center gap-2 overflow-x-auto py-0.5 scrollbar-none">
+          {/* Left: Mini Avatar roster (Only avatars, clickable to view details) */}
+          <div
+            onClick={() => setShowPlayersModal(true)}
+            className="flex items-center gap-2 overflow-x-auto py-0.5 scrollbar-none cursor-pointer flex-1 min-w-0"
+            title="แตะเพื่อดูรายชื่อผู้เล่นทั้งหมด"
+          >
             {players.map((p, pIdx) => {
               const isPlayerTurn = p.id === room.current_turn_player_id;
-              const isMe = p.id === currentPlayer?.id;
               const costumeId = room.game_state?.costumes?.[p.id] ?? (pIdx % 20);
               const playerColor = [
                 '#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6',
@@ -62,18 +67,13 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
               return (
                 <div
                   key={p.id}
-                  className={`relative flex items-center gap-1.5 px-2 py-1 rounded-full border transition-all flex-shrink-0 ${
+                  className={`relative flex items-center justify-center p-0.5 rounded-full border transition-all flex-shrink-0 active:scale-95 ${
                     isPlayerTurn
-                      ? 'bg-[#4a1c04] border-yellow-400 ring-2 ring-yellow-400/50 shadow-md scale-105'
-                      : 'bg-[#1e0a02] border-[#421703] opacity-90'
+                      ? 'bg-[#4a1c04] border-yellow-400 ring-2 ring-yellow-400 shadow-lg scale-110'
+                      : 'bg-[#1e0a02] border-[#421703] opacity-80 hover:opacity-100'
                   }`}
-                  title={`${p.display_name} (${p.drinks_count} ช็อต)`}
+                  title={`${p.display_name} (${p.drinks_count} ช็อต)${isPlayerTurn ? ' - กำลังเล่นตานี้' : ''}`}
                 >
-                  <div
-                    className="w-3 h-3 rounded-full border border-white/60 shadow-sm flex-shrink-0"
-                    style={{ backgroundColor: playerColor }}
-                    title="สีตัวละครบนกระดาน"
-                  />
                   <Avatar
                     src={p.avatar_url}
                     name={p.display_name}
@@ -81,22 +81,27 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
                     platform={getPlatform(p)}
                     isTurn={isPlayerTurn}
                   />
-                  <span className="text-xs font-black text-amber-100 truncate max-w-[70px]">
-                    {p.display_name}
-                  </span>
-                  <span className="text-[10px] font-black text-rose-300 bg-[#3a0d05] border border-rose-700/60 px-1.5 py-0.5 rounded-full shadow-inner">
-                    🍷{p.drinks_count}
-                  </span>
+                  {/* Miniature player color badge in bottom-right corner */}
+                  <span
+                    className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[#2a1104] shadow"
+                    style={{ backgroundColor: playerColor }}
+                  />
                 </div>
               );
             })}
+
+            {/* Tap to inspect badge */}
+            <span className="flex items-center gap-1 text-[11px] font-bold text-amber-300/80 bg-[#381604] border border-[#632808] px-2 py-1 rounded-xl shadow-inner shrink-0 hover:text-amber-200">
+              <Users className="w-3 h-3" />
+              <span>{players.length}</span>
+            </span>
           </div>
 
           {/* Right: Rules Button & 3D/2D Toggle */}
           <div className="flex items-center gap-1.5 flex-shrink-0">
             <button
               onClick={() => setIs3DMode(!is3DMode)}
-              className="flex items-center gap-1.5 text-xs font-black text-yellow-300 bg-[#3b1805] hover:bg-[#522207] px-3 py-1.5 rounded-xl border border-yellow-500/50 shadow transition active:scale-95"
+              className="flex items-center gap-1.5 text-xs font-black text-yellow-300 bg-[#3b1805] hover:bg-[#522207] px-2.5 py-1.5 rounded-xl border border-yellow-500/50 shadow transition active:scale-95"
               title="สลับมุมมอง 3D / 2D"
             >
               <Box className="w-3.5 h-3.5" />
@@ -105,7 +110,7 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
 
             <button
               onClick={() => setShowRulesModal(true)}
-              className="flex items-center gap-1.5 text-xs font-bold text-amber-200 bg-[#351505] hover:bg-[#481c05] px-3 py-1.5 rounded-xl border border-[#6b2e0a] shadow transition active:scale-95"
+              className="flex items-center gap-1.5 text-xs font-bold text-amber-200 bg-[#351505] hover:bg-[#481c05] px-2.5 py-1.5 rounded-xl border border-[#6b2e0a] shadow transition active:scale-95"
               title="ดู/แก้ไขคำสั่งกระดาน 28 ช่อง"
             >
               <Settings className="w-3.5 h-3.5 text-amber-400" />
@@ -246,6 +251,99 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
           await onUpdateGameState({ custom_tiles: updatedTiles });
         }}
       />
+
+      {/* Player List Modal */}
+      <Modal
+        isOpen={showPlayersModal}
+        onClose={() => setShowPlayersModal(false)}
+        title={`สหายร่วมวง (${players.length} คน)`}
+      >
+        <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+          {players.map((p, idx) => {
+            const isPlayerTurn = p.id === room.current_turn_player_id;
+            const isMe = p.id === currentPlayer?.id;
+            const isPlayerHost = p.id === room.host_id;
+            const isBot = p.id.startsWith('bot-');
+            const costumeId = room.game_state?.costumes?.[p.id] ?? (idx % 20);
+            const playerColor = [
+              '#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6',
+              '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#e11d48',
+              '#14b8a6', '#6366f1', '#d946ef', '#eab308', '#64748b',
+              '#fb7185', '#0284c7', '#a855f7', '#4ade80', '#fbbf24',
+            ][costumeId % 20];
+            const playerPosition = positions[p.id] ?? 0;
+            const currentTileName = tiles[playerPosition]?.title || 'จุดเริ่มต้น';
+
+            return (
+              <div
+                key={p.id}
+                className={`flex items-center justify-between p-3 rounded-2xl border transition-all ${
+                  isPlayerTurn
+                    ? 'bg-[#3b1704] border-yellow-400 ring-2 ring-yellow-400/40 shadow-lg'
+                    : 'bg-[#200c02] border-[#4a1c04]'
+                }`}
+              >
+                {/* Left: Avatar & Details */}
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="relative">
+                    <Avatar
+                      src={p.avatar_url}
+                      name={p.display_name}
+                      size="md"
+                      platform={getPlatform(p)}
+                      isTurn={isPlayerTurn}
+                    />
+                    <span
+                      className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-[#200c02] shadow"
+                      style={{ backgroundColor: playerColor }}
+                      title="สีตัวละครบนกระดาน"
+                    />
+                  </div>
+
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-sm font-black text-amber-100 truncate">
+                        {p.display_name}
+                      </span>
+                      {isMe && (
+                        <span className="text-[10px] font-bold text-amber-300 bg-[#3b1704] border border-amber-600/50 px-1.5 py-0.2 rounded-md">
+                          คุณ
+                        </span>
+                      )}
+                      {isPlayerHost && (
+                        <span title="เจ้าของห้อง" className="inline-flex">
+                          <Crown className="w-3.5 h-3.5 text-yellow-400 inline shrink-0" />
+                        </span>
+                      )}
+                      {isBot && (
+                        <span className="text-[10px] font-bold text-cyan-300 bg-cyan-950/60 border border-cyan-700/50 px-1.5 py-0.2 rounded-md flex items-center gap-0.5">
+                          <Bot className="w-2.5 h-2.5 inline" /> บอท
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-amber-300/70 mt-0.5">
+                      <span>อยู่ที่: <strong className="text-yellow-400">{currentTileName}</strong></span>
+                      {isPlayerTurn && (
+                        <span className="text-yellow-300 font-bold animate-pulse">• กำลังเล่นตา</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right: Drinks counter badge */}
+                <div className="flex items-center gap-1.5 shrink-0 pl-2">
+                  <div className="flex items-center gap-1 bg-[#330c04] border border-rose-800/80 px-2.5 py-1 rounded-xl shadow-inner">
+                    <Wine className="w-3.5 h-3.5 text-rose-400" />
+                    <span className="text-xs font-black text-rose-200">
+                      {p.drinks_count} <span className="text-[10px] font-normal text-rose-300/70">ช็อต</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Modal>
     </div>
   );
 };
