@@ -198,7 +198,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
                 sfx.playDrinkPenalty();
                 newLogs = addLog(
-                  `💸 ${currentTurnPlayer.display_name} จ่ายค่าผ่านทางให้ ${owner?.display_name || 'เจ้าของ'} จำนวน ${formatMoneyM(rentAmount)}`,
+                  `💸 ${currentTurnPlayer.display_name} จ่ายค่าผ่านทาง ${formatMoneyM(rentAmount)} ➔ ${owner?.display_name || 'เจ้าของ'} ได้รับ +${formatMoneyM(actualRent)} (เงินเหลือ ${formatMoneyM(updatedCash[currentTurnPlayer.id])})`,
                   '#ef4444'
                 );
               }
@@ -216,7 +216,15 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                   }
                 });
               }
-              newLogs = addLog(`🎁 ${currentTurnPlayer.display_name} เปิดหีบสมบัติ: [${card.title}]`, '#ec4899');
+              let chestDesc = `🎁 ${currentTurnPlayer.display_name} เปิดหีบ: [${card.title}]`;
+              if (card.rewardMoney && card.rewardMoney > 0) {
+                chestDesc += ` ➔ ได้รับ +${formatMoneyM(card.rewardMoney)} (รวม ${formatMoneyM(updatedCash[currentTurnPlayer.id])})`;
+              } else if (card.rewardMoney && card.rewardMoney < 0) {
+                chestDesc += ` ➔ เสียเงิน ${formatMoneyM(Math.abs(card.rewardMoney))} (เหลือ ${formatMoneyM(updatedCash[currentTurnPlayer.id])})`;
+              } else if (card.collectFromAll) {
+                chestDesc += ` ➔ เก็บเงินจากเพื่อนทุกคน คนละ ${formatMoneyM(card.collectFromAll)}`;
+              }
+              newLogs = addLog(chestDesc, '#ec4899');
             } else if (targetTile.type === 'chance') {
               const card = CHANCE_CARDS[Math.floor(Math.random() * CHANCE_CARDS.length)];
               setActiveCard(card);
@@ -228,7 +236,18 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                 updatedPositions[currentTurnPlayer.id] = 8;
                 updatedJail[currentTurnPlayer.id] = 1;
               }
-              newLogs = addLog(`⛩️ ${currentTurnPlayer.display_name} เปิดประตูดวง: [${card.title}]`, '#eab308');
+              let chanceDesc = `⛩️ ${currentTurnPlayer.display_name} เปิดดวง: [${card.title}]`;
+              if (card.rewardMoney && card.rewardMoney > 0) {
+                chanceDesc += ` ➔ ได้รับ +${formatMoneyM(card.rewardMoney)} (รวม ${formatMoneyM(updatedCash[currentTurnPlayer.id])})`;
+              } else if (card.rewardMoney && card.rewardMoney < 0) {
+                chanceDesc += ` ➔ เสียเงิน ${formatMoneyM(Math.abs(card.rewardMoney))} (เหลือ ${formatMoneyM(updatedCash[currentTurnPlayer.id])})`;
+              } else if (card.teleportToIndex !== undefined) {
+                const targetT = SUPER_MONOPOLY_TILES[card.teleportToIndex];
+                chanceDesc += ` ➔ วาร์ปไปที่ [${targetT?.name}]`;
+              } else if (card.goJail) {
+                chanceDesc += ` ➔ ถูกส่งตัวเข้าห้องขังทันที!`;
+              }
+              newLogs = addLog(chanceDesc, '#eab308');
             } else if (targetTile.type === 'tax') {
               updatedCash[currentTurnPlayer.id] = Math.max(0, playerCash - 1.0);
               sfx.playDrinkPenalty();
@@ -445,8 +464,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     sfx.playSuccess();
     confetti({ particleCount: 30, spread: 50, origin: { y: 0.6 } });
 
+    const remainingMoney = currentMoney - cost;
     const newLogs = addLog(
-      `🏡 ${currentTurnPlayer.display_name} ซื้อที่ดิน [${activePropertyModal.name}] (${formatMoneyM(cost)})`,
+      `🏡 ${currentTurnPlayer.display_name} ตกลง [ซื้อที่ดิน] [${activePropertyModal.name}] (${formatMoneyM(cost)}) ➔ เงินคงเหลือ ${formatMoneyM(remainingMoney)}`,
       '#10b981'
     );
 
@@ -500,8 +520,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     confetti({ particleCount: 40, spread: 60, origin: { y: 0.6 } });
 
     const upgradeLabel = isUpgradingToHotel ? 'โรงแรมหรู' : `บ้านหลังที่ ${currentHouses + 1}`;
+    const remainingMoney = currentMoney - cost;
     const newLogs = addLog(
-      `🏨 ${currentTurnPlayer.display_name} สร้าง${upgradeLabel} บนที่ดิน [${activePropertyModal.name}] (${formatMoneyM(cost)})`,
+      `🏨 ${currentTurnPlayer.display_name} สร้าง${upgradeLabel} บน [${activePropertyModal.name}] (${formatMoneyM(cost)}) ➔ เงินคงเหลือ ${formatMoneyM(remainingMoney)}`,
       '#06b6d4'
     );
 
@@ -516,6 +537,15 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
   // Close Active Modal and Auto Advance Turn
   const handleCloseActiveModal = async () => {
+    if (activePropertyModal && isMyTurn) {
+      const pCash = cash[currentTurnPlayer.id] ?? 0;
+      const skipLog = addLog(
+        `⏭️ ${currentTurnPlayer.display_name} เลือก [ไม่ซื้อ / ข้ามที่ดิน] [${activePropertyModal.name}] (เงินคงเหลือ ${formatMoneyM(pCash)})`,
+        '#9ca3af'
+      );
+      await onUpdateGameState({ gameLogs: skipLog });
+    }
+
     setActivePropertyModal(null);
     setActiveCard(null);
 
@@ -699,8 +729,14 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               updatedCash[turnPlayerId] = botCash - targetTile.cost;
               updatedProperties[finalPos] = { ownerId: turnPlayerId, houses: 0 };
               newLogs = addLog(
-                `🏡 🤖 ${currentTurnPlayer.display_name} ซื้อที่ดิน [${targetTile.name}] (${formatMoneyM(targetTile.cost)})`,
+                `🏡 🤖 ${currentTurnPlayer.display_name} ตกลง [ซื้อที่ดิน] [${targetTile.name}] (${formatMoneyM(targetTile.cost)}) ➔ เงินเหลือ ${formatMoneyM(updatedCash[turnPlayerId])}`,
                 '#10b981'
+              );
+            } else if (!ownership && targetTile.cost) {
+              // Bot skips buying!
+              newLogs = addLog(
+                `⏭️ 🤖 ${currentTurnPlayer.display_name} เลือก [ไม่ซื้อที่ดิน] [${targetTile.name}] (เงินเหลือ ${formatMoneyM(botCash)})`,
+                '#9ca3af'
               );
             } else if (ownership && ownership.ownerId === turnPlayerId && ownership.houses < 4) {
               // Bot upgrades house
@@ -708,8 +744,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               if (botCash > cost * 1.5) {
                 updatedCash[turnPlayerId] = botCash - cost;
                 updatedProperties[finalPos] = { ...ownership, houses: ownership.houses + 1 };
+                const upgName = ownership.houses === 3 ? 'โรงแรมหรู' : `บ้านหลังที่ ${ownership.houses + 1}`;
                 newLogs = addLog(
-                  `🏨 🤖 ${currentTurnPlayer.display_name} สร้างสิ่งปลูกสร้างบน [${targetTile.name}]`,
+                  `🏨 🤖 ${currentTurnPlayer.display_name} สร้าง${upgName} บน [${targetTile.name}] (${formatMoneyM(cost)}) ➔ เงินเหลือ ${formatMoneyM(updatedCash[turnPlayerId])}`,
                   '#06b6d4'
                 );
               }
@@ -728,14 +765,20 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                 updatedCash[owner.id] = (updatedCash[owner.id] ?? INITIAL_CASH_M) + actualRent;
               }
               newLogs = addLog(
-                `💸 🤖 ${currentTurnPlayer.display_name} จ่ายค่าผ่านทางให้ ${owner?.display_name || 'เจ้าของ'} จำนวน ${formatMoneyM(rent)}`,
+                `💸 🤖 ${currentTurnPlayer.display_name} จ่ายค่าผ่านทาง ${formatMoneyM(rent)} ➔ ${owner?.display_name || 'เจ้าของ'} ได้รับ +${formatMoneyM(actualRent)} (เงินเหลือ ${formatMoneyM(updatedCash[turnPlayerId])})`,
                 '#ef4444'
               );
             }
           } else if (targetTile.type === 'chest') {
             const card = CHEST_CARDS[Math.floor(Math.random() * CHEST_CARDS.length)];
             if (card.rewardMoney) updatedCash[turnPlayerId] += card.rewardMoney;
-            newLogs = addLog(`🎁 🤖 ${currentTurnPlayer.display_name} เปิดหีบ: [${card.title}]`, '#ec4899');
+            let botChestDesc = `🎁 🤖 ${currentTurnPlayer.display_name} เปิดหีบ: [${card.title}]`;
+            if (card.rewardMoney && card.rewardMoney > 0) {
+              botChestDesc += ` ➔ ได้รับ +${formatMoneyM(card.rewardMoney)} (รวม ${formatMoneyM(updatedCash[turnPlayerId])})`;
+            } else if (card.rewardMoney && card.rewardMoney < 0) {
+              botChestDesc += ` ➔ เสียเงิน ${formatMoneyM(Math.abs(card.rewardMoney))} (เหลือ ${formatMoneyM(updatedCash[turnPlayerId])})`;
+            }
+            newLogs = addLog(botChestDesc, '#ec4899');
           } else if (targetTile.type === 'chance') {
             const card = CHANCE_CARDS[Math.floor(Math.random() * CHANCE_CARDS.length)];
             if (card.rewardMoney) updatedCash[turnPlayerId] += card.rewardMoney;
@@ -744,7 +787,18 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               updatedPositions[turnPlayerId] = 8;
               updatedJail[turnPlayerId] = 1;
             }
-            newLogs = addLog(`⛩️ 🤖 ${currentTurnPlayer.display_name} เปิดดวง: [${card.title}]`, '#eab308');
+            let botChanceDesc = `⛩️ 🤖 ${currentTurnPlayer.display_name} เปิดดวง: [${card.title}]`;
+            if (card.rewardMoney && card.rewardMoney > 0) {
+              botChanceDesc += ` ➔ ได้รับ +${formatMoneyM(card.rewardMoney)} (รวม ${formatMoneyM(updatedCash[turnPlayerId])})`;
+            } else if (card.rewardMoney && card.rewardMoney < 0) {
+              botChanceDesc += ` ➔ เสียเงิน ${formatMoneyM(Math.abs(card.rewardMoney))} (เหลือ ${formatMoneyM(updatedCash[turnPlayerId])})`;
+            } else if (card.teleportToIndex !== undefined) {
+              const targetT = SUPER_MONOPOLY_TILES[card.teleportToIndex];
+              botChanceDesc += ` ➔ วาร์ปไป [${targetT?.name}]`;
+            } else if (card.goJail) {
+              botChanceDesc += ` ➔ เข้าห้องขังทันที!`;
+            }
+            newLogs = addLog(botChanceDesc, '#eab308');
           } else if (targetTile.type === 'tax') {
             updatedCash[turnPlayerId] = Math.max(0, botCash - 1.0);
             newLogs = addLog(`💰 🤖 ${currentTurnPlayer.display_name} จ่ายภาษี 1.0M`, '#f97316');

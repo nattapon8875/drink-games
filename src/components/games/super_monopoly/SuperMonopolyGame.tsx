@@ -154,70 +154,108 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                 const isBankrupt = playerCash <= 0;
                 const isBot = p.line_user_id === 'bot' || p.id.startsWith('bot-');
 
+                const ownedProps = Object.entries(properties)
+                  .filter(([_, prop]) => prop.ownerId === p.id)
+                  .map(([idxStr, prop]) => ({
+                    tile: SUPER_MONOPOLY_TILES[Number(idxStr)],
+                    houses: prop.houses,
+                  }))
+                  .filter((item) => item.tile);
+
                 return (
                   <div
                     key={p.id}
-                    className={`p-2.5 rounded-xl border transition-all flex items-center justify-between ${
+                    className={`p-2.5 rounded-xl border transition-all flex flex-col gap-1.5 ${
                       isCurrent
                         ? 'bg-[#3d1805] border-yellow-400 ring-2 ring-yellow-400/40 shadow-lg'
                         : 'bg-[#1a0801] border-[#3d1503]'
                     }`}
                   >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="relative">
-                        <Avatar
-                          src={p.avatar_url}
-                          name={p.display_name}
-                          size="md"
-                          isTurn={isCurrent}
-                        />
-                        {isMe && (
-                          <span className="absolute -bottom-1 -right-1 text-[8px] font-black bg-amber-500 text-amber-950 px-1 rounded-full border border-white">
-                            คุณ
-                          </span>
-                        )}
-                        {isBot && (
-                          <span className="absolute -top-1 -right-1 text-[7px] font-black bg-purple-950 text-purple-200 px-1 rounded border border-purple-700">
-                            BOT
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs font-black text-amber-100 truncate max-w-[90px]">
-                            {p.display_name}
-                          </span>
-                          {p.id === room.host_id && (
-                            <Crown className="w-3 h-3 text-yellow-400 shrink-0" />
+                    {/* Top row: Avatar, Name, Cash */}
+                    <div className="w-full flex items-center justify-between">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="relative">
+                          <Avatar
+                            src={p.avatar_url}
+                            name={p.display_name}
+                            size="md"
+                            isTurn={isCurrent}
+                          />
+                          {isMe && (
+                            <span className="absolute -bottom-1 -right-1 text-[8px] font-black bg-amber-500 text-amber-950 px-1 rounded-full border border-white">
+                              คุณ
+                            </span>
+                          )}
+                          {isBot && (
+                            <span className="absolute -top-1 -right-1 text-[7px] font-black bg-purple-950 text-purple-200 px-1 rounded border border-purple-700">
+                              BOT
+                            </span>
                           )}
                         </div>
-                        <span className="text-[10px] text-amber-300/70 block">
-                          โฉนด: <strong className="text-amber-200">{propCount}</strong> แห่ง
-                        </span>
+
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs font-black text-amber-100 truncate max-w-[90px]">
+                              {p.display_name}
+                            </span>
+                            {p.id === room.host_id && (
+                              <Crown className="w-3 h-3 text-yellow-400 shrink-0" />
+                            )}
+                          </div>
+                          <span className="text-[10px] text-amber-300/70 block">
+                            โฉนด: <strong className="text-amber-200">{propCount}</strong> แห่ง
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Jail status badge & Cash balance */}
+                      <div className="text-right shrink-0 flex flex-col items-end gap-0.5">
+                        {inJailTurns[p.id] > 0 && (
+                          <span className="text-[9px] font-bold bg-red-950 text-red-300 border border-red-700 px-1.5 py-0.5 rounded-full">
+                            ⛓️ ในคุก
+                          </span>
+                        )}
+                        {isBankrupt ? (
+                          <span className="text-[10px] font-black text-red-400 bg-red-950 px-1.5 py-0.5 rounded border border-red-800">
+                            ล้มละลาย
+                          </span>
+                        ) : (
+                          <div className="flex flex-col items-end">
+                            <span className="text-xs font-black text-emerald-400 font-mono">
+                              {formatMoneyM(playerCash)}
+                            </span>
+                            <span className="text-[9px] text-amber-400/60 font-bold">เงินสด</span>
+                          </div>
+                        )}
                       </div>
                     </div>
 
-                    {/* Jail status badge & Cash balance */}
-                    <div className="text-right shrink-0 flex flex-col items-end gap-0.5">
-                      {inJailTurns[p.id] > 0 && (
-                        <span className="text-[9px] font-bold bg-red-950 text-red-300 border border-red-700 px-1.5 py-0.2 rounded-full">
-                          ⛓️ ในคุก
-                        </span>
-                      )}
-                      {isBankrupt ? (
-                        <span className="text-[10px] font-black text-red-400 bg-red-950 px-1.5 py-0.5 rounded border border-red-800">
-                          ล้มละลาย
-                        </span>
-                      ) : (
-                        <div className="flex flex-col items-end">
-                          <span className="text-xs font-black text-emerald-400 font-mono">
-                            {formatMoneyM(playerCash)}
+                    {/* Owned Properties List: แสดงว่าใครได้/ถือครองที่ดินอะไรบ้าง */}
+                    {ownedProps.length > 0 && (
+                      <div className="w-full flex flex-wrap gap-1 mt-0.5 pt-1.5 border-t border-[#3b1704]">
+                        {ownedProps.map(({ tile, houses }) => (
+                          <span
+                            key={tile.index}
+                            className="text-[9px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-1 border shadow-sm transition hover:scale-105 cursor-pointer"
+                            style={{
+                              backgroundColor: tile.color ? `${tile.color}2b` : '#2d1406',
+                              borderColor: tile.color || '#d97706',
+                              color: '#fef3c7',
+                            }}
+                            title={`${tile.name}${houses === 4 ? ' (โรงแรม)' : houses > 0 ? ` (บ้าน ${houses} หลัง)` : ' (ที่ดินเปล่า)'}`}
+                            onClick={() => setInspectTile(tile)}
+                          >
+                            <span className="text-[10px]">{tile.icon || '🏛️'}</span>
+                            <span className="truncate max-w-[65px]">{tile.name}</span>
+                            {houses > 0 && (
+                              <span className="text-[8px] font-mono text-yellow-300 ml-0.5">
+                                {houses === 4 ? '🏨' : `🏠x${houses}`}
+                              </span>
+                            )}
                           </span>
-                          <span className="text-[9px] text-amber-400/60 font-bold">เงินสด</span>
-                        </div>
-                      )}
-                    </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 );
               })}
