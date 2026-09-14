@@ -91,9 +91,10 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   }, [players, isHost, cash, positions, onUpdateGameState]);
 
   const addLog = useCallback(
-    (text: string, color?: string) => {
+    (text: string, color?: string, currentLogs?: Array<{ text: string; time: string; color?: string }>) => {
       const time = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-      const newLogs = [{ text, time, color }, ...gameLogs.slice(0, 40)];
+      const base = currentLogs ?? gameLogs;
+      const newLogs = [{ text, time, color }, ...base.slice(0, 50)];
       return newLogs;
     },
     [gameLogs]
@@ -113,11 +114,11 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     const nextIndex = (currentIndex + 1) % players.length;
     const nextPlayer = players[nextIndex];
 
-    const newLogs = addLog(`🎲 ส่งตาให้ [${nextPlayer.display_name}]`, '#93c5fd');
+    const newLogs = addLog(`🎲 ส่งตาให้ [${nextPlayer.display_name}]`, '#93c5fd', gameLogs);
 
     await onUpdateGameState({ gameLogs: newLogs });
     await onNextTurn(nextPlayer.id);
-  }, [players, currentTurnPlayer, addLog, onUpdateGameState, onNextTurn]);
+  }, [players, currentTurnPlayer, addLog, gameLogs, onUpdateGameState, onNextTurn]);
 
   // Execute walking and landing logic for Human player
   const executeHumanWalk = useCallback(
@@ -154,7 +155,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
           const finalPos = currentStepPos;
           const targetTile = SUPER_MONOPOLY_TILES[finalPos];
 
-          let moveLog = `${currentTurnPlayer.display_name} ทอยได้ [${d1}][${d2}] (${totalRoll} แต้ม) เดินไปที่ [${targetTile.name}]`;
+          let moveLog = `🎯 ${currentTurnPlayer.display_name} ทอยได้ [${d1}][${d2}] (${totalRoll} แต้ม) ➔ ตกที่ [${targetTile.name}]`;
           if (passedGoInWalk) {
             moveLog += ` (ผ่านจุดเริ่มต้น รับ +${formatMoneyM(SALARY_M)})`;
           }
@@ -205,8 +206,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
                 sfx.playDrinkPenalty();
                 newLogs = addLog(
-                  `💸 ${currentTurnPlayer.display_name} จ่ายค่าผ่านทาง ${formatMoneyM(rentAmount)} ➔ ${owner?.display_name || 'เจ้าของ'} ได้รับ +${formatMoneyM(actualRent)} (เงินเหลือ ${formatMoneyM(updatedCash[currentTurnPlayer.id])})`,
-                  '#ef4444'
+                  `💸 ${currentTurnPlayer.display_name} จ่ายค่าผ่านทางให้ ${owner?.display_name || 'เจ้าของ'} ${formatMoneyM(actualRent)} (เงินเหลือ ${formatMoneyM(updatedCash[currentTurnPlayer.id])})`,
+                  '#ef4444',
+                  newLogs
                 );
               }
             } else if (targetTile.type === 'chest') {
@@ -231,7 +233,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               } else if (card.collectFromAll) {
                 chestDesc += ` ➔ เก็บเงินจากเพื่อนทุกคน คนละ ${formatMoneyM(card.collectFromAll)}`;
               }
-              newLogs = addLog(chestDesc, '#ec4899');
+              newLogs = addLog(chestDesc, '#ec4899', newLogs);
             } else if (targetTile.type === 'chance') {
               const card = CHANCE_CARDS[Math.floor(Math.random() * CHANCE_CARDS.length)];
               setActiveCard(card);
@@ -254,25 +256,25 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               } else if (card.goJail) {
                 chanceDesc += ` ➔ ถูกส่งตัวเข้าห้องขังทันที!`;
               }
-              newLogs = addLog(chanceDesc, '#eab308');
+              newLogs = addLog(chanceDesc, '#eab308', newLogs);
             } else if (targetTile.type === 'tax') {
               updatedCash[currentTurnPlayer.id] = Math.max(0, playerCash - 1.0);
               sfx.playDrinkPenalty();
-              newLogs = addLog(`💰 ${currentTurnPlayer.display_name} จ่ายภาษี ${formatMoneyM(1.0)}`, '#f97316');
+              newLogs = addLog(`💰 ${currentTurnPlayer.display_name} จ่ายภาษี ${formatMoneyM(1.0)}`, '#f97316', newLogs);
             } else if (targetTile.type === 'go_to_jail') {
               updatedPositions[currentTurnPlayer.id] = 10;
               updatedJail[currentTurnPlayer.id] = 1;
               sfx.playDrinkPenalty();
-              newLogs = addLog(`⛓️ ${currentTurnPlayer.display_name} โดนจับส่งเข้าห้องขัง!`, '#dc2626');
+              newLogs = addLog(`⛓️ ${currentTurnPlayer.display_name} โดนจับส่งเข้าห้องขัง!`, '#dc2626', newLogs);
             } else if (targetTile.type === 'jail') {
               sfx.playSuccess();
-              newLogs = addLog(`⛓️ ${currentTurnPlayer.display_name} แวะเยี่ยมคุก (เป็นผู้มาเยือน ปลอดภัย)`, '#a855f7');
+              newLogs = addLog(`⛓️ ${currentTurnPlayer.display_name} แวะเยี่ยมคุก (เป็นผู้มาเยือน ปลอดภัย)`, '#a855f7', newLogs);
             } else if (targetTile.type === 'parking') {
               sfx.playSuccess();
-              newLogs = addLog(`🅿️ ${currentTurnPlayer.display_name} ถึงจุดพักรถ ปลอดภัย ไม่มีค่าใช้จ่าย`, '#38bdf8');
+              newLogs = addLog(`🅿️ ${currentTurnPlayer.display_name} ถึงจุดพักผ่อน ปลอดภัย ไม่มีค่าใช้จ่าย`, '#38bdf8', newLogs);
             } else if (targetTile.type === 'start') {
               sfx.playSuccess();
-              newLogs = addLog(`🏁 ${currentTurnPlayer.display_name} อยู่ที่จุดเริ่มต้น รับเงินทุน 2.0M`, '#22c55e');
+              newLogs = addLog(`🏁 ${currentTurnPlayer.display_name} อยู่ที่จุดเริ่มต้น รับเงินทุน 2.0M`, '#22c55e', newLogs);
             }
 
             // Sync single update to server
@@ -474,7 +476,8 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     const remainingMoney = currentMoney - cost;
     const newLogs = addLog(
       `🏡 ${currentTurnPlayer.display_name} ตกลง [ซื้อที่ดิน] [${activePropertyModal.name}] (${formatMoneyM(cost)}) ➔ เงินคงเหลือ ${formatMoneyM(remainingMoney)}`,
-      '#10b981'
+      '#10b981',
+      gameLogs
     );
 
     setActivePropertyModal(null);
@@ -534,7 +537,8 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     const remainingMoney = currentMoney - cost;
     const newLogs = addLog(
       `🏨 ${currentTurnPlayer.display_name} สร้าง${upgradeLabel} บน [${activePropertyModal.name}] (${formatMoneyM(cost)}) ➔ เงินคงเหลือ ${formatMoneyM(remainingMoney)}`,
-      '#06b6d4'
+      '#06b6d4',
+      gameLogs
     );
 
     setActivePropertyModal(null);
@@ -552,7 +556,8 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       const pCash = cash[currentTurnPlayer.id] ?? 0;
       const skipLog = addLog(
         `⏭️ ${currentTurnPlayer.display_name} เลือก [ไม่ซื้อ / ข้ามที่ดิน] [${activePropertyModal.name}] (เงินคงเหลือ ${formatMoneyM(pCash)})`,
-        '#9ca3af'
+        '#9ca3af',
+        gameLogs
       );
       await onUpdateGameState({ gameLogs: skipLog });
     }
@@ -602,6 +607,12 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       try {
         let rollsThisTurn = 0;
         let shouldRollAgain = true;
+        let botTurnLogs = gameLogs;
+        let botCash: number = cash[turnPlayerId] ?? INITIAL_CASH_M;
+        let botJailTurns: number = inJailTurns[turnPlayerId] ?? 0;
+        let currentPos: number = positions[turnPlayerId] ?? 0;
+        let botProperties = { ...properties };
+        let botJailState = { ...inJailTurns };
 
         while (shouldRollAgain && rollsThisTurn < 2 && isMounted) {
           rollsThisTurn++;
@@ -611,24 +622,22 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
           await new Promise((resolve) => setTimeout(resolve, 1000));
           if (!isMounted) return;
 
-          let botCash: number = cash[turnPlayerId] ?? INITIAL_CASH_M;
-          let botJailTurns: number = inJailTurns[turnPlayerId] ?? 0;
-          let currentPos: number = positions[turnPlayerId] ?? 0;
-
           // Check if bot is currently in jail:
           if (botJailTurns > 0) {
             if (botCash >= 1.0) {
               // Bot pays 0.5M bail to get out immediately!
               botCash -= JAIL_BAIL_M;
               botJailTurns = 0;
-              const payLog = addLog(
+              botJailState[turnPlayerId] = 0;
+              botTurnLogs = addLog(
                 `👮 🤖 ${currentTurnPlayer.display_name} จ่ายค่าประกันตัว 0.5M หลุดออกจากคุกแล้ว!`,
-                '#10b981'
+                '#10b981',
+                botTurnLogs
               );
               await onUpdateGameState({
                 cash: { ...cash, [turnPlayerId]: botCash },
-                inJailTurns: { ...inJailTurns, [turnPlayerId]: 0 },
-                gameLogs: payLog,
+                inJailTurns: botJailState,
+                gameLogs: botTurnLogs,
               });
               await new Promise((resolve) => setTimeout(resolve, 800));
             } else {
@@ -645,23 +654,27 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               if (d1 === d2) {
                 // Free escape!
                 botJailTurns = 0;
-                const escLog = addLog(
+                botJailState[turnPlayerId] = 0;
+                botTurnLogs = addLog(
                   `🎉 🤖 ${currentTurnPlayer.display_name} ทอยได้แต้มคู่ [${d1}][${d2}] แหกคุกสำเร็จ!`,
-                  '#10b981'
+                  '#10b981',
+                  botTurnLogs
                 );
                 await onUpdateGameState({
-                  inJailTurns: { ...inJailTurns, [turnPlayerId]: 0 },
-                  gameLogs: escLog,
+                  inJailTurns: botJailState,
+                  gameLogs: botTurnLogs,
                 });
               } else {
                 // Stay in jail, pass turn!
-                const stayLog = addLog(
+                botJailState[turnPlayerId] = 0; // served sentence
+                botTurnLogs = addLog(
                   `⛓️ 🤖 ${currentTurnPlayer.display_name} ทอยได้ [${d1}][${d2}] ไม่ใช่แต้มคู่ ติดคุกข้ามตานี้`,
-                  '#ef4444'
+                  '#ef4444',
+                  botTurnLogs
                 );
                 await onUpdateGameState({
-                  inJailTurns: { ...inJailTurns, [turnPlayerId]: 0 }, // served sentence
-                  gameLogs: stayLog,
+                  inJailTurns: botJailState,
+                  gameLogs: botTurnLogs,
                 });
                 await new Promise((resolve) => setTimeout(resolve, 1500));
                 break; // exit while loop to end turn
@@ -716,8 +729,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
           setActiveStepTileIndex(null);
 
           const finalPos = stepPos;
+          currentPos = finalPos;
           const targetTile = SUPER_MONOPOLY_TILES[finalPos];
-          let logText = `🤖 ${currentTurnPlayer.display_name} ทอยได้ [${d1}][${d2}] (${totalRoll} แต้ม) เดินไปที่ [${targetTile.name}]`;
+          let logText = `🎯 🤖 ${currentTurnPlayer.display_name} ทอยได้ [${d1}][${d2}] (${totalRoll} แต้ม) ➔ ตกที่ [${targetTile.name}]`;
 
           if (passedGoInWalk) {
             logText += ` (ผ่านจุดเริ่มต้น รับ +${formatMoneyM(SALARY_M)})`;
@@ -726,39 +740,43 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             logText += ' 🎉 แต้มคู่!';
           }
 
+          botTurnLogs = addLog(logText, '#93c5fd', botTurnLogs);
           const updatedPositions = { ...positions, [turnPlayerId]: finalPos };
           const updatedCash = { ...cash, [turnPlayerId]: botCash };
-          const updatedProperties = { ...properties };
-          const updatedJail = { ...inJailTurns, [turnPlayerId]: 0 };
-          let newLogs = addLog(logText, '#93c5fd');
+          botJailState[turnPlayerId] = 0;
 
           // 4. Bot Decision on Target Tile:
           if (targetTile.type === 'property') {
-            const ownership = updatedProperties[finalPos];
+            const ownership = botProperties[finalPos];
             if (!ownership && targetTile.cost && botCash > targetTile.cost * 1.2) {
               // Bot buys property
-              updatedCash[turnPlayerId] = botCash - targetTile.cost;
-              updatedProperties[finalPos] = { ownerId: turnPlayerId, houses: 0 };
-              newLogs = addLog(
-                `🏡 🤖 ${currentTurnPlayer.display_name} ตกลง [ซื้อที่ดิน] [${targetTile.name}] (${formatMoneyM(targetTile.cost)}) ➔ เงินเหลือ ${formatMoneyM(updatedCash[turnPlayerId])}`,
-                '#10b981'
+              botCash -= targetTile.cost;
+              updatedCash[turnPlayerId] = botCash;
+              botProperties[finalPos] = { ownerId: turnPlayerId, houses: 0 };
+              botTurnLogs = addLog(
+                `🏡 🤖 ${currentTurnPlayer.display_name} ตกลง [ซื้อที่ดิน] [${targetTile.name}] (${formatMoneyM(targetTile.cost)}) ➔ เงินเหลือ ${formatMoneyM(botCash)}`,
+                '#10b981',
+                botTurnLogs
               );
             } else if (!ownership && targetTile.cost) {
               // Bot skips buying!
-              newLogs = addLog(
+              botTurnLogs = addLog(
                 `⏭️ 🤖 ${currentTurnPlayer.display_name} เลือก [ไม่ซื้อที่ดิน] [${targetTile.name}] (เงินเหลือ ${formatMoneyM(botCash)})`,
-                '#9ca3af'
+                '#9ca3af',
+                botTurnLogs
               );
             } else if (ownership && ownership.ownerId === turnPlayerId && !targetTile.isUtility && ownership.houses < 4) {
               // Bot upgrades house
               const cost = ownership.houses === 3 ? (targetTile.hotelCost || 2.0) : (targetTile.houseCost || 0.8);
               if (botCash > cost * 1.5) {
-                updatedCash[turnPlayerId] = botCash - cost;
-                updatedProperties[finalPos] = { ...ownership, houses: ownership.houses + 1 };
+                botCash -= cost;
+                updatedCash[turnPlayerId] = botCash;
+                botProperties[finalPos] = { ...ownership, houses: ownership.houses + 1 };
                 const upgName = ownership.houses === 3 ? 'โรงแรมหรู' : `บ้านหลังที่ ${ownership.houses + 1}`;
-                newLogs = addLog(
-                  `🏨 🤖 ${currentTurnPlayer.display_name} สร้าง${upgName} บน [${targetTile.name}] (${formatMoneyM(cost)}) ➔ เงินเหลือ ${formatMoneyM(updatedCash[turnPlayerId])}`,
-                  '#06b6d4'
+                botTurnLogs = addLog(
+                  `🏨 🤖 ${currentTurnPlayer.display_name} สร้าง${upgName} บน [${targetTile.name}] (${formatMoneyM(cost)}) ➔ เงินเหลือ ${formatMoneyM(botCash)}`,
+                  '#06b6d4',
+                  botTurnLogs
                 );
               }
             } else if (ownership && ownership.ownerId !== turnPlayerId) {
@@ -767,7 +785,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               let rent = targetTile.baseRent || 0.2;
               if (targetTile.isUtility) {
                 const hotelIndices = [4, 5, 15, 25, 26, 35];
-                const ownedHotelsCount = hotelIndices.filter((hIdx) => updatedProperties[hIdx]?.ownerId === ownership.ownerId).length;
+                const ownedHotelsCount = hotelIndices.filter((hIdx) => botProperties[hIdx]?.ownerId === ownership.ownerId).length;
                 rent = (targetTile.baseRent || 0.4) * Math.max(1, ownedHotelsCount);
               } else {
                 if (ownership.houses === 1) rent = targetTile.rent1House || 0.5;
@@ -777,71 +795,85 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               }
 
               const actualRent = Math.min(botCash, rent);
-              updatedCash[turnPlayerId] = Math.max(0, botCash - rent);
+              botCash = Math.max(0, botCash - rent);
+              updatedCash[turnPlayerId] = botCash;
               if (owner) {
                 updatedCash[owner.id] = (updatedCash[owner.id] ?? INITIAL_CASH_M) + actualRent;
               }
-              newLogs = addLog(
-                `💸 🤖 ${currentTurnPlayer.display_name} จ่ายค่าผ่านทาง ${formatMoneyM(rent)} ➔ ${owner?.display_name || 'เจ้าของ'} ได้รับ +${formatMoneyM(actualRent)} (เงินเหลือ ${formatMoneyM(updatedCash[turnPlayerId])})`,
-                '#ef4444'
+              botTurnLogs = addLog(
+                `💸 🤖 ${currentTurnPlayer.display_name} จ่ายค่าผ่านทางให้ ${owner?.display_name || 'เจ้าของ'} ${formatMoneyM(actualRent)} (เงินเหลือ ${formatMoneyM(botCash)})`,
+                '#ef4444',
+                botTurnLogs
               );
             }
           } else if (targetTile.type === 'chest') {
             const card = CHEST_CARDS[Math.floor(Math.random() * CHEST_CARDS.length)];
-            if (card.rewardMoney) updatedCash[turnPlayerId] += card.rewardMoney;
+            if (card.rewardMoney) {
+              botCash += card.rewardMoney;
+              updatedCash[turnPlayerId] = botCash;
+            }
             let botChestDesc = `🎁 🤖 ${currentTurnPlayer.display_name} เปิดหีบ: [${card.title}]`;
             if (card.rewardMoney && card.rewardMoney > 0) {
-              botChestDesc += ` ➔ ได้รับ +${formatMoneyM(card.rewardMoney)} (รวม ${formatMoneyM(updatedCash[turnPlayerId])})`;
+              botChestDesc += ` ➔ ได้รับ +${formatMoneyM(card.rewardMoney)} (รวม ${formatMoneyM(botCash)})`;
             } else if (card.rewardMoney && card.rewardMoney < 0) {
-              botChestDesc += ` ➔ เสียเงิน ${formatMoneyM(Math.abs(card.rewardMoney))} (เหลือ ${formatMoneyM(updatedCash[turnPlayerId])})`;
+              botChestDesc += ` ➔ เสียเงิน ${formatMoneyM(Math.abs(card.rewardMoney))} (เหลือ ${formatMoneyM(botCash)})`;
             }
-            newLogs = addLog(botChestDesc, '#ec4899');
+            botTurnLogs = addLog(botChestDesc, '#ec4899', botTurnLogs);
           } else if (targetTile.type === 'chance') {
             const card = CHANCE_CARDS[Math.floor(Math.random() * CHANCE_CARDS.length)];
-            if (card.rewardMoney) updatedCash[turnPlayerId] += card.rewardMoney;
-            if (card.teleportToIndex !== undefined) updatedPositions[turnPlayerId] = card.teleportToIndex;
+            if (card.rewardMoney) {
+              botCash += card.rewardMoney;
+              updatedCash[turnPlayerId] = botCash;
+            }
+            if (card.teleportToIndex !== undefined) {
+              updatedPositions[turnPlayerId] = card.teleportToIndex;
+              currentPos = card.teleportToIndex;
+            }
             if (card.goJail) {
               updatedPositions[turnPlayerId] = 10;
-              updatedJail[turnPlayerId] = 1;
+              botJailState[turnPlayerId] = 1;
+              currentPos = 10;
             }
             let botChanceDesc = `⛩️ 🤖 ${currentTurnPlayer.display_name} เปิดดวง: [${card.title}]`;
             if (card.rewardMoney && card.rewardMoney > 0) {
-              botChanceDesc += ` ➔ ได้รับ +${formatMoneyM(card.rewardMoney)} (รวม ${formatMoneyM(updatedCash[turnPlayerId])})`;
+              botChanceDesc += ` ➔ ได้รับ +${formatMoneyM(card.rewardMoney)} (รวม ${formatMoneyM(botCash)})`;
             } else if (card.rewardMoney && card.rewardMoney < 0) {
-              botChanceDesc += ` ➔ เสียเงิน ${formatMoneyM(Math.abs(card.rewardMoney))} (เหลือ ${formatMoneyM(updatedCash[turnPlayerId])})`;
+              botChanceDesc += ` ➔ เสียเงิน ${formatMoneyM(Math.abs(card.rewardMoney))} (เหลือ ${formatMoneyM(botCash)})`;
             } else if (card.teleportToIndex !== undefined) {
               const targetT = SUPER_MONOPOLY_TILES[card.teleportToIndex];
               botChanceDesc += ` ➔ วาร์ปไป [${targetT?.name}]`;
             } else if (card.goJail) {
               botChanceDesc += ` ➔ เข้าห้องขังทันที!`;
             }
-            newLogs = addLog(botChanceDesc, '#eab308');
+            botTurnLogs = addLog(botChanceDesc, '#eab308', botTurnLogs);
           } else if (targetTile.type === 'tax') {
-            updatedCash[turnPlayerId] = Math.max(0, botCash - 1.0);
-            newLogs = addLog(`💰 🤖 ${currentTurnPlayer.display_name} จ่ายภาษี 1.0M`, '#f97316');
+            botCash = Math.max(0, botCash - 1.0);
+            updatedCash[turnPlayerId] = botCash;
+            botTurnLogs = addLog(`💰 🤖 ${currentTurnPlayer.display_name} จ่ายภาษี 1.0M (เงินเหลือ ${formatMoneyM(botCash)})`, '#f97316', botTurnLogs);
           } else if (targetTile.type === 'go_to_jail') {
             updatedPositions[turnPlayerId] = 10;
-            updatedJail[turnPlayerId] = 1;
-            newLogs = addLog(`⛓️ 🤖 ${currentTurnPlayer.display_name} โดนจับส่งเข้าห้องขัง!`, '#dc2626');
+            botJailState[turnPlayerId] = 1;
+            currentPos = 10;
+            botTurnLogs = addLog(`⛓️ 🤖 ${currentTurnPlayer.display_name} โดนจับส่งเข้าห้องขัง!`, '#dc2626', botTurnLogs);
           } else if (targetTile.type === 'jail') {
-            newLogs = addLog(`⛓️ 🤖 ${currentTurnPlayer.display_name} แวะเยี่ยมคุก ชิลๆ ไม่ถูกขัง`, '#a855f7');
+            botTurnLogs = addLog(`⛓️ 🤖 ${currentTurnPlayer.display_name} แวะเยี่ยมคุก ชิลๆ ไม่ถูกขัง`, '#a855f7', botTurnLogs);
           } else if (targetTile.type === 'parking') {
-            newLogs = addLog(`🅿️ 🤖 ${currentTurnPlayer.display_name} ถึงจุดพักรถ ปลอดภัย ไม่มีค่าใช้จ่าย`, '#38bdf8');
+            botTurnLogs = addLog(`🅿️ 🤖 ${currentTurnPlayer.display_name} ถึงจุดพักผ่อน ปลอดภัย ไม่มีค่าใช้จ่าย`, '#38bdf8', botTurnLogs);
           } else if (targetTile.type === 'start') {
-            newLogs = addLog(`🏁 🤖 ${currentTurnPlayer.display_name} ถึงจุดเริ่มต้น`, '#22c55e');
+            botTurnLogs = addLog(`🏁 🤖 ${currentTurnPlayer.display_name} ถึงจุดเริ่มต้น`, '#22c55e', botTurnLogs);
           }
 
           // Single clean server state sync
           await onUpdateGameState({
             positions: updatedPositions,
             cash: updatedCash,
-            properties: updatedProperties,
-            inJailTurns: updatedJail,
-            gameLogs: newLogs,
+            properties: botProperties,
+            inJailTurns: botJailState,
+            gameLogs: botTurnLogs,
           });
 
           // If rolled Double and NOT sent to jail, bot rolls again!
-          if (isDoubleRoll && targetTile.type !== 'go_to_jail' && !updatedJail[turnPlayerId]) {
+          if (isDoubleRoll && targetTile.type !== 'go_to_jail' && !botJailState[turnPlayerId]) {
             shouldRollAgain = true;
             await new Promise((resolve) => setTimeout(resolve, 1500));
           }
@@ -856,8 +888,8 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
         const nextIndex = (currentIndex + 1) % players.length;
         const nextPlayer = players[nextIndex];
 
-        const passLog = addLog(`🎲 ส่งตาให้ [${nextPlayer.display_name}]`, '#93c5fd');
-        await onUpdateGameState({ gameLogs: passLog });
+        botTurnLogs = addLog(`🎲 ส่งตาให้ [${nextPlayer.display_name}]`, '#93c5fd', botTurnLogs);
+        await onUpdateGameState({ gameLogs: botTurnLogs });
         await onNextTurn(nextPlayer.id);
       } catch (err) {
         console.error('Bot turn error:', err);
