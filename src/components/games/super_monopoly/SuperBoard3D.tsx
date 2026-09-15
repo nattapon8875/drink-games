@@ -180,21 +180,20 @@ export function getSuperTile3DPosition(index: number): [number, number, number] 
 
 // Rotation for each tile:
 // 1. 4 corners are normal square tiles (NO diagonal slant)
-// 2. หัวการ์ด (Top / Banner) ออกด้านนอกกระดาน
-// 3. ท้ายการ์ด (Bottom / Price) เข้าด้านในทั้ง 4 ด้าน
+// 2. หัวการ์ด (Top / Banner) เข้าไปด้านในกระดาน
+// 3. ท้ายการ์ด (Bottom / Price) ออกมาด้านนอกทั้ง 4 ด้าน
 export function getSuperTile3DRotation(index: number): [number, number, number] {
+  // Header inward, price outward. Turning the cards the other way round put the
+  // header on the outer rim but also turned the artwork with it, so the row
+  // nearest the camera - the one you actually read - came out upside down.
   if (index >= 0 && index <= 10) {
-    // Bottom row & corners 0 and 10: header OUTWARD (+Z), price toward the centre
-    return [0, Math.PI, 0];
-  } else if (index > 10 && index < 20) {
-    // Left col (11 -> 19): header OUTWARD (-X)
-    return [0, -Math.PI / 2, 0];
-  } else if (index >= 20 && index <= 30) {
-    // Top row & corners 20 and 30: header OUTWARD (-Z)
     return [0, 0, 0];
-  } else {
-    // Right col (31 -> 39): header OUTWARD (+X)
+  } else if (index > 10 && index < 20) {
     return [0, Math.PI / 2, 0];
+  } else if (index >= 20 && index <= 30) {
+    return [0, Math.PI, 0];
+  } else {
+    return [0, -Math.PI / 2, 0];
   }
 }
 
