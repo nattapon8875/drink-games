@@ -88,11 +88,13 @@ export async function POST(req: Request) {
           const { player } = body;
           const room = serverStore.rooms.get(roomCode);
 
-          // If player was previously in kicked_player_ids, clear them so they can rejoin smoothly
+          // A kick has to stick. Clearing the flag here let the kicked client's
+          // own auto-join put them straight back into the room.
           if (room?.game_state?.kicked_player_ids?.includes(player.id)) {
-            const updatedKicked = room.game_state.kicked_player_ids.filter((id) => id !== player.id);
-            room.game_state.kicked_player_ids = updatedKicked;
-            serverStore.rooms.set(roomCode, room);
+            return NextResponse.json(
+              { error: 'คุณถูกเตะออกจากห้องนี้แล้ว' },
+              { status: 403 }
+            );
           }
 
           const currentPlayers = serverStore.players.get(roomCode) || [];
@@ -205,6 +207,16 @@ export async function POST(req: Request) {
           );
           serverStore.players.set(roomCode, updatedPlayers);
           return NextResponse.json({ success: true, players: updatedPlayers });
+        }
+
+        case 'set_host': {
+          const { playerId } = body;
+          const room = serverStore.rooms.get(roomCode);
+          if (room && playerId) {
+            room.host_id = playerId;
+            serverStore.rooms.set(roomCode, room);
+          }
+          return NextResponse.json({ success: true, room });
         }
 
         case 'heartbeat': {

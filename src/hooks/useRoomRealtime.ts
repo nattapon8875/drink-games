@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
 import { RoomRecord, PlayerRecord } from '@/types/database';
 import { UnifiedUser } from '@/lib/platforms/types';
+import { getPreviousPlayerIds, forgetPreviousPlayerId } from '@/lib/platforms/customName';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
 // Presence tuning. A client refreshes its own row every HEARTBEAT_INTERVAL_MS;
@@ -180,6 +181,10 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
   const joinRoom = useCallback(async () => {
     if (!currentUser || !roomCode || currentUser.id === 'guest-init') return;
 
+    // Never re-add someone the host kicked. The auto-join effect re-runs on every
+    // room update, so without this it races the redirect and puts them back in.
+    if (room?.game_state?.kicked_player_ids?.includes(currentUser.id)) return;
+
     if (!isSupabaseConfigured()) {
       const newPlayer: PlayerRecord = {
         id: currentUser.id,
@@ -255,14 +260,10 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
               costumePool[Math.floor(Math.random() * costumePool.length)];
           }
 
-          // Clear kicked status if previously kicked
-          const currentKicked = room.game_state?.kicked_player_ids || [];
-          const updatedKicked = currentKicked.filter((id: string) => id !== currentUser.id);
-
           await supabase
             .from('rooms')
             .update({
-              game_state: { ...room.game_state, positions, costumes, kicked_player_ids: updatedKicked },
+              game_state: { ...room.game_state, positions, costumes },
             })
             .eq('code', roomCode);
         }
@@ -802,6 +803,53 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
     [roomCode, currentUser]
   );
 
+  // ---- Identity reclaim ----------------------------------------------------
+  // The same person can come back under a different id (the Discord OAuth path
+  // gives the real account id, the fallback path a random local one), leaving
+  // their previous row behind so they appear twice. As soon as we are in the
+  // room under the new id, remove the rows we know were ours.
+  const reclaimingRef = useRef(false);
+  useEffect(() => {
+    const myId = currentUser?.id;
+    if (!roomCode || !myId || myId === 'guest-init' || !room) return;
+    if (reclaimingRef.current) return;
+    if (!players.some((p) => p.id === myId)) return; // wait until we are actually in
+
+    const previousIds = getPreviousPlayerIds();
+    if (previousIds.length === 0) return;
+
+    const orphans = players.filter((p) => p.id !== myId && previousIds.includes(p.id));
+    if (orphans.length === 0) return;
+
+    reclaimingRef.current = true;
+    (async () => {
+      try {
+        for (const orphan of orphans) {
+          const orphanWasHost = room.host_id === orphan.id;
+          console.log('[Identity] Removing own stale row:', orphan.display_name, orphan.id);
+          await leaveRoomRef.current(orphan.id);
+          forgetPreviousPlayerId(orphan.id);
+
+          // Our old row held the crown, so take it back rather than letting
+          // leaveRoom hand it to whoever happens to be first in turn order.
+          if (orphanWasHost) {
+            if (!isSupabaseConfigured()) {
+              await fetch('/api/room', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'set_host', code: roomCode, playerId: myId }),
+              });
+            } else {
+              await supabase.from('rooms').update({ host_id: myId }).eq('code', roomCode);
+            }
+          }
+        }
+      } finally {
+        reclaimingRef.current = false;
+      }
+    })();
+  }, [roomCode, currentUser?.id, players, room]);
+
   // ---- Presence: heartbeat + stale player cleanup --------------------------
   // Discord can tear down the Activity iframe without ever firing pagehide
   // (force close, network drop, switching voice channel), so unload handlers
@@ -858,24 +906,44 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
     };
   }, [roomCode, currentUser?.id]);
 
-  // Only the host reaps, so a stale row is not deleted N times over.
-  // Bots have no client and would otherwise be reaped immediately.
-  const isRoomHost = Boolean(room && currentUser && room.host_id === currentUser.id);
+  // Exactly one client reaps, so leaveRoom's game_state write is never racing
+  // itself. The reaper cannot be the host: when the host is the ghost, nobody
+  // would be left to clean it up. Instead every client independently elects the
+  // lowest id among players with a fresh heartbeat, so they all agree, and the
+  // job moves on by itself once the current reaper goes stale.
+  //
+  // The election is computed fresh on every tick rather than memoised: it
+  // depends on how old each heartbeat is *now*, and the players array can sit
+  // unchanged for minutes while those heartbeats age out.
   useEffect(() => {
-    if (!roomCode || !isRoomHost || !currentUser?.id) return;
+    const myId = currentUser?.id;
+    if (!roomCode || !myId) return;
 
     let cancelled = false;
 
     const reap = async () => {
       if (cancelled) return;
-      const cutoff = Date.now() - STALE_AFTER_MS;
 
-      const stale = playersRef.current.filter((p) => {
-        if (isBotPlayer(p) || p.id === currentUser.id) return false;
-        if (!p.last_seen) return false; // never heartbeat: pre-migration row, leave alone
+      const cutoff = Date.now() - STALE_AFTER_MS;
+      const roster = playersRef.current;
+
+      const isFresh = (p: PlayerRecord) => {
+        if (p.id === myId) return true; // we are demonstrably here
+        if (!p.last_seen) return false;
         const seen = new Date(p.last_seen).getTime();
-        return Number.isFinite(seen) && seen < cutoff;
-      });
+        return Number.isFinite(seen) && seen >= cutoff;
+      };
+
+      const alive = roster
+        .filter((p) => !isBotPlayer(p) && isFresh(p))
+        .map((p) => p.id)
+        .sort();
+
+      if (alive[0] !== myId) return; // someone else is on cleanup duty
+
+      const stale = roster.filter(
+        (p) => !isBotPlayer(p) && p.id !== myId && p.last_seen && !isFresh(p)
+      );
 
       for (const p of stale) {
         console.log('[Presence] Removing stale player:', p.display_name, p.id);
@@ -889,7 +957,7 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
       cancelled = true;
       clearInterval(timer);
     };
-  }, [roomCode, isRoomHost, currentUser?.id]);
+  }, [roomCode, currentUser?.id]);
 
   return {
     room,

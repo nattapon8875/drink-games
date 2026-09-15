@@ -44,3 +44,45 @@ export function getCustomNameFor(userId: string, allowLegacy = false): string | 
 
   return null;
 }
+
+// ---------------------------------------------------------------------------
+// Previous player ids
+//
+// A person's id can change between visits: the Discord OAuth path yields the
+// real account id while the fallback path yields a random local one. When that
+// switch happens the old row is still sitting in the room, so the same human
+// shows up twice. We remember the ids they used before so the room can drop
+// those rows as soon as they rejoin.
+// ---------------------------------------------------------------------------
+
+const PREVIOUS_IDS_KEY = 'party_previous_ids';
+const MAX_PREVIOUS_IDS = 5;
+
+export function rememberPreviousId(oldId: string, currentId: string) {
+  if (typeof window === 'undefined') return;
+  if (!oldId || !currentId || oldId === currentId || oldId === 'guest-init') return;
+
+  const existing = getPreviousPlayerIds();
+  const next = [oldId, ...existing.filter((id) => id !== oldId && id !== currentId)].slice(
+    0,
+    MAX_PREVIOUS_IDS
+  );
+  localStorage.setItem(PREVIOUS_IDS_KEY, JSON.stringify(next));
+}
+
+export function getPreviousPlayerIds(): string[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(PREVIOUS_IDS_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter((id) => typeof id === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+export function forgetPreviousPlayerId(id: string) {
+  if (typeof window === 'undefined') return;
+  const next = getPreviousPlayerIds().filter((x) => x !== id);
+  localStorage.setItem(PREVIOUS_IDS_KEY, JSON.stringify(next));
+}

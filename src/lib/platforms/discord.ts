@@ -1,6 +1,6 @@
 import { DiscordSDK } from '@discord/embedded-app-sdk';
 import { UnifiedUser } from './types';
-import { getCustomNameFor } from './customName';
+import { getCustomNameFor, rememberPreviousId } from './customName';
 
 let discordSdk: DiscordSDK | null = null;
 let isDiscordReady = false;
@@ -122,6 +122,16 @@ export async function initDiscord(): Promise<{
 
     if (user) {
       if (typeof window !== 'undefined') {
+        // Switching from the fallback identity to the real Discord account changes
+        // the player id. Record the old one so the room can drop that stale row.
+        const previous = localStorage.getItem('party_discord_user');
+        if (previous) {
+          try {
+            const parsed = JSON.parse(previous);
+            if (parsed?.id) rememberPreviousId(parsed.id, user.id);
+          } catch {}
+        }
+
         // Keep a custom name ONLY if this same Discord account is the one that set it.
         // Legacy unscoped names are ignored here so the real profile name always wins.
         const customName = getCustomNameFor(user.id);
