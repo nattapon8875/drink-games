@@ -9,10 +9,11 @@ import { PropertyCardModal } from './PropertyCardModal';
 import { ChanceChestModal } from './ChanceChestModal';
 import { PenaltyModal } from './PenaltyModal';
 import { RulesModal } from './RulesModal';
+import { RollOrderModal } from './RollOrderModal';
 import { Modal } from '@/components/common/Modal';
 import { SUPER_MONOPOLY_TILES, formatMoneyM } from './superMonopolyData';
 import { Avatar } from '@/components/common/Avatar';
-import { SuperPropertyTile } from '@/types/database';
+import { SuperPropertyTile, PlayerRecord } from '@/types/database';
 import {
   Dices,
   BookOpen,
@@ -66,6 +67,8 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     handleBuildHouse,
     handleEndTurn,
     handleCloseActiveModal,
+    orderedPlayers,
+    rollOrderDone,
   } = useSuperMonopolyEngine(props);
 
   const [inspectTile, setInspectTile] = useState<SuperPropertyTile | null>(null);
@@ -225,13 +228,14 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
             </h3>
 
             <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto scrollbar-none pr-0.5">
-              {players.map((p) => {
+              {orderedPlayers.map((p: PlayerRecord) => {
                 const playerCash = cash[p.id] ?? 15.0;
                 const propCount = getPlayerPropertiesCount(p.id);
                 const isCurrent = p.id === currentTurnPlayer?.id;
                 const isMe = p.id === currentPlayer?.id;
                 const isBankrupt = playerCash <= 0;
                 const isBot = p.line_user_id === 'bot' || p.id.startsWith('bot-');
+                const scoreInfo = room.game_state?.roll_order_scores?.[p.id];
 
                 const ownedProps = Object.entries(properties)
                   .filter(([_, prop]) => prop.ownerId === p.id)
@@ -274,16 +278,35 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
 
                         <div className="min-w-0">
                           <div className="flex items-center gap-1">
-                            <span className="text-xs font-black text-amber-100 truncate max-w-[90px]">
+                            <span className="text-xs font-black text-amber-100 truncate max-w-[85px]">
                               {p.display_name}
                             </span>
                             {p.id === room.host_id && (
                               <Crown className="w-3 h-3 text-yellow-400 shrink-0" />
                             )}
                           </div>
-                          <span className="text-[10px] text-amber-300/70 block">
-                            โฉนด: <strong className="text-amber-200">{propCount}</strong> แห่ง
-                          </span>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[10px] text-amber-300/70">
+                              โฉนด: <strong className="text-amber-200">{propCount}</strong>
+                            </span>
+                            {scoreInfo && (
+                              <span
+                                className="text-[9px] font-black px-1.5 py-0.2 rounded bg-amber-500/20 text-yellow-300 border border-yellow-500/40 flex items-center gap-0.5 shadow-sm"
+                                title={`ทอยตัดสินลำดับได้ ${scoreInfo.total} แต้ม (${scoreInfo.d1}+${scoreInfo.d2})`}
+                              >
+                                <span>
+                                  {scoreInfo.rank === 1
+                                    ? '🥇'
+                                    : scoreInfo.rank === 2
+                                    ? '🥈'
+                                    : scoreInfo.rank === 3
+                                    ? '🥉'
+                                    : `#${scoreInfo.rank}`}
+                                </span>
+                                <span>🎲{scoreInfo.total}</span>
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
 
@@ -660,6 +683,18 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
       <RulesModal
         isOpen={showRulesModal}
         onClose={() => setShowRulesModal(false)}
+      />
+
+      {/* Pre-Game Roll for Turn Order Modal */}
+      <RollOrderModal
+        isOpen={!rollOrderDone}
+        players={players}
+        currentPlayer={currentPlayer}
+        isHost={isHost}
+        roomGameState={room.game_state}
+        onUpdateGameState={props.onUpdateGameState}
+        onReorderPlayers={props.onReorderPlayers}
+        onNextTurn={props.onNextTurn}
       />
 
       {/* All Moves & Game History Modal */}

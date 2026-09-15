@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { BaseGameProps } from '@/types/game';
 import {
   SuperMonopolyGameState,
@@ -6,6 +6,7 @@ import {
   PropertyOwnership,
   CardAction,
   SuperPropertyTile,
+  PlayerRecord,
 } from '@/types/database';
 import {
   SUPER_MONOPOLY_TILES,
@@ -65,7 +66,17 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   const handledTurnKeyRef = useRef<string>('');
   const botWatchdogTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const currentTurnPlayer = players.find((p) => p.id === room.current_turn_player_id) || players[0];
+  // Ordered players based on initial roll order scores / database turn_order
+  const orderedPlayers = useMemo<PlayerRecord[]>(() => {
+    const scores = rawState.roll_order_scores;
+    return [...players].sort((a, b) => {
+      const rankA = scores?.[a.id]?.rank ?? (a.turn_order ?? 99);
+      const rankB = scores?.[b.id]?.rank ?? (b.turn_order ?? 99);
+      return rankA - rankB;
+    });
+  }, [players, rawState.roll_order_scores]);
+
+  const currentTurnPlayer = orderedPlayers.find((p) => p.id === room.current_turn_player_id) || orderedPlayers[0];
   const isMyTurn = Boolean(currentPlayer && currentPlayer.id === currentTurnPlayer?.id);
   const isBotTurn = Boolean(
     currentTurnPlayer?.id?.startsWith('bot-') || currentTurnPlayer?.line_user_id === 'bot'
@@ -151,11 +162,11 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     setHasRolledThisTurn(false);
     setIsDouble(false);
 
-    if (players.length === 0) return;
+    if (orderedPlayers.length === 0) return;
 
-    const currentIndex = players.findIndex((p) => p.id === currentTurnPlayer?.id);
-    const nextIndex = (currentIndex + 1) % players.length;
-    const nextPlayer = players[nextIndex];
+    const currentIndex = orderedPlayers.findIndex((p) => p.id === currentTurnPlayer?.id);
+    const nextIndex = (currentIndex + 1) % orderedPlayers.length;
+    const nextPlayer = orderedPlayers[nextIndex];
 
     const newLogs = addLog(`🎲 ส่งตาให้ [${nextPlayer.display_name}]`, '#93c5fd', gameLogs);
 
@@ -166,7 +177,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       activeStepTileIndex: null,
     });
     await onNextTurn(nextPlayer.id);
-  }, [players, currentTurnPlayer, addLog, gameLogs, onUpdateGameState, onNextTurn]);
+  }, [orderedPlayers, currentTurnPlayer, addLog, gameLogs, onUpdateGameState, onNextTurn]);
 
   // Execute walking and landing logic for Human player (Synchronized step-by-step across all clients)
   const executeHumanWalk = useCallback(
@@ -409,7 +420,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
   // Roll 2 Dice (Human)
   const rollDice = useCallback(async () => {
-    if (!isMyTurn || isRolling || isMoving || hasRolledThisTurn || !currentTurnPlayer) return;
+    if (!isMyTurn || isRolling || isMoving || hasRolledThisTurn || !currentTurnPlayer || !rawState.roll_order_done) return;
     if (isCurrentPlayerInJail || isCurrentPlayerResting) return; // Must resolve jail or rest first
 
     const d1 = Math.floor(Math.random() * 6) + 1;
@@ -776,7 +787,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   // BOT AUTO-PLAY ENGINE (Rock-Solid: No Deadlocks, No Freezes)
   // -------------------------------------------------------------
   useEffect(() => {
-    if (!isHost || !isBotTurn) return;
+    if (!isHost || !isBotTurn || !rawState.roll_order_done) return;
 
     const turnPlayerId = room.current_turn_player_id;
     if (!turnPlayerId) return;
@@ -792,9 +803,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     botWatchdogTimerRef.current = setTimeout(async () => {
       console.warn('[Bot Watchdog] Bot took too long! Auto-passing turn...');
       if (!isMounted) return;
-      const currentIndex = players.findIndex((p) => p.id === turnPlayerId);
-      const nextIndex = (currentIndex + 1) % players.length;
-      const nextPlayer = players[nextIndex];
+      const currentIndex = orderedPlayers.findIndex((p) => p.id === turnPlayerId);
+      const nextIndex = (currentIndex + 1) % orderedPlayers.length;
+      const nextPlayer = orderedPlayers[nextIndex];
       if (nextPlayer) {
         await onNextTurn(nextPlayer.id);
       }
@@ -1105,9 +1116,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
         await new Promise((resolve) => setTimeout(resolve, 1800));
         if (!isMounted) return;
 
-        const currentIndex = players.findIndex((p) => p.id === turnPlayerId);
-        const nextIndex = (currentIndex + 1) % players.length;
-        const nextPlayer = players[nextIndex];
+        const currentIndex = orderedPlayers.findIndex((p) => p.id === turnPlayerId);
+        const nextIndex = (currentIndex + 1) % orderedPlayers.length;
+        const nextPlayer = orderedPlayers[nextIndex];
 
         botTurnLogs = addLog(`🎲 ส่งตาให้ [${nextPlayer.display_name}]`, '#93c5fd', botTurnLogs);
         await onUpdateGameState({
@@ -1120,9 +1131,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       } catch (err) {
         console.error('Bot turn error:', err);
         // Guaranteed recovery on error
-        const currentIndex = players.findIndex((p) => p.id === turnPlayerId);
-        const nextIndex = (currentIndex + 1) % players.length;
-        const nextPlayer = players[nextIndex];
+        const currentIndex = orderedPlayers.findIndex((p) => p.id === turnPlayerId);
+        const nextIndex = (currentIndex + 1) % orderedPlayers.length;
+        const nextPlayer = orderedPlayers[nextIndex];
         if (nextPlayer) {
           await onNextTurn(nextPlayer.id);
         }
@@ -1143,7 +1154,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
         botWatchdogTimerRef.current = null;
       }
     };
-  }, [room.current_turn_player_id, isHost, isBotTurn]);
+  }, [room.current_turn_player_id, isHost, isBotTurn, rawState.roll_order_done, orderedPlayers]);
 
   return {
     dice,
@@ -1181,5 +1192,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     handleBuildHouse,
     handleEndTurn,
     handleCloseActiveModal,
+    orderedPlayers,
+    rollOrderDone: Boolean(rawState.roll_order_done),
   };
 }

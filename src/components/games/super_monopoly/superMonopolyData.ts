@@ -472,6 +472,13 @@ export const SUPER_MONOPOLY_TILES: SuperPropertyTile[] = [
   },
   {
     index: 38,
+    name: 'เสียภาษีรายได้',
+    type: 'tax',
+    description: 'จ่ายภาษีรายได้เข้ารัฐ 1.0M',
+    icon: '💰',
+  },
+  {
+    index: 39,
     name: 'พระนครศรีอยุธยา',
     type: 'property',
     color: '#15803d',
@@ -484,13 +491,6 @@ export const SUPER_MONOPOLY_TILES: SuperPropertyTile[] = [
     rent3House: 8.0,
     rentHotel: 16.0,
     icon: '🏛️',
-  },
-  {
-    index: 39,
-    name: 'เสียภาษีรายได้',
-    type: 'tax',
-    description: 'จ่ายภาษีรายได้เข้ารัฐ 1.0M',
-    icon: '💰',
   },
 ];
 

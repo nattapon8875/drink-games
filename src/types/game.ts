@@ -9,6 +9,7 @@ export interface BaseGameProps {
   onUpdatePlayerDrink: (playerId: string, incrementBy: number) => Promise<void>;
   onNextTurn: (nextPlayerId: string) => Promise<void>;
   onKickPlayer?: (playerId: string) => Promise<void>;
+  onReorderPlayers?: (orderedPlayerIds: string[]) => Promise<void>;
 }
 
 export interface GameInfo {

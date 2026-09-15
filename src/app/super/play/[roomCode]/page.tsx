@@ -39,6 +39,7 @@ export default function SuperPlayPage() {
     updateGameState,
     incrementDrink,
     nextTurn,
+    reorderPlayers,
   } = useRoomRealtime(roomCode, user);
 
   const [showPlayersModal, setShowPlayersModal] = useState(false);
@@ -152,6 +153,7 @@ export default function SuperPlayPage() {
     onUpdatePlayerDrink: incrementDrink,
     onNextTurn: nextTurn,
     onKickPlayer: kickPlayer,
+    onReorderPlayers: reorderPlayers,
   };
 
   return (
