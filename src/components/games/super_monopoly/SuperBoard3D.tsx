@@ -48,24 +48,27 @@ export function getSuperTile3DPosition(index: number): [number, number, number] 
   }
 }
 
-// Rotation for each tile to align text & banner toward the outer perimeter
+// Rotation for each tile:
+// 1. 4 corners are normal square tiles (NO diagonal slant)
+// 2. หัวการ์ด (Top / Banner) เข้าไปด้านในกระดาน
+// 3. ท้ายการ์ด (Bottom / Price) ออกมาด้านนอกทั้ง 4 ด้าน
 export function getSuperTile3DRotation(index: number): [number, number, number] {
-  if (index === 0) {
-    return [0, Math.PI * 0.75, 0]; // Corner 0 (Start): angled forward
-  } else if (index === 10) {
-    return [0, -Math.PI * 0.75, 0]; // Corner 10 (Jail)
-  } else if (index === 20) {
-    return [0, -Math.PI * 0.25, 0]; // Corner 20 (Rest)
-  } else if (index === 30) {
-    return [0, Math.PI * 0.25, 0]; // Corner 30 (Go To Jail)
-  } else if (index > 0 && index < 10) {
-    return [0, Math.PI, 0]; // Bottom row: banner on outer edge
+  if (index >= 0 && index <= 10) {
+    // Bottom row & corners 0 and 10:
+    // Header (Top) faces INWARD (-Z), Bottom (Price) faces OUTWARD (+Z)
+    return [0, 0, 0];
   } else if (index > 10 && index < 20) {
-    return [0, -Math.PI / 2, 0]; // Left col: banner on outer edge
-  } else if (index > 20 && index < 30) {
-    return [0, 0, 0]; // Top row: banner on outer edge
+    // Left col (11 -> 19):
+    // Header (Top) faces INWARD (+X), Bottom (Price) faces OUTWARD (-X)
+    return [0, Math.PI / 2, 0];
+  } else if (index >= 20 && index <= 30) {
+    // Top row & corners 20 and 30:
+    // Header (Top) faces INWARD (+Z), Bottom (Price) faces OUTWARD (-Z)
+    return [0, Math.PI, 0];
   } else {
-    return [0, Math.PI / 2, 0]; // Right col: banner on outer edge
+    // Right col (31 -> 39):
+    // Header (Top) faces INWARD (-X), Bottom (Price) faces OUTWARD (+X)
+    return [0, -Math.PI / 2, 0];
   }
 }
 
@@ -446,9 +449,16 @@ const Tile3D: React.FC<{
     return createSuperTileTexture(tile);
   }, [tile]);
 
+  const isCorner = tile.index % 10 === 0;
+
   const tileGeo = useMemo(() => {
+    if (isCorner) {
+      // 4 corners are square tiles aligned with the board grid
+      return new RoundedBoxGeometry(0.96, 0.22, 0.96, 2, 0.03);
+    }
+    // Normal perimeter tiles
     return new RoundedBoxGeometry(0.80, 0.22, 0.94, 2, 0.03);
-  }, []);
+  }, [isCorner]);
 
   const houses = ownership?.houses || 0;
   const hasHotel = houses === 4;
@@ -483,7 +493,7 @@ const Tile3D: React.FC<{
       {/* Owner Color Base Flag / Trim */}
       {ownerColor && (
         <mesh position={[0, -0.06, 0]}>
-          <boxGeometry args={[0.82, 0.12, 0.96]} />
+          <boxGeometry args={[isCorner ? 0.98 : 0.82, 0.12, isCorner ? 0.98 : 0.96]} />
           <meshStandardMaterial color={ownerColor} roughness={0.3} metalness={0.5} />
         </mesh>
       )}
