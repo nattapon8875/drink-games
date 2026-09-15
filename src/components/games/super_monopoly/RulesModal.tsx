@@ -20,7 +20,7 @@ interface RulesModalProps {
   onClose: () => void;
 }
 
-type TabType = 'overview' | 'dice' | 'properties' | 'corners' | 'cards';
+type TabType = 'overview' | 'dice' | 'properties' | 'corners' | 'cards' | 'discord';
 
 export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
@@ -100,6 +100,18 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
           >
             <Gift className="w-3.5 h-3.5" />
             <span>การ์ดดวง/สมบัติ</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('discord')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-black shrink-0 transition flex items-center gap-1.5 ${
+              activeTab === 'discord'
+                ? 'bg-gradient-to-r from-indigo-600 to-blue-500 text-white shadow'
+                : 'text-amber-300/70 hover:text-white bg-[#1a0801]'
+            }`}
+          >
+            <span>🎮 เล่นบน Discord</span>
           </button>
         </div>
 
@@ -334,6 +346,49 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                 </div>
                 <p className="text-xs text-amber-200/90 font-medium leading-relaxed">
                   พยายามสะสมที่ดินในแถบเดียวกัน หรือคว้าสัมปทานการประปาและโรงไฟฟ้าเพื่อผูกขาดรายได้ และคอยบริหารเงินสดสำรองไว้เสมอเพื่อไม่ให้ล้มละลายเมื่อตกบ้านของศัตรู!
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 6: วิธีเล่นบน Discord */}
+          {activeTab === 'discord' && (
+            <div className="space-y-3">
+              <div className="p-3.5 rounded-2xl bg-[#181935] border-2 border-[#5865F2]/70 shadow-sm space-y-2.5">
+                <div className="flex items-center gap-2 text-[#5865F2] font-black text-sm">
+                  <span className="text-xl">🚀</span>
+                  <span className="text-white font-extrabold">ขั้นตอนการเข้าเล่นผ่าน Discord Activity (ห้องเสียง)</span>
+                </div>
+                <p className="text-xs text-indigo-200/90 font-medium leading-relaxed">
+                  ผู้เล่นสามารถเปิดเล่นพร้อมเพื่อนใน Voice Channel บน Discord ได้ทันทีแบบเรียลไทม์:
+                </p>
+
+                <div className="space-y-2 text-xs text-indigo-100">
+                  <div className="flex items-start gap-2 bg-[#101124] p-2.5 rounded-xl border border-[#5865F2]/30">
+                    <span className="font-black text-yellow-400 bg-yellow-400/20 px-2 py-0.5 rounded-md shrink-0">1</span>
+                    <span>เข้าไปที่ห้องคุยเสียง (<strong>Voice Channel</strong>) บน Discord Server ที่กำลังคุยกับเพื่อนๆ</span>
+                  </div>
+                  <div className="flex items-start gap-2 bg-[#101124] p-2.5 rounded-xl border border-[#5865F2]/30">
+                    <span className="font-black text-yellow-400 bg-yellow-400/20 px-2 py-0.5 rounded-md shrink-0">2</span>
+                    <span>กดที่ปุ่มไอคอนรูปจรวด <strong>🚀 (Start an Activity / เริ่มกิจกรรม)</strong> ตรงแถบเมนูด้านล่างข้างปุ่มไมโครโฟน</span>
+                  </div>
+                  <div className="flex items-start gap-2 bg-[#101124] p-2.5 rounded-xl border border-[#5865F2]/30">
+                    <span className="font-black text-yellow-400 bg-yellow-400/20 px-2 py-0.5 rounded-md shrink-0">3</span>
+                    <span>ค้นหาและเลือกแอป <strong>"Party Games"</strong> หรือ <strong>"Drink Games"</strong></span>
+                  </div>
+                  <div className="flex items-start gap-2 bg-[#101124] p-2.5 rounded-xl border border-[#5865F2]/30">
+                    <span className="font-black text-yellow-400 bg-yellow-400/20 px-2 py-0.5 rounded-md shrink-0">4</span>
+                    <span>เลือก <strong>"ซุปเปอร์เศรษฐี"</strong> ➔ กดเข้าร่วมห้องแล้วใส่รหัสห้อง หรือหากมีเพื่อนเปิดกิจกรรมอยู่แล้ว สามารถกดปุ่ม <strong>"Join Activity"</strong> เพื่อเข้าร่วมเล่นได้ทันที!</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-[#260e03] border border-[#522007] space-y-1 text-xs">
+                <div className="font-black text-amber-300 flex items-center gap-1.5">
+                  <span>🌐 เล่นผ่านเว็บบราวเซอร์ / มือถือ</span>
+                </div>
+                <p className="text-amber-200/90 font-medium leading-relaxed">
+                  สำหรับเพื่อนที่ไม่ได้อยู่ในห้องเสียง สามารถคัดลอกลิงก์ห้องส่งให้เพื่อนเปิดบนมือถือหรือคอมพิวเตอร์ผ่านเบราว์เซอร์ เพื่อร่วมวงเล่นกระดานเดียวกันได้ทันที!
                 </p>
               </div>
             </div>

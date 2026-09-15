@@ -7,6 +7,7 @@ import { useRoomRealtime } from '@/hooks/useRoomRealtime';
 import { SuperMonopolyGame } from '@/components/games/super_monopoly/SuperMonopolyGame';
 import { Avatar } from '@/components/common/Avatar';
 import { Modal } from '@/components/common/Modal';
+import { DiscordGuideModal } from '@/components/games/super_monopoly/DiscordGuideModal';
 import { showToast, showConfirm } from '@/lib/alerts';
 import {
   ArrowLeft,
@@ -41,6 +42,7 @@ export default function SuperPlayPage() {
   } = useRoomRealtime(roomCode, user);
 
   const [showPlayersModal, setShowPlayersModal] = useState(false);
+  const [showDiscordModal, setShowDiscordModal] = useState(false);
 
   // Auto-join on load
   useEffect(() => {
@@ -200,21 +202,16 @@ export default function SuperPlayPage() {
             <span>{players.length} คน</span>
           </button>
 
-          {/* Room Code */}
+          {/* Room Code & Share Discord Modal Button */}
           <button
             type="button"
-            onClick={async () => {
-              if (typeof window !== 'undefined' && roomCode) {
-                await navigator.clipboard.writeText(roomCode);
-                showToast(`คัดลอกรหัสห้อง ${roomCode} แล้ว!`, 'success');
-              }
-            }}
+            onClick={() => setShowDiscordModal(true)}
             className="px-3 py-1 rounded-xl bg-[#270e02] hover:bg-[#381604] border border-[#522005] hover:border-yellow-400/50 shadow-inner text-xs text-amber-300 font-mono font-black cursor-pointer active:scale-95 transition flex items-center gap-1.5"
-            title="คลิกเพื่อคัดลอกรหัสห้อง"
+            title="คลิกเพื่อคัดลอกรหัส ลิงก์ และดูขั้นตอนการเข้า Discord"
           >
             <BuffaloLogo className="w-4 h-4" />
             <span>SUPER: {roomCode}</span>
-            <span className="text-[10px] text-amber-300/60">📋</span>
+            <span className="text-[10px] text-amber-300/80 bg-amber-950 px-1.5 py-0.5 rounded border border-amber-600/40">แชร์/วิธีเข้า</span>
           </button>
         </div>
       </div>
@@ -294,6 +291,13 @@ export default function SuperPlayPage() {
           })}
         </div>
       </Modal>
+
+      {/* Discord Guide & Share Modal */}
+      <DiscordGuideModal
+        isOpen={showDiscordModal}
+        roomCode={roomCode}
+        onClose={() => setShowDiscordModal(false)}
+      />
     </div>
   );
 }

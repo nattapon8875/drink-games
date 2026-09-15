@@ -44,6 +44,8 @@ export default function SuperLobbyPage() {
 
   const [starting, setStarting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
+  const [showDiscordModal, setShowDiscordModal] = useState(false);
 
   // Auto-join room
   useEffect(() => {
@@ -117,6 +119,15 @@ export default function SuperLobbyPage() {
     }
   };
 
+  const handleCopyCode = async () => {
+    if (typeof window !== 'undefined' && roomCode) {
+      await navigator.clipboard.writeText(roomCode);
+      setCopiedCode(true);
+      showToast(`คัดลอกรหัสห้อง ${roomCode} เรียบร้อย!`, 'success');
+      setTimeout(() => setCopiedCode(false), 2500);
+    }
+  };
+
   const handleCopyLink = async () => {
     if (typeof window !== 'undefined') {
       const url = `${window.location.origin}/super/lobby/${roomCode}`;
@@ -124,6 +135,15 @@ export default function SuperLobbyPage() {
       setCopied(true);
       showToast('คัดลอกลิงก์ชวนเพื่อนเรียบร้อย!', 'success');
       setTimeout(() => setCopied(false), 2500);
+    }
+  };
+
+  const handleCopyFullMessage = async () => {
+    if (typeof window !== 'undefined') {
+      const url = `${window.location.origin}/super/lobby/${roomCode}`;
+      const message = `🎲 ขอเชิญร่วมวงประลอง "ซุปเปอร์เศรษฐี คลาสสิก"!\n🔑 รหัสห้อง: ${roomCode}\n🔗 ลิงก์เข้าห้อง: ${url}\n(เล่นผ่าน Discord Activity หรือกดเปิดลิงก์บน Browser ได้ทันที)`;
+      await navigator.clipboard.writeText(message);
+      showToast('คัดลอกข้อความชวนเพื่อนเรียบร้อย! นำไปวางในแชท Discord หรือ LINE ได้เลย', 'success');
     }
   };
 
@@ -197,15 +217,15 @@ export default function SuperLobbyPage() {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={handleCopyLink}
+              onClick={() => setShowDiscordModal(true)}
               className="flex items-center gap-2 bg-[#170601] hover:bg-[#2b1003] border-2 border-yellow-500/40 hover:border-yellow-400 px-3.5 py-1.5 rounded-xl shadow-inner cursor-pointer transition active:scale-95"
-              title="คลิกเพื่อคัดลอกลิงก์ห้อง"
+              title="คลิกเพื่อดูรหัส ลิงก์ และขั้นตอนการเข้า Discord"
             >
               <span className="text-xs text-amber-400/80 font-bold">รหัสห้อง:</span>
               <span className="font-mono text-base font-black text-yellow-300 tracking-wider">
                 {roomCode}
               </span>
-              <Copy className="w-4 h-4 text-yellow-400" />
+              <span className="text-[10px] text-amber-300/80 bg-amber-950 px-1.5 py-0.5 rounded border border-amber-600/40">แชร์/วิธีเข้า</span>
             </button>
 
             {isHost && (
@@ -296,28 +316,79 @@ export default function SuperLobbyPage() {
               </div>
             )}
 
-            {/* Invite Share Card */}
-            <div className="bg-[#240e03]/90 border-2 border-[#54240a] rounded-2xl p-4 shadow-xl flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center shrink-0">
-                  <Share2 className="w-5 h-5 text-yellow-400" />
+            {/* Invite Share & Discord Guide Card */}
+            <div className="bg-[#240e03]/90 border-2 border-[#54240a] rounded-2xl p-4 shadow-xl flex flex-col gap-3">
+              <div className="flex items-center justify-between border-b border-[#471a06] pb-2">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center shrink-0">
+                    <Share2 className="w-4 h-4 text-yellow-400" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-amber-100">ชวนเพื่อนเข้าเล่น</h4>
+                    <p className="text-[10px] text-amber-300/70 font-semibold">
+                      คัดลอกรหัสหรือลิงก์ส่งให้เพื่อนใน Discord / LINE
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-xs font-black text-amber-100">ชวนเพื่อนเข้าห้อง</h4>
-                  <p className="text-[11px] text-amber-300/70 font-semibold">
-                    ส่งลิงก์ห้องให้เพื่อนเล่นบน Discord หรือ Browser
-                  </p>
-                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowDiscordModal(true)}
+                  className="px-2.5 py-1 rounded-lg bg-[#5865F2]/20 hover:bg-[#5865F2]/30 border border-[#5865F2]/50 text-[11px] font-bold text-indigo-200 flex items-center gap-1 transition"
+                  title="ดูขั้นตอนการเข้าเล่นผ่าน Discord อย่างละเอียด"
+                >
+                  <span>🎮 วิธีเข้า Discord</span>
+                </button>
               </div>
 
+              {/* Room Code Display & Copy Actions */}
+              <div className="flex items-center gap-2">
+                <div className="flex-1 bg-[#170601] border border-[#421704] rounded-xl px-3 py-2 flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-amber-400/80">รหัสห้อง:</span>
+                  <span className="font-mono text-base font-black text-yellow-300 tracking-wider">
+                    {roomCode}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleCopyCode}
+                  className="wood-btn-brown px-3 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 shadow active:scale-95 shrink-0"
+                  title="คัดลอกเฉพาะรหัสห้อง 6 ตัว"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>{copiedCode ? 'ก๊อปรหัสแล้ว!' : 'คัดลอกรหัส'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleCopyLink}
+                  className="wood-btn-gold px-3 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 shadow active:scale-95 shrink-0"
+                  title="คัดลอกลิงก์ตรงสำหรับเปิดบนบราวเซอร์"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>{copied ? 'ก๊อปลิงก์แล้ว!' : 'คัดลอกลิงก์'}</span>
+                </button>
+              </div>
+
+              {/* Full Message Button */}
               <button
                 type="button"
-                onClick={handleCopyLink}
-                className="wood-btn-gold px-4 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 shadow-md active:scale-95"
+                onClick={handleCopyFullMessage}
+                className="w-full py-2 rounded-xl bg-[#2e1305] hover:bg-[#421b06] border border-[#662908] text-[11px] font-bold text-amber-200 hover:text-white flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition"
               >
-                <Copy className="w-3.5 h-3.5" />
-                <span>{copied ? 'คัดลอกแล้ว!' : 'คัดลอกลิงก์'}</span>
+                <span>💬 คัดลอกข้อความชวนเพื่อน (รหัส + ลิงก์ + วิธีเข้า)</span>
               </button>
+
+              {/* Quick Discord Instructions Snippet */}
+              <div className="p-2.5 rounded-xl bg-[#141527] border border-[#5865F2]/40 text-[11px] text-indigo-100 flex flex-col gap-1">
+                <div className="flex items-center gap-1.5 text-[#5865F2] font-black">
+                  <span>🚀 เข้าผ่าน Discord:</span>
+                </div>
+                <p className="text-[10px] text-indigo-200/80 leading-relaxed">
+                  เข้าห้องคุยเสียง (Voice) ➔ กดไอคอนรูปจรวด <strong>Start Activity</strong> ➔ เลือก <strong>Drink Games</strong> ➔ ใส่รหัส <span className="font-mono text-yellow-300 font-bold">{roomCode}</span>
+                </p>
+              </div>
             </div>
           </div>
 
