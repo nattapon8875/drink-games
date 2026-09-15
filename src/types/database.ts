@@ -89,6 +89,13 @@ export interface CardAction {
   collectFromAll?: number; // in M
 }
 
+export interface DiceRollState {
+  playerId: string;
+  dice: [number, number];
+  rollId: string;
+  timestamp?: number;
+}
+
 export interface SuperMonopolyGameState {
   cash: Record<string, number>;
   positions: Record<string, number>;
@@ -100,5 +107,6 @@ export interface SuperMonopolyGameState {
   activePropertyModal?: number | null;
   gameLogs: Array<{ text: string; time: string; color?: string }>;
   costumes?: Record<string, number>;
+  lastRoll?: DiceRollState | null;
 }
 

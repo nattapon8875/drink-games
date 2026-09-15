@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { BaseGameProps } from '@/types/game';
 import {
   SuperMonopolyGameState,
+  DiceRollState,
   PropertyOwnership,
   CardAction,
   SuperPropertyTile,
@@ -59,6 +60,12 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     currentPlayer && (restTurns[currentPlayer.id] ?? 0) > 0
   );
 
+  // Synchronized Dice Roll & Walk Animation for Spectators (Non-turn players & Non-hosts)
+  const handledRollIdRef = useRef<string>(rawState.lastRoll?.rollId || '__INIT__');
+  const spectatorRollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const spectatorStepIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const spectatorTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Reset turn state when current turn player changes
   useEffect(() => {
     setHasRolledThisTurn(false);
@@ -67,6 +74,79 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     setActiveCard(null);
     setActiveStepTileIndex(null);
   }, [room.current_turn_player_id]);
+
+  // Listen to synchronized dice rolls from server (Multiplayer Sync)
+  useEffect(() => {
+    const roll = rawState.lastRoll;
+    if (!roll || !roll.rollId) return;
+    if (handledRollIdRef.current === roll.rollId) return; // Already handled locally on this client!
+    handledRollIdRef.current = roll.rollId;
+
+    // Ignore stale rolls (older than 12 seconds)
+    if (roll.timestamp && Date.now() - roll.timestamp > 12000) return;
+
+    const [d1, d2] = roll.dice;
+    const totalRoll = d1 + d2;
+    const isDoubleRoll = d1 === d2;
+    const rollPlayerId = roll.playerId;
+
+    // Clear any active spectator animations
+    if (spectatorRollIntervalRef.current) clearInterval(spectatorRollIntervalRef.current);
+    if (spectatorStepIntervalRef.current) clearInterval(spectatorStepIntervalRef.current);
+    if (spectatorTimeoutRef.current) clearTimeout(spectatorTimeoutRef.current);
+
+    // 1. Start live spectator dice rolling animation
+    setIsRolling(true);
+    setHasRolledThisTurn(true);
+    setIsDouble(false);
+    sfx.playDiceRoll();
+
+    spectatorRollIntervalRef.current = setInterval(() => {
+      setDice([
+        Math.floor(Math.random() * 6) + 1,
+        Math.floor(Math.random() * 6) + 1,
+      ]);
+    }, 80);
+
+    // 2. Settle dice after 1000ms
+    spectatorTimeoutRef.current = setTimeout(() => {
+      if (spectatorRollIntervalRef.current) clearInterval(spectatorRollIntervalRef.current);
+      setDice([d1, d2]);
+      setIsDouble(isDoubleRoll);
+      setIsRolling(false);
+      sfx.playTileLand();
+
+      // 3. Pause 800ms before walking step-by-step
+      spectatorTimeoutRef.current = setTimeout(() => {
+        setIsMoving(true);
+        const startPos = (rawState.positions && rawState.positions[rollPlayerId]) ?? positions[rollPlayerId] ?? 0;
+        let currentStep = startPos;
+        let stepCount = 0;
+
+        spectatorStepIntervalRef.current = setInterval(() => {
+          stepCount++;
+          currentStep = (currentStep + 1) % 40;
+          sfx.playStep();
+          setActiveStepTileIndex(currentStep);
+
+          if (stepCount >= totalRoll) {
+            if (spectatorStepIntervalRef.current) clearInterval(spectatorStepIntervalRef.current);
+            spectatorTimeoutRef.current = setTimeout(() => {
+              setIsMoving(false);
+              setActiveStepTileIndex(null);
+              sfx.playTileLand();
+            }, 500);
+          }
+        }, 260);
+      }, 800);
+    }, 1000);
+
+    return () => {
+      if (spectatorRollIntervalRef.current) clearInterval(spectatorRollIntervalRef.current);
+      if (spectatorStepIntervalRef.current) clearInterval(spectatorStepIntervalRef.current);
+      if (spectatorTimeoutRef.current) clearTimeout(spectatorTimeoutRef.current);
+    };
+  }, [rawState.lastRoll, rawState.positions, positions]);
 
   // Ensure cash initialized for all players
   useEffect(() => {
@@ -120,7 +200,10 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
     const newLogs = addLog(`🎲 ส่งตาให้ [${nextPlayer.display_name}]`, '#93c5fd', gameLogs);
 
-    await onUpdateGameState({ gameLogs: newLogs });
+    await onUpdateGameState({
+      gameLogs: newLogs,
+      lastRoll: null,
+    });
     await onNextTurn(nextPlayer.id);
   }, [players, currentTurnPlayer, addLog, gameLogs, onUpdateGameState, onNextTurn]);
 
@@ -326,13 +409,25 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     if (!isMyTurn || isRolling || isMoving || hasRolledThisTurn || !currentTurnPlayer) return;
     if (isCurrentPlayerInJail || isCurrentPlayerResting) return; // Must resolve jail or rest first
 
+    const d1 = Math.floor(Math.random() * 6) + 1;
+    const d2 = Math.floor(Math.random() * 6) + 1;
+    const rollId = `${Date.now()}_human_${Math.random().toString(36).substring(2, 7)}`;
+    handledRollIdRef.current = rollId;
+
+    // Broadcast roll event to all other players in the room immediately!
+    await onUpdateGameState({
+      lastRoll: {
+        playerId: currentTurnPlayer.id,
+        dice: [d1, d2],
+        rollId,
+        timestamp: Date.now(),
+      },
+    });
+
     setIsRolling(true);
     setHasRolledThisTurn(true);
     setIsDouble(false);
     sfx.playDiceRoll();
-
-    const d1 = Math.floor(Math.random() * 6) + 1;
-    const d2 = Math.floor(Math.random() * 6) + 1;
 
     // Shuffle dice numbers rapidly during 1.0s roll animation
     const rollInterval = setInterval(() => {
@@ -355,7 +450,17 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
         executeHumanWalk(d1, d2);
       }, 800);
     }, 1000);
-  }, [isMyTurn, isRolling, isMoving, hasRolledThisTurn, currentTurnPlayer, isCurrentPlayerInJail, isCurrentPlayerResting, executeHumanWalk]);
+  }, [
+    isMyTurn,
+    isRolling,
+    isMoving,
+    hasRolledThisTurn,
+    currentTurnPlayer,
+    isCurrentPlayerInJail,
+    isCurrentPlayerResting,
+    executeHumanWalk,
+    onUpdateGameState,
+  ]);
 
   // Jail Option 1: Serve 1 Turn in Jail (หยุดรับโทษ 1 ตา)
   const handleServeJailTurn = useCallback(async () => {
@@ -440,19 +545,40 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   const handleTryJailDouble = useCallback(async () => {
     if (!currentPlayer || !isMyTurn || !isCurrentPlayerInJail || isRolling || isMoving || hasRolledThisTurn) return;
 
-    setIsRolling(true);
-    setHasRolledThisTurn(true);
-    sfx.playDiceRoll();
-
     const d1 = Math.floor(Math.random() * 6) + 1;
     const d2 = Math.floor(Math.random() * 6) + 1;
     const isDoubleRoll = d1 === d2;
+    const rollId = `${Date.now()}_jail_${Math.random().toString(36).substring(2, 7)}`;
+    handledRollIdRef.current = rollId;
 
-    setDice([d1, d2]);
-    setIsDouble(isDoubleRoll);
+    await onUpdateGameState({
+      lastRoll: {
+        playerId: currentPlayer.id,
+        dice: [d1, d2],
+        rollId,
+        timestamp: Date.now(),
+      },
+    });
+
+    setIsRolling(true);
+    setHasRolledThisTurn(true);
+    setIsDouble(false);
+    sfx.playDiceRoll();
+
+    const rollInterval = setInterval(() => {
+      setDice([
+        Math.floor(Math.random() * 6) + 1,
+        Math.floor(Math.random() * 6) + 1,
+      ]);
+    }, 80);
 
     setTimeout(async () => {
+      clearInterval(rollInterval);
+      setDice([d1, d2]);
+      setIsDouble(isDoubleRoll);
       setIsRolling(false);
+      sfx.playTileLand();
+
       const updatedJail = { ...inJailTurns, [currentPlayer.id]: 0 };
 
       if (isDoubleRoll) {
@@ -472,7 +598,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
         setTimeout(() => {
           executeHumanWalk(d1, d2);
-        }, 600);
+        }, 800);
       } else {
         showToast(`⛓️ ทอยได้ [${d1}][${d2}] ไม่ใช่แต้มคู่ ต้องติดคุกต่อไป (ข้ามตานี้)`, 'warning');
         sfx.playDrinkPenalty();
@@ -483,7 +609,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
         );
 
         await onUpdateGameState({
-          inJailTurns: updatedJail, // sentence served
+          inJailTurns: updatedJail,
           gameLogs: newLogs,
         });
 
@@ -755,14 +881,26 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
           }
 
           // 2. Roll 2 dice (with live shuffle)
-          setIsRolling(true);
-          setIsDouble(false);
-          sfx.playDiceRoll();
-
           const d1 = Math.floor(Math.random() * 6) + 1;
           const d2 = Math.floor(Math.random() * 6) + 1;
           const totalRoll = d1 + d2;
           const isDoubleRoll = d1 === d2;
+          const botRollId = `${Date.now()}_bot_${Math.random().toString(36).substring(2, 7)}`;
+          handledRollIdRef.current = botRollId;
+
+          // Broadcast roll event to non-host players immediately!
+          await onUpdateGameState({
+            lastRoll: {
+              playerId: turnPlayerId,
+              dice: [d1, d2],
+              rollId: botRollId,
+              timestamp: Date.now(),
+            },
+          });
+
+          setIsRolling(true);
+          setIsDouble(false);
+          sfx.playDiceRoll();
 
           const botRollInterval = setInterval(() => {
             setDice([
@@ -986,7 +1124,10 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
         const nextPlayer = players[nextIndex];
 
         botTurnLogs = addLog(`🎲 ส่งตาให้ [${nextPlayer.display_name}]`, '#93c5fd', botTurnLogs);
-        await onUpdateGameState({ gameLogs: botTurnLogs });
+        await onUpdateGameState({
+          gameLogs: botTurnLogs,
+          lastRoll: null,
+        });
         await onNextTurn(nextPlayer.id);
       } catch (err) {
         console.error('Bot turn error:', err);

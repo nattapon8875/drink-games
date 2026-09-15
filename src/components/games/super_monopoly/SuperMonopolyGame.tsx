@@ -432,7 +432,11 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                 {isRolling ? (
                   <div className="flex items-center gap-1.5 text-xs text-yellow-300 font-bold animate-pulse">
                     <span className="text-sm animate-spin">🎲</span>
-                    <span>กำลังทอยลูกเต๋า...</span>
+                    <span>
+                      {isMyTurn
+                        ? 'กำลังทอยลูกเต๋า...'
+                        : `${currentTurnPlayer?.display_name || 'ผู้เล่น'} กำลังทอยเต๋า...`}
+                    </span>
                   </div>
                 ) : hasRolledThisTurn || isMoving ? (
                   <div className="flex items-center justify-center gap-2 animate-in fade-in zoom-in-95 duration-200">
@@ -444,7 +448,9 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                   </div>
                 ) : (
                   <span className="text-[11px] text-amber-400/60 font-bold">
-                    🎲 กดทอยเพื่อสุ่มแต้มเดิน
+                    {isMyTurn
+                      ? '🎲 กดทอยเพื่อสุ่มแต้มเดิน'
+                      : `🎲 รอ ${currentTurnPlayer?.display_name || 'ผู้เล่น'} ทอยลูกเต๋า`}
                   </span>
                 )}
               </div>
