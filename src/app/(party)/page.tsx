@@ -25,17 +25,6 @@ import { GameInfo } from '@/types/game';
 
 const AVAILABLE_GAMES: GameInfo[] = [
   {
-    id: 'super-monopoly',
-    title: 'ซุปเปอร์เศรษฐี คลาสสิก 🏠',
-    subtitle: 'Classic Super Monopoly (Discord & Web)',
-    description: 'บอร์ดเกมซุปเปอร์เศรษฐียุค 90s ซื้อขายที่ดินทั่วไทย ปลูกบ้าน-โรงแรม ยูนิตเงินหลักล้าน (M) จอเต็มตาสไตล์คลาสสิก!',
-    minPlayers: 2,
-    maxPlayers: 8,
-    badge: 'ready',
-    icon: 'super-monopoly',
-    category: 'classic',
-  },
-  {
     id: 'monopoly',
     title: 'เกมเศรษฐีวงเหล้า',
     subtitle: 'Drinking Board Game',
@@ -104,7 +93,6 @@ export default function HomePage() {
   // Profile Edit Modal
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [editName, setEditName] = useState<string>('');
-  const [activeCategory, setActiveCategory] = useState<'all' | 'classic' | 'drinking'>('all');
 
   useEffect(() => {
     if (user?.displayName) {
@@ -367,7 +355,7 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Game Selector Catalog with Category Filter */}
+      {/* Game Selector Catalog */}
       <section className="w-full space-y-3 my-2">
         <div className="flex items-center justify-between text-xs font-black text-amber-300 px-1">
           <span>เลือกเกม &amp; เปิดโต๊ะ</span>
@@ -376,48 +364,8 @@ export default function HomePage() {
           </span>
         </div>
 
-        {/* Category Filter Tabs */}
-        <div className="flex items-center gap-1.5 p-1 bg-[#200c02] border border-[#522005] rounded-2xl shadow-inner">
-          <button
-            type="button"
-            onClick={() => setActiveCategory('all')}
-            className={`flex-1 py-2 px-2 rounded-xl text-xs font-black transition active:scale-95 ${
-              activeCategory === 'all'
-                ? 'wood-btn-gold shadow-md text-amber-950'
-                : 'text-amber-200/80 hover:text-amber-100 hover:bg-[#381604]'
-            }`}
-          >
-            ทั้งหมด
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveCategory('classic')}
-            className={`flex-1 py-2 px-2 rounded-xl text-xs font-black flex items-center justify-center gap-1 transition active:scale-95 ${
-              activeCategory === 'classic'
-                ? 'wood-btn-gold shadow-md text-amber-950'
-                : 'text-amber-200/80 hover:text-amber-100 hover:bg-[#381604]'
-            }`}
-          >
-            <span>🏠 เกมปกติ (บอร์ดเกม)</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveCategory('drinking')}
-            className={`flex-1 py-2 px-2 rounded-xl text-xs font-black flex items-center justify-center gap-1 transition active:scale-95 ${
-              activeCategory === 'drinking'
-                ? 'wood-btn-gold shadow-md text-amber-950'
-                : 'text-amber-200/80 hover:text-amber-100 hover:bg-[#381604]'
-            }`}
-          >
-            <span>🍻 เกมวงเหล้า</span>
-          </button>
-        </div>
-
         <div className="space-y-3">
-          {AVAILABLE_GAMES.filter((game) => {
-            if (activeCategory === 'all') return true;
-            return game.category === activeCategory;
-          }).map((game) => {
+          {AVAILABLE_GAMES.map((game) => {
             const isReady = game.badge === 'ready';
             const isThisGameCreating = isCreatingGameId === game.id;
 
@@ -438,7 +386,6 @@ export default function HomePage() {
                         : 'bg-[#1e0a02] border-[#421703] text-amber-200/50'
                     }`}
                   >
-                    {game.icon === 'super-monopoly' && <span className="text-2xl leading-none select-none">🏠</span>}
                     {game.icon === 'dice' && <Dice5 className="w-6 h-6" />}
                     {game.icon === 'bottle' && <Disc className="w-6 h-6" />}
                     {game.icon === 'cards' && <Layers className="w-6 h-6" />}
