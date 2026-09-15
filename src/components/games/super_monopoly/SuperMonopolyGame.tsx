@@ -174,8 +174,48 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     setInspectTile(tile);
   }, []);
 
+  // Seats around the 3D board. The ring stays balanced whatever the table size:
+  // two face off, three make a triangle, four take the corners, and anything
+  // larger fills the edge midpoints between them.
+  const SEAT_RINGS: Record<number, string[]> = {
+    1: ['bottom-2 left-1/2 -translate-x-1/2'],
+    2: ['bottom-2 left-1/2 -translate-x-1/2', 'top-2 left-1/2 -translate-x-1/2'],
+    3: ['bottom-2 left-2', 'bottom-2 right-2', 'top-2 left-1/2 -translate-x-1/2'],
+    4: ['bottom-2 left-2', 'bottom-2 right-2', 'top-2 right-2', 'top-2 left-2'],
+    5: ['bottom-2 left-2', 'bottom-2 right-2', 'top-2 right-2', 'top-2 left-2', 'top-2 left-1/2 -translate-x-1/2'],
+    6: [
+      'bottom-2 left-2', 'bottom-2 right-2', 'top-2 right-2', 'top-2 left-2',
+      'top-2 left-1/2 -translate-x-1/2', 'bottom-2 left-1/2 -translate-x-1/2',
+    ],
+    7: [
+      'bottom-2 left-2', 'bottom-2 right-2', 'top-2 right-2', 'top-2 left-2',
+      'top-2 left-1/2 -translate-x-1/2', 'bottom-2 left-1/2 -translate-x-1/2',
+      'left-2 top-1/2 -translate-y-1/2',
+    ],
+    8: [
+      'bottom-2 left-2', 'bottom-2 right-2', 'top-2 right-2', 'top-2 left-2',
+      'top-2 left-1/2 -translate-x-1/2', 'bottom-2 left-1/2 -translate-x-1/2',
+      'left-2 top-1/2 -translate-y-1/2', 'right-2 top-1/2 -translate-y-1/2',
+    ],
+  };
+  const seatRing = SEAT_RINGS[Math.min(Math.max(orderedPlayers.length, 1), 8)] || SEAT_RINGS[8];
+
+  // The dice panel used to be tied to isRolling/isMoving, and the turn passes
+  // through a moment where both are false - between revealing the dice and the
+  // token starting to walk. Spectators saw the panel blink out and back twice a
+  // turn. Latch it instead: once a roll starts it stays up until the turn moves.
+  const [diceShownForTurn, setDiceShownForTurn] = useState(false);
+
+  useEffect(() => {
+    setDiceShownForTurn(false);
+  }, [room.current_turn_player_id]);
+
+  useEffect(() => {
+    if (isRolling || isMoving || hasRolledThisTurn) setDiceShownForTurn(true);
+  }, [isRolling, isMoving, hasRolledThisTurn]);
+
   return (
-    <div className="w-full h-full min-h-[90vh] flex flex-col justify-between p-2 sm:p-4 select-none max-w-7xl mx-auto">
+    <div className={`w-full h-full min-h-[90vh] flex flex-col justify-between p-2 sm:p-4 select-none mx-auto ${is3DMode ? 'max-w-none' : 'max-w-7xl'}`}>
       {/* Top Status Header */}
       <div className="w-full flex items-center justify-between bg-[#2a1104]/90 border-2 border-[#54240a] rounded-2xl px-4 py-2 mb-2 shadow-xl">
         <div className="flex items-center gap-2">
@@ -278,9 +318,9 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
       </div>
 
       {/* Main 3-Column Landscape Grid (Discord Widescreen Layout) */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 items-start my-auto">
+      <div className={`flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 items-start my-auto w-full ${is3DMode ? 'max-w-none' : 'max-w-7xl'}`}>
         {/* Left Column: Player Leaderboard & Net Worth (3 cols) */}
-        <div className="lg:col-span-3 flex flex-col gap-2 order-2 lg:order-1">
+        <div className={`lg:col-span-3 flex-col gap-2 order-2 lg:order-1 ${is3DMode ? 'hidden' : 'flex'}`}>
           <div className="bg-[#240e03] border-2 border-[#54240a] rounded-2xl p-3 shadow-xl">
             <h3 className="text-xs font-black text-amber-300 uppercase tracking-wider mb-2 flex items-center gap-1.5 border-b border-[#451803] pb-1.5">
               <Award className="w-4 h-4 text-yellow-400" />
@@ -397,32 +437,6 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                       </div>
                     </div>
 
-                    {/* Owned Properties List: แสดงว่าใครได้/ถือครองที่ดินอะไรบ้าง */}
-                    {ownedProps.length > 0 && (
-                      <div className="w-full flex flex-wrap gap-1 mt-0.5 pt-1.5 border-t border-[#3b1704]">
-                        {ownedProps.map(({ tile, houses }) => (
-                          <span
-                            key={tile.index}
-                            className="text-[9px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-1 border shadow-sm transition hover:scale-105 cursor-pointer"
-                            style={{
-                              backgroundColor: tile.color ? `${tile.color}2b` : '#2d1406',
-                              borderColor: tile.color || '#d97706',
-                              color: '#fef3c7',
-                            }}
-                            title={`${tile.name}${houses === 4 ? ' (โรงแรม)' : houses > 0 ? ` (บ้าน ${houses} หลัง)` : ' (ที่ดินเปล่า)'}`}
-                            onClick={() => setInspectTile(tile)}
-                          >
-                            <span className="text-[10px]">{tile.icon || '🏛️'}</span>
-                            <span className="truncate max-w-[65px]">{tile.name}</span>
-                            {houses > 0 && (
-                              <span className="text-[8px] font-mono text-yellow-300 ml-0.5">
-                                {houses === 4 ? '🏨' : `🏠x${houses}`}
-                              </span>
-                            )}
-                          </span>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 );
               })}
@@ -431,7 +445,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
         </div>
 
         {/* Center Column: 3D / 2D Super Monopoly Classic Board (6 cols) */}
-        <div className="lg:col-span-6 flex flex-col items-center justify-center order-1 lg:order-2 w-full">
+        <div className={`${is3DMode ? 'lg:col-span-9' : 'lg:col-span-6'} flex flex-col items-center justify-center order-1 lg:order-2 w-full`}>
           {/* 3D / 2D Toggle Button Bar */}
           <div className="w-full flex items-center justify-between pb-1.5 px-1">
             <span className="text-[11px] font-bold text-amber-300/80 flex items-center gap-1">
@@ -465,14 +479,64 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           </div>
 
           {/* Active Board Display */}
-          <div className="relative">
+          <div className="relative w-full">
+          {/* Seats ring the 3D board itself, so the table reads like the
+              classic game instead of needing a list off to the side. */}
+          {is3DMode &&
+            orderedPlayers.slice(0, 8).map((seatPlayer, seatIdx) => {
+              const colour = PLAYER_3D_COLORS[players.indexOf(seatPlayer) % PLAYER_3D_COLORS.length];
+              const isSeatTurn = seatPlayer.id === currentTurnPlayer?.id;
+              const seatCash = cash[seatPlayer.id] ?? 15;
+              const seatJailed = (inJailTurns[seatPlayer.id] ?? 0) > 0;
+
+              return (
+                <div
+                  key={seatPlayer.id}
+                  className={`absolute ${seatRing[seatIdx]} z-20 pointer-events-none rounded-xl border-2 bg-[#140501] px-2 py-1 shadow-xl max-w-[38%] ${
+                    isSeatTurn ? 'border-yellow-300' : 'border-white/15'
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full shrink-0 border border-white/50"
+                      style={{ backgroundColor: colour }}
+                    />
+                    <span className="text-[10px] font-black text-amber-50 truncate max-w-[84px]">
+                      {seatPlayer.display_name}
+                    </span>
+                    {seatPlayer.id === room.host_id && <span className="text-[9px]">👑</span>}
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[9px] font-black text-amber-300/70 shrink-0">
+                      ที่ {seatIdx + 1}
+                    </span>
+                    <span
+                      className={`text-[11px] font-black font-mono ${
+                        seatCash <= 0 ? 'text-red-400' : 'text-emerald-300'
+                      }`}
+                    >
+                      {seatCash <= 0 ? 'ล้ม' : formatMoneyM(seatCash)}
+                    </span>
+                  </div>
+
+                  {seatJailed && (
+                    <div className="text-[9px] font-black text-rose-300 leading-tight">⛓️</div>
+                  )}
+                </div>
+              );
+            })}
+
           {/* Dice roll in the middle of the board, the way they would on a table.
               Non-interactive so tiles underneath stay clickable. */}
-          {(isRolling || hasRolledThisTurn || isMoving) && (
+          {diceShownForTurn && (
             <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
               <div
-                className={`flex flex-col items-center gap-1.5 px-4 py-3 rounded-3xl bg-black/65 backdrop-blur-sm border-2 shadow-2xl transition ${
-                  isRolling ? 'border-yellow-400/90 scale-105' : 'border-amber-600/60'
+                // Solid, not translucent: a blurred backdrop over the animating
+                // WebGL board repaints every frame and makes the dice shimmer
+                // while a token is walking.
+                className={`flex flex-col items-center gap-1.5 px-4 py-3 rounded-3xl bg-[#140501] border-2 shadow-2xl ${
+                  isRolling ? 'border-yellow-400/90' : 'border-amber-600/60'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
@@ -524,53 +588,10 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
 
         {/* Right Column: 2 Dice Roll Controls & Live Game Logs (3 cols) */}
         <div className="lg:col-span-3 flex flex-col gap-2 order-3">
-          {/* Action & 2 Dice Control Box */}
-          <div className="bg-[#240e03] border-2 border-[#54240a] rounded-2xl p-3.5 shadow-xl text-center">
-            <h3 className="text-xs font-black text-amber-300 uppercase tracking-wider mb-2 flex items-center justify-center gap-1.5 border-b border-[#451803] pb-1.5">
-              <Dices className="w-4 h-4 text-yellow-400" />
-              <span>ทอยลูกเต๋า 2 ลูก (2 DICE)</span>
-            </h3>
-
-            {/* The dice themselves now roll in the middle of the board, so this
-                panel only carries the status line and the controls. */}
-            <div className="flex flex-col items-center justify-center my-1">
-              {/* Total Roll Result - Only shown AFTER dice finish spinning! */}
-              <div className="mt-2.5 flex items-center justify-center gap-2 min-h-[36px]">
-                {isRolling ? (
-                  <div className="flex items-center gap-1.5 text-xs text-yellow-300 font-bold animate-pulse">
-                    <span className="text-sm animate-spin">🎲</span>
-                    <span>
-                      {isMyTurn
-                        ? 'กำลังทอยลูกเต๋า...'
-                        : `${currentTurnPlayer?.display_name || 'ผู้เล่น'} กำลังทอยเต๋า...`}
-                    </span>
-                  </div>
-                ) : hasRolledThisTurn || isMoving ? (
-                  <div className="flex items-center justify-center gap-2 animate-in fade-in zoom-in-95 duration-200">
-                    <span className="text-xs text-amber-300/80 font-bold">รวมแต้มเต๋า:</span>
-                    <span className="text-2xl font-black font-mono text-yellow-400 drop-shadow">
-                      {diceTotal}
-                    </span>
-                    <span className="text-xs text-amber-300/80 font-bold">ช่อง</span>
-                  </div>
-                ) : (
-                  <span className="text-[11px] text-amber-400/60 font-bold">
-                    {isMyTurn
-                      ? '🎲 กดทอยเพื่อสุ่มแต้มเดิน'
-                      : `🎲 รอ ${currentTurnPlayer?.display_name || 'ผู้เล่น'} ทอยลูกเต๋า`}
-                  </span>
-                )}
-              </div>
-
-              {/* Double Roll Badge - Only shown AFTER dice finish spinning! */}
-              {!isRolling && isDouble && (hasRolledThisTurn || isMoving) && (
-                <div className="mt-1 px-3 py-0.5 rounded-full bg-yellow-500/20 border border-yellow-400 text-yellow-300 text-[11px] font-black animate-bounce flex items-center gap-1">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>ได้แต้มคู่ ({dice[0]}-{dice[1]}) ได้ทอยต่ออีกรอบ!</span>
-                </div>
-              )}
-            </div>
-
+          {/* Turn status. Rolling, ending the turn and acknowledging jail
+              all live on the floating action now, so only the things it
+              cannot show are kept here. */}
+          <div className="bg-[#240e03] border-2 border-[#54240a] rounded-2xl p-3 shadow-xl">
             {/* Host standing in for an absent player */}
             {isProxying && currentTurnPlayer && (
               <div className="mb-2 px-3 py-2 rounded-2xl bg-purple-950/80 border-2 border-purple-500 text-purple-100 font-black text-xs flex items-center justify-center gap-2 shadow-lg">
@@ -601,91 +622,17 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               </div>
             )}
 
-            {/* Turn Buttons & Prompts */}
-            {isMyTurn || isProxying ? (
-              isCurrentPlayerInJail ? (
-                <div className="flex flex-col gap-2 p-3 rounded-2xl bg-[#360e06] border-2 border-red-600/70 shadow-2xl text-center">
-                  <div className="flex items-center justify-center gap-1.5 text-red-300 font-black text-xs sm:text-sm">
-                    <span className="text-base">⛓️</span>
-                    <span>คุณถูกคุมขังอยู่ในห้องขัง!</span>
-                  </div>
-                  <p className="text-[10px] text-amber-200/90 font-bold">
-                    ต้องหยุดรับโทษ 1 ตา กดรับทราบเพื่อส่งตาให้คนถัดไป — รอบหน้าจะได้เดินตามปกติ
-                  </p>
-
-                  <button
-                    type="button"
-                    disabled={isRolling || isMoving}
-                    onClick={handleServeJailTurn}
-                    className="wood-btn-gold w-full py-3 rounded-xl font-black text-xs text-amber-950 flex items-center justify-center gap-1.5 shadow-lg active:scale-95 disabled:opacity-40"
-                  >
-                    <span>⛓️ รับทราบ (ส่งตาให้คนถัดไป)</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ) : isCurrentPlayerResting ? (
-                <div className="flex flex-col gap-2 p-3 rounded-2xl bg-[#0c2438] border-2 border-sky-400/80 shadow-2xl text-center">
-                  <div className="flex items-center justify-center gap-1.5 text-sky-300 font-black text-xs sm:text-sm">
-                    <span className="text-base">🏖️</span>
-                    <span>คุณกำลังหยุดพักผ่อนที่จุดพัก!</span>
-                  </div>
-                  <p className="text-[10px] text-sky-200/90 font-bold">
-                    ตามกฎจุดพักผ่อน: คุณต้องหยุดทอยลูกเต๋า 1 ตาในรอบนี้
-                  </p>
-
-                  <button
-                    type="button"
-                    disabled={isRolling || isMoving}
-                    onClick={handleServeRestTurn}
-                    className="wood-btn-gold w-full py-3 rounded-xl font-black text-xs text-amber-950 flex items-center justify-center gap-1.5 shadow-lg active:scale-95"
-                  >
-                    <span>🏖️ หยุดพักผ่อน 1 ตา (ส่งตาเดิน)</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+            {!isMyTurn && !isProxying && (
+              isBotTurn ? (
+                <div className="py-3 px-2 rounded-xl bg-[#2a0e03] border border-yellow-600/40 text-xs text-yellow-300 font-bold flex items-center justify-center gap-2">
+                  <Bot className="w-4 h-4 text-yellow-400" />
+                  <span>🤖 {currentTurnPlayer?.display_name} กำลังคิดและทอยเต๋า...</span>
                 </div>
               ) : (
-                <div className="flex flex-col gap-2">
-                  <button
-                    type="button"
-                    disabled={isRolling || isMoving || hasRolledThisTurn}
-                    onClick={rollDice}
-                    className="wood-btn-gold w-full py-3.5 rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-lg active:scale-95 disabled:opacity-40"
-                  >
-                    <Dices className="w-5 h-5" />
-                    <span>
-                      {isRolling
-                        ? 'กำลังทอยลูกเต๋า...'
-                        : isMoving
-                        ? 'กำลังเดินบนกระดาน...'
-                        : hasRolledThisTurn
-                        ? 'ทอยไปแล้วในรอบนี้'
-                        : 'กดทอยลูกเต๋า 2 ลูก!'}
-                    </span>
-                  </button>
-
-                  {/* Passing without rolling was a free skip, so the turn can
-                      only be handed on once the dice have actually been thrown. */}
-                  <button
-                    type="button"
-                    disabled={isRolling || isMoving || !hasRolledThisTurn}
-                    onClick={handleEndTurn}
-                    title="ส่งตาได้หลังทอยเต๋าแล้วเท่านั้น"
-                    className="wood-btn-brown w-full py-2 rounded-xl font-bold text-xs text-amber-200 border border-[#54240a] flex items-center justify-center gap-1 active:scale-95 transition disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    <span>{hasRolledThisTurn ? 'จบรอบตาเดิน (ส่งตา)' : 'ต้องทอยเต๋าก่อนถึงส่งตาได้'}</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+                <div className="py-3 px-2 rounded-xl bg-[#1c0801] border border-[#3d1503] text-xs text-amber-300/70 font-bold text-center">
+                  ⏳ รอ {currentTurnPlayer?.display_name} ทอยลูกเต๋า...
                 </div>
               )
-            ) : isBotTurn ? (
-              <div className="py-3 px-2 rounded-xl bg-[#2a0e03] border border-yellow-600/40 text-xs text-yellow-300 font-bold flex items-center justify-center gap-2 animate-pulse">
-                <Bot className="w-4 h-4 text-yellow-400" />
-                <span>🤖 {currentTurnPlayer?.display_name} กำลังคิดและทอยเต๋า...</span>
-              </div>
-            ) : (
-              <div className="py-3 px-2 rounded-xl bg-[#1c0801] border border-[#3d1503] text-xs text-amber-300/70 font-bold animate-pulse">
-                ⏳ รอ {currentTurnPlayer?.display_name} ทอยลูกเต๋า...
-              </div>
             )}
           </div>
 
@@ -740,7 +687,13 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
         !activeCard &&
         !activePenaltyModal && (
           <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-1 pointer-events-none">
-            <span className="pointer-events-none px-2 py-0.5 rounded-full bg-black/70 border border-amber-600/50 text-[10px] font-black text-amber-200 shadow">
+            <span
+              className={`pointer-events-none px-2 py-0.5 rounded-full border text-[10px] font-black shadow ${
+                isProxying
+                  ? 'bg-purple-950 border-purple-400 text-purple-100'
+                  : 'bg-black/70 border-amber-600/50 text-amber-200'
+              }`}
+            >
               {isProxying && currentTurnPlayer
                 ? `เล่นแทน ${currentTurnPlayer.display_name}`
                 : 'ตาของคุณ'}
@@ -751,7 +704,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                 type="button"
                 disabled={isRolling || isMoving}
                 onClick={handleServeJailTurn}
-                className="pointer-events-auto wood-btn-gold px-7 py-3.5 rounded-full font-black text-sm shadow-2xl border-2 border-yellow-300/70 active:scale-95 disabled:opacity-40"
+                className={`pointer-events-auto px-7 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 ${isProxying ? 'bg-purple-800 hover:bg-purple-700 border-2 border-purple-300 text-purple-50' : 'wood-btn-gold border-2 border-yellow-300/70'}`}
               >
                 ⛓️ รับทราบ (ส่งตา)
               </button>
@@ -760,7 +713,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                 type="button"
                 disabled={isRolling || isMoving}
                 onClick={handleServeRestTurn}
-                className="pointer-events-auto wood-btn-gold px-7 py-3.5 rounded-full font-black text-sm shadow-2xl border-2 border-yellow-300/70 active:scale-95 disabled:opacity-40"
+                className={`pointer-events-auto px-7 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 ${isProxying ? 'bg-purple-800 hover:bg-purple-700 border-2 border-purple-300 text-purple-50' : 'wood-btn-gold border-2 border-yellow-300/70'}`}
               >
                 🏖️ หยุดพัก (ส่งตา)
               </button>
@@ -769,7 +722,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                 type="button"
                 disabled={isRolling || isMoving}
                 onClick={rollDice}
-                className="pointer-events-auto wood-btn-gold px-8 py-4 rounded-full font-black text-base shadow-2xl border-2 border-yellow-300/70 active:scale-95 disabled:opacity-50"
+                className={`pointer-events-auto px-8 py-4 rounded-full font-black text-base shadow-2xl active:scale-95 disabled:opacity-50 ${isProxying ? 'bg-purple-800 hover:bg-purple-700 border-2 border-purple-300 text-purple-50' : 'wood-btn-gold border-2 border-yellow-300/70'}`}
               >
                 {isRolling ? 'กำลังทอย...' : isMoving ? 'กำลังเดิน...' : '🎲 ทอยลูกเต๋า'}
               </button>
@@ -778,7 +731,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                 type="button"
                 disabled={isRolling || isMoving}
                 onClick={handleEndTurn}
-                className="pointer-events-auto px-7 py-3.5 rounded-full font-black text-sm bg-[#3d1806] border-2 border-[#7d320b] text-amber-200 shadow-2xl active:scale-95 disabled:opacity-40"
+                className={`pointer-events-auto px-7 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 ${isProxying ? 'bg-purple-800 hover:bg-purple-700 border-2 border-purple-300 text-purple-50' : 'bg-[#3d1806] border-2 border-[#7d320b] text-amber-200'}`}
               >
                 ส่งตาเดิน ➜
               </button>

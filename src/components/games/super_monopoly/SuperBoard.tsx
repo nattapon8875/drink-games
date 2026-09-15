@@ -295,6 +295,21 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
                 )}
               </div>
 
+              {/* Bought but not built on yet: plant the owner's flag so the
+                  board itself shows who holds what */}
+              {ownerPlayer && (!ownership || ownership.houses === 0) && (
+                <div
+                  className="absolute top-0.5 right-0.5 z-20 pointer-events-none flex items-start"
+                  title={`เจ้าของ: ${ownerPlayer.display_name}`}
+                >
+                  <span className="w-[1.5px] h-2.5 sm:h-3 bg-[#f5f0e0] shadow" />
+                  <span
+                    className="w-2 h-1.5 sm:w-2.5 sm:h-2 border border-white/60 shadow"
+                    style={{ backgroundColor: ownerColor }}
+                  />
+                </div>
+              )}
+
               {/* Bottom Owner Ribbon if owned */}
               {ownerPlayer && (
                 <div

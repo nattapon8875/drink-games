@@ -481,6 +481,30 @@ function createSuperTileTexture(tile: SuperPropertyTile): THREE.CanvasTexture {
   return texture;
 }
 
+// A claim flag in the owner's colour. Stands on a bought plot until the first
+// house goes up, so a glance at the board tells you who holds what.
+const ClaimFlag3D: React.FC<{ color: string }> = ({ color }) => {
+  return (
+    <group position={[0, 0.11, -0.15]}>
+      {/* Pole */}
+      <mesh position={[0, 0.22, 0]} castShadow>
+        <cylinderGeometry args={[0.022, 0.022, 0.44, 8]} />
+        <meshStandardMaterial color="#f5f0e0" roughness={0.5} />
+      </mesh>
+      {/* Pennant */}
+      <mesh position={[0.11, 0.36, 0]} castShadow>
+        <boxGeometry args={[0.2, 0.14, 0.02]} />
+        <meshStandardMaterial color={color} roughness={0.35} metalness={0.15} />
+      </mesh>
+      {/* Base */}
+      <mesh position={[0, 0.02, 0]}>
+        <cylinderGeometry args={[0.09, 0.11, 0.05, 12]} />
+        <meshStandardMaterial color={color} roughness={0.4} metalness={0.3} />
+      </mesh>
+    </group>
+  );
+};
+
 // 3D House Model (LINE เกมเศรษฐี Cute Cottage Style)
 const House3D: React.FC<{ position: [number, number, number]; color?: string }> = ({
   position,
@@ -640,6 +664,9 @@ const Tile3D: React.FC<{
           </mesh>
         </group>
       )}
+
+      {/* Bought but not built on yet: plant the owner's flag */}
+      {ownerColor && houses === 0 && <ClaimFlag3D color={ownerColor} />}
 
       {/* 3D Houses / Hotel sitting on Tile */}
       {houses > 0 && (
@@ -929,7 +956,7 @@ const SuperBoard3DBase: React.FC<SuperBoard3DProps> = ({
 }) => {
   return (
     <div
-      className="w-full h-full min-h-[460px] sm:min-h-[560px] lg:min-h-[640px] aspect-square rounded-2xl overflow-hidden shadow-2xl relative bg-[#0f0703] border-2 border-[#54280a]"
+      className="w-full min-h-[460px] sm:min-h-[560px] lg:min-h-[640px] aspect-square rounded-2xl overflow-hidden shadow-2xl relative bg-[#0f0703] border-2 border-[#54280a]"
       onContextMenu={(e) => e.preventDefault()}
     >
       <Canvas shadows dpr={CANVAS_DPR} camera={CANVAS_CAMERA} gl={CANVAS_GL}>
@@ -1009,7 +1036,7 @@ const SuperBoard3DBase: React.FC<SuperBoard3DProps> = ({
       </Canvas>
 
       {/* Overlay Hint */}
-      <div className="absolute bottom-2 left-2 pointer-events-none px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur border border-amber-500/30 text-[10px] text-amber-200/90 font-bold flex items-center gap-1.5 shadow">
+      <div className="absolute bottom-2 left-2 pointer-events-none px-2.5 py-1 rounded-lg bg-[#140501] border border-amber-500/30 text-[10px] text-amber-200/90 font-bold flex items-center gap-1.5 shadow">
         <span>🎮 มุมมอง 3D สไตล์เกมเศรษฐี</span>
         <span className="text-amber-400/50">•</span>
         <span>ลากเพื่อหมุน • เลื่อนลูกกลิ้งเพื่อซูม</span>
