@@ -35,6 +35,10 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
+  // When we last wrote game_state ourselves. A poll that was already in flight
+  // carries state older than that write, and applying it snaps the board back.
+  const lastLocalWriteRef = useRef<number>(0);
+  const LOCAL_WRITE_GRACE_MS = 700;
 
   // Fetch from Server API (works across Incognito, Normal tabs, and all devices)
   const fetchData = useCallback(async () => {
@@ -141,7 +145,10 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
           if (res.ok) {
             const data = await res.json();
             if (data.exists && data.room) {
-              setRoom((prev) => keepIfUnchanged(prev, data.room));
+              const ourWriteIsNewer = Date.now() - lastLocalWriteRef.current < LOCAL_WRITE_GRACE_MS;
+              if (!ourWriteIsNewer) {
+                setRoom((prev) => keepIfUnchanged(prev, data.room));
+              }
               setPlayers((prev) => keepIfUnchanged(prev, data.players || []));
             }
           }
@@ -387,6 +394,12 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
       const merged = { ...(room.game_state || {}), ...partialState };
 
       if (!isSupabaseConfigured()) {
+        // Show it immediately. Waiting for the round trip first meant every
+        // step of a walk was paced by network latency, so the token moved in
+        // uneven jerks rather than at a steady 320ms.
+        lastLocalWriteRef.current = Date.now();
+        setRoom((prev) => (prev ? { ...prev, game_state: merged } : null));
+
         await fetch('/api/room', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -396,9 +409,10 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
             partialState,
           }),
         });
-        setRoom((prev) => (prev ? { ...prev, game_state: merged } : null));
         return;
       }
+
+      lastLocalWriteRef.current = Date.now();
 
       await supabase
         .from('rooms')
