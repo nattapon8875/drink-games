@@ -10,6 +10,9 @@ interface PropertyCardModalProps {
   ownership: PropertyOwnership | null;
   currentCash: number;
   isMyTurn: boolean;
+  ownerName?: string | null;
+  ownerColor?: string | null;
+  isOwnedByMe?: boolean;
   onClose: () => void;
   onBuyLand: () => Promise<void>;
   onBuildHouse: () => Promise<void>;
@@ -21,6 +24,9 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
   ownership,
   currentCash,
   isMyTurn,
+  ownerName,
+  ownerColor,
+  isOwnedByMe,
   onClose,
   onBuyLand,
   onBuildHouse,
@@ -206,6 +212,40 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
           <span className="text-[11px] font-bold text-white/90 bg-black/30 px-2.5 py-0.5 rounded-full mt-1">
             ราคาที่ดิน: {tile.cost ? formatMoneyM(tile.cost) : '-'}
           </span>
+        </div>
+
+        {/* Who owns this tile - the card never said before */}
+        <div
+          className={`rounded-2xl px-3 py-2 flex items-center justify-between gap-2 border-2 shadow-inner ${
+            isOwner
+              ? 'bg-[#1d0a02] border-[#6b2c08]'
+              : 'bg-[#07240f] border-emerald-700/70'
+          }`}
+        >
+          <span className="text-[11px] font-black text-amber-300/80 shrink-0">
+            สถานะที่ดิน:
+          </span>
+
+          {isOwner ? (
+            <span className="flex items-center gap-1.5 min-w-0">
+              <span
+                className="w-3 h-3 rounded-full border border-white/40 shrink-0"
+                style={{ backgroundColor: ownerColor || '#f59e0b' }}
+              />
+              <span className="text-xs font-black text-amber-100 truncate">
+                {ownerName || 'มีเจ้าของแล้ว'}
+              </span>
+              {isOwnedByMe && (
+                <span className="text-[10px] font-black text-yellow-300 bg-yellow-500/15 border border-yellow-500/40 px-1.5 py-0.5 rounded-full shrink-0">
+                  ของคุณ
+                </span>
+              )}
+            </span>
+          ) : (
+            <span className="text-xs font-black text-emerald-300">
+              ✨ ที่ว่าง — ยังไม่มีเจ้าของ
+            </span>
+          )}
         </div>
 
         {/* Rent & Building Rates Table */}

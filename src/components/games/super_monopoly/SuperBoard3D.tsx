@@ -486,7 +486,10 @@ function createSuperTileTexture(tile: SuperPropertyTile): THREE.CanvasTexture {
 }
 
 // 3D House Model (LINE เกมเศรษฐี Cute Cottage Style)
-const House3D: React.FC<{ position: [number, number, number] }> = ({ position }) => {
+const House3D: React.FC<{ position: [number, number, number]; color?: string }> = ({
+  position,
+  color = '#10b981',
+}) => {
   return (
     <group position={position}>
       {/* House Body (White / Cream) */}
@@ -494,28 +497,31 @@ const House3D: React.FC<{ position: [number, number, number] }> = ({ position })
         <boxGeometry args={[0.22, 0.24, 0.22]} />
         <meshStandardMaterial color="#fef9c3" roughness={0.3} />
       </mesh>
-      {/* Roof (Vibrant Green) */}
+      {/* Roof painted in the owner's colour so you can read the board at a glance */}
       <mesh position={[0, 0.30, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
         <coneGeometry args={[0.20, 0.18, 4]} />
-        <meshStandardMaterial color="#10b981" roughness={0.2} metalness={0.1} />
+        <meshStandardMaterial color={color} roughness={0.2} metalness={0.1} />
       </mesh>
       {/* Chimney */}
       <mesh position={[0.06, 0.34, 0.06]}>
         <boxGeometry args={[0.04, 0.10, 0.04]} />
-        <meshStandardMaterial color="#ef4444" />
+        <meshStandardMaterial color="#fef9c3" />
       </mesh>
     </group>
   );
 };
 
 // 3D Hotel Model (LINE เกมเศรษฐี Luxurious Landmark Hotel)
-const Hotel3D: React.FC<{ position: [number, number, number] }> = ({ position }) => {
+const Hotel3D: React.FC<{ position: [number, number, number]; color?: string }> = ({
+  position,
+  color = '#b91c1c',
+}) => {
   return (
     <group position={position}>
-      {/* Main Building Base (Grand Red) */}
+      {/* Main tower in the owner's colour, gold crown kept for all hotels */}
       <mesh position={[0, 0.22, 0]} castShadow>
         <boxGeometry args={[0.42, 0.44, 0.30]} />
-        <meshStandardMaterial color="#b91c1c" roughness={0.3} metalness={0.2} />
+        <meshStandardMaterial color={color} roughness={0.3} metalness={0.2} />
       </mesh>
       {/* Top Roof (Golden Crown) */}
       <mesh position={[0, 0.48, 0]} castShadow>
@@ -643,12 +649,12 @@ const Tile3D: React.FC<{
       {houses > 0 && (
         <group position={[0, 0.11, -0.15]}>
           {hasHotel ? (
-            <Hotel3D position={[0, 0, 0]} />
+            <Hotel3D position={[0, 0, 0]} color={ownerColor || undefined} />
           ) : (
             <>
-              {houses >= 1 && <House3D position={[-0.24, 0, 0]} />}
-              {houses >= 2 && <House3D position={[0, 0, 0]} />}
-              {houses >= 3 && <House3D position={[0.24, 0, 0]} />}
+              {houses >= 1 && <House3D position={[-0.24, 0, 0]} color={ownerColor || undefined} />}
+              {houses >= 2 && <House3D position={[0, 0, 0]} color={ownerColor || undefined} />}
+              {houses >= 3 && <House3D position={[0.24, 0, 0]} color={ownerColor || undefined} />}
             </>
           )}
         </group>

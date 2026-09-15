@@ -230,16 +230,25 @@ export const SuperBoard: React.FC<SuperBoardProps> = ({
                   {/* Houses / Hotel Indicators */}
                   {ownership && ownership.houses > 0 && (
                     <div className="flex items-center gap-0.5">
+                      {/* Buildings are drawn in the owner's colour, not as generic emoji,
+                          so you can tell whose street you are walking into. */}
                       {ownership.houses === 4 ? (
-                        <span className="text-[7px] sm:text-[9px] drop-shadow" title="โรงแรมหรู">
-                          🏨
+                        <span
+                          className="px-1 rounded-[2px] border border-white/70 text-[6px] sm:text-[8px] font-black text-white leading-tight shadow"
+                          style={{ backgroundColor: ownerColor }}
+                          title="โรงแรมหรู"
+                        >
+                          ★
                         </span>
                       ) : (
-                        <div className="flex items-center -space-x-0.5">
+                        <div className="flex items-center gap-[1px]">
                           {Array.from({ length: ownership.houses }).map((_, hI) => (
-                            <span key={hI} className="text-[6px] sm:text-[8px] drop-shadow">
-                              🏠
-                            </span>
+                            <span
+                              key={hI}
+                              className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-[1px] border border-white/70 shadow"
+                              style={{ backgroundColor: ownerColor }}
+                              title={`บ้าน ${ownership.houses} หลัง`}
+                            />
                           ))}
                         </div>
                       )}

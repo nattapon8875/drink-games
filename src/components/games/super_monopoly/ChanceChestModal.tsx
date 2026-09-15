@@ -9,6 +9,8 @@ interface ChanceChestModalProps {
   isOpen: boolean;
   currentCash?: number;
   isMyTurn: boolean;
+  /** Someone else drew this - shown so the whole table sees the result */
+  spectatorName?: string | null;
   onClose: () => void;
 }
 
@@ -17,6 +19,7 @@ export const ChanceChestModal: React.FC<ChanceChestModalProps> = ({
   isOpen,
   currentCash,
   isMyTurn,
+  spectatorName,
   onClose,
 }) => {
   if (!card || !isOpen) return null;
@@ -30,6 +33,14 @@ export const ChanceChestModal: React.FC<ChanceChestModalProps> = ({
       title={isChest ? '🎁 หีบสมบัติ' : '⛩️ ประตูดวง'}
     >
       <div className="flex flex-col items-center text-center gap-3 py-2">
+        {spectatorName && (
+          <div className="w-full px-3 py-1.5 rounded-xl bg-[#1d0a02] border border-[#6b2c08] text-[11px] font-black text-amber-200 flex items-center justify-center gap-1.5">
+            <span>👀</span>
+            <span className="truncate max-w-[220px]">{spectatorName}</span>
+            <span className="text-amber-400/80">เปิดการ์ดได้</span>
+          </div>
+        )}
+
         {/* Card Header Icon & Banner */}
         <div
           className={`w-20 h-20 rounded-3xl flex items-center justify-center border-4 shadow-xl ${
@@ -71,6 +82,13 @@ export const ChanceChestModal: React.FC<ChanceChestModalProps> = ({
           <div className="px-4 py-2 rounded-2xl border-2 bg-emerald-950/80 border-emerald-500 text-emerald-200 font-black text-sm flex items-center gap-2 shadow-md">
             <span>💰 เก็บเงินจากเพื่อนทุกคน คนละ:</span>
             <span className="text-lg font-mono text-yellow-300">+{formatMoneyM(card.collectFromAll)}</span>
+          </div>
+        )}
+
+        {card.payToAll && (
+          <div className="px-4 py-2 rounded-2xl border-2 bg-rose-950/80 border-rose-500 text-rose-200 font-black text-sm flex items-center gap-2 shadow-md">
+            <span>💸 จ่ายให้เพื่อนทุกคน คนละ:</span>
+            <span className="text-lg font-mono text-rose-300">-{formatMoneyM(card.payToAll)}</span>
           </div>
         )}
 

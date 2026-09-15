@@ -88,6 +88,7 @@ export interface CardAction {
   teleportToIndex?: number;
   goJail?: boolean;
   collectFromAll?: number; // in M
+  payToAll?: number; // in M - pay every other player this much
 }
 
 export interface DiceRollState {

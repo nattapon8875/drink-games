@@ -1,15 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BaseGameProps } from '@/types/game';
 import { useSuperMonopolyEngine } from './useSuperMonopolyEngine';
 import { SuperBoard } from './SuperBoard';
-import { SuperBoard3D } from './SuperBoard3D';
+import { SuperBoard3D, PLAYER_3D_COLORS } from './SuperBoard3D';
 import { PropertyCardModal } from './PropertyCardModal';
 import { ChanceChestModal } from './ChanceChestModal';
 import { PenaltyModal } from './PenaltyModal';
 import { RulesModal } from './RulesModal';
 import { RollOrderModal } from './RollOrderModal';
+import { showConfirm } from '@/lib/alerts';
+import { CHEST_CARDS, CHANCE_CARDS } from './superMonopolyData';
 import { Modal } from '@/components/common/Modal';
 import { SUPER_MONOPOLY_TILES, formatMoneyM } from './superMonopolyData';
 import { Avatar } from '@/components/common/Avatar';
@@ -42,6 +44,9 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     isMoving,
     activeStepTileIndex,
     isMyTurn,
+    drawnCard,
+    isProxying,
+    startProxyTurn,
     isBotTurn,
     currentTurnPlayer,
     positions,
@@ -60,8 +65,6 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     restTurns,
     rollDice,
     handleServeJailTurn,
-    handlePayJailBail,
-    handleDrinkForJail,
     handleServeRestTurn,
     handleBuyLand,
     handleBuildHouse,
@@ -114,6 +117,58 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     );
   };
 
+  // Ownership of whichever tile the card is showing (landed on, or tapped to inspect)
+  const shownTile = activePropertyModal || inspectTile;
+  const shownTileOwnership = shownTile ? properties[shownTile.index] || null : null;
+  const shownTileOwner = shownTileOwnership
+    ? players.find((p) => p.id === shownTileOwnership.ownerId) || null
+    : null;
+
+  // The host may only stand in once a turn has sat idle, so nobody gets their
+  // dice taken away while they are still deciding.
+  const PROXY_UNLOCK_SECONDS = 20;
+  const [turnIdleSeconds, setTurnIdleSeconds] = useState(0);
+
+  useEffect(() => {
+    setTurnIdleSeconds(0);
+    const timer = setInterval(() => setTurnIdleSeconds((n) => n + 1), 1000);
+    return () => clearInterval(timer);
+  }, [room.current_turn_player_id]);
+
+  const canOfferProxy = Boolean(isHost && !isMyTurn && !isBotTurn && !isProxying && currentTurnPlayer);
+  const proxySecondsLeft = Math.max(0, PROXY_UNLOCK_SECONDS - turnIdleSeconds);
+
+  const handleStartProxy = async () => {
+    if (!currentTurnPlayer) return;
+    const ok = await showConfirm(
+      `เล่นแทนเพื่อน?`,
+      `คุณจะทอยเต๋าและตัดสินใจแทนในตานี้ ทุกคนในห้องจะเห็นว่าหัวหน้าห้องเล่นแทน [${currentTurnPlayer.display_name}]`,
+      'เล่นแทนเลย',
+      'ยกเลิก'
+    );
+    if (ok) await startProxyTurn();
+  };
+
+  // Card draws are announced through game_state so the whole table sees them.
+  // The player who drew keeps their own interactive card; everyone else gets a
+  // read-only copy that clears itself.
+  const [dismissedDrawAt, setDismissedDrawAt] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!drawnCard) return;
+    setDismissedDrawAt(null);
+    const timer = setTimeout(() => setDismissedDrawAt(drawnCard.at), 7000);
+    return () => clearTimeout(timer);
+  }, [drawnCard?.at]);
+
+  const spectatorCard =
+    drawnCard && !activeCard && dismissedDrawAt !== drawnCard.at
+      ? [...CHEST_CARDS, ...CHANCE_CARDS].find((c) => c.id === drawnCard.cardId) || null
+      : null;
+  const spectatorCardOwner = drawnCard
+    ? players.find((p) => p.id === drawnCard.playerId) || null
+    : null;
+
   return (
     <div className="w-full h-full min-h-[90vh] flex flex-col justify-between p-2 sm:p-4 select-none max-w-7xl mx-auto">
       {/* Top Status Header */}
@@ -125,7 +180,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               ซุปเปอร์เศรษฐี คลาสสิก • SUPER MONOPOLY
             </h2>
             <p className="text-[10px] text-amber-300/80 font-bold">
-              ห้อง: <span className="font-mono text-yellow-400">{room.code}</span> | ทุนเริ่มต้น 15M | ลูกเต๋า 2 ลูก 🎲🎲
+              ห้อง: <span className="font-mono text-yellow-400">{room.code}</span> | ทุนเริ่มต้น 15.00M | ลูกเต๋า 2 ลูก 🎲🎲
             </p>
           </div>
         </div>
@@ -405,6 +460,41 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           </div>
 
           {/* Active Board Display */}
+          <div className="relative">
+          {/* Dice roll in the middle of the board, the way they would on a table.
+              Non-interactive so tiles underneath stay clickable. */}
+          {(isRolling || hasRolledThisTurn || isMoving) && (
+            <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+              <div
+                className={`flex flex-col items-center gap-1.5 px-4 py-3 rounded-3xl bg-black/65 backdrop-blur-sm border-2 shadow-2xl transition ${
+                  isRolling ? 'border-yellow-400/90 scale-105' : 'border-amber-600/60'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  {renderDiceFace(dice[0], isRolling)}
+                  {renderDiceFace(dice[1], isRolling)}
+                </div>
+
+                {isRolling ? (
+                  <span className="text-[11px] font-black text-yellow-300 animate-pulse">
+                    กำลังทอย...
+                  </span>
+                ) : (
+                  <span className="text-[11px] font-black text-amber-100">
+                    {dice[0] + dice[1]} แต้ม
+                    {dice[0] === dice[1] && (
+                      <span className="text-yellow-300"> · แต้มคู่!</span>
+                    )}
+                  </span>
+                )}
+
+                <span className="text-[9px] font-bold text-amber-300/80 max-w-[160px] truncate">
+                  {currentTurnPlayer?.display_name || ''}
+                </span>
+              </div>
+            </div>
+          )}
+
           {is3DMode ? (
             <SuperBoard3D
               positions={positions}
@@ -424,6 +514,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               onTileClick={(tile) => setInspectTile(tile)}
             />
           )}
+          </div>
         </div>
 
         {/* Right Column: 2 Dice Roll Controls & Live Game Logs (3 cols) */}
@@ -435,24 +526,9 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               <span>ทอยลูกเต๋า 2 ลูก (2 DICE)</span>
             </h3>
 
-            {/* 2 Physical 3D Dice Display */}
-            <div className="flex flex-col items-center justify-center my-3">
-              <div className="flex items-center justify-center gap-3">
-                {/* Die 1 */}
-                <div className="flex flex-col items-center gap-1">
-                  {renderDiceFace(dice[0], isRolling)}
-                  <span className="text-[9px] font-bold text-amber-400/70">ลูกที่ 1</span>
-                </div>
-
-                <span className="text-xl font-black text-yellow-400/80">+</span>
-
-                {/* Die 2 */}
-                <div className="flex flex-col items-center gap-1">
-                  {renderDiceFace(dice[1], isRolling)}
-                  <span className="text-[9px] font-bold text-amber-400/70">ลูกที่ 2</span>
-                </div>
-              </div>
-
+            {/* The dice themselves now roll in the middle of the board, so this
+                panel only carries the status line and the controls. */}
+            <div className="flex flex-col items-center justify-center my-1">
               {/* Total Roll Result - Only shown AFTER dice finish spinning! */}
               <div className="mt-2.5 flex items-center justify-center gap-2 min-h-[36px]">
                 {isRolling ? (
@@ -490,8 +566,38 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               )}
             </div>
 
+            {/* Host standing in for an absent player */}
+            {isProxying && currentTurnPlayer && (
+              <div className="mb-2 px-3 py-2 rounded-2xl bg-purple-950/80 border-2 border-purple-500 text-purple-100 font-black text-xs flex items-center justify-center gap-2 shadow-lg">
+                <span>👑</span>
+                <span>กำลังเล่นแทน [{currentTurnPlayer.display_name}]</span>
+              </div>
+            )}
+
+            {canOfferProxy && currentTurnPlayer && (
+              <div className="mb-2 p-2.5 rounded-2xl bg-[#1b0f2e] border-2 border-purple-600/70 shadow-lg flex flex-col gap-1.5">
+                <span className="text-[10px] font-black text-purple-300 flex items-center gap-1">
+                  <span>👑</span>
+                  <span>เครื่องมือหัวหน้าห้อง</span>
+                </span>
+                <button
+                  type="button"
+                  disabled={proxySecondsLeft > 0}
+                  onClick={handleStartProxy}
+                  className="w-full py-2 rounded-xl font-black text-[11px] bg-purple-800 hover:bg-purple-700 border border-purple-400 text-purple-50 shadow active:scale-95 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {proxySecondsLeft > 0
+                    ? `รอเจ้าตัวกดเองก่อน (${proxySecondsLeft} วิ)`
+                    : `🎲 เล่นแทน [${currentTurnPlayer.display_name}]`}
+                </button>
+                <span className="text-[9px] text-purple-300/70 font-semibold text-center">
+                  ใช้เมื่อเพื่อนหลุดหรือไม่สะดวกกด
+                </span>
+              </div>
+            )}
+
             {/* Turn Buttons & Prompts */}
-            {isMyTurn ? (
+            {isMyTurn || isProxying ? (
               isCurrentPlayerInJail ? (
                 <div className="flex flex-col gap-2 p-3 rounded-2xl bg-[#360e06] border-2 border-red-600/70 shadow-2xl text-center">
                   <div className="flex items-center justify-center gap-1.5 text-red-300 font-black text-xs sm:text-sm">
@@ -499,43 +605,18 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                     <span>คุณถูกคุมขังอยู่ในห้องขัง!</span>
                   </div>
                   <p className="text-[10px] text-amber-200/90 font-bold">
-                    เลือกหยุดรับโทษ 1 ตา หรือจ่ายค่าปรับเพื่อออกทันที:
+                    ต้องหยุดรับโทษ 1 ตา กดรับทราบเพื่อส่งตาให้คนถัดไป — รอบหน้าจะได้เดินตามปกติ
                   </p>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 mt-1">
-                    <button
-                      type="button"
-                      disabled={isRolling || isMoving}
-                      onClick={handleServeJailTurn}
-                      className="wood-btn-brown py-2.5 px-1 rounded-xl font-black text-[11px] text-yellow-300 border border-yellow-500/60 flex flex-col items-center justify-center shadow active:scale-95"
-                      title="หยุดรับโทษ 1 ตา โดยข้ามการทอยในรอบนี้ รอบถัดไปจะได้รับอิสรภาพ"
-                    >
-                      <span>⛓️ หยุดรับโทษ 1 ตา</span>
-                      <span className="text-[9px] text-amber-300/80 font-bold">(ข้ามตาเดิน)</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      disabled={isRolling || isMoving || myCash < 0.5}
-                      onClick={handlePayJailBail}
-                      className="wood-btn-gold py-2.5 px-1 rounded-xl font-black text-[11px] flex flex-col items-center justify-center shadow active:scale-95 disabled:opacity-40"
-                      title="จ่ายค่าปรับ 0.5M เพื่อออกจากห้องขังและทอยเต๋าได้ทันที"
-                    >
-                      <span>💸 จ่ายค่าปรับ 0.5M</span>
-                      <span className="text-[9px] text-amber-950 font-bold">(ออกคุกทันที)</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      disabled={isRolling || isMoving}
-                      onClick={handleDrinkForJail}
-                      className="py-2.5 px-1 rounded-xl font-black text-[11px] bg-[#541208] hover:bg-[#70180a] border border-rose-500 text-rose-200 flex flex-col items-center justify-center shadow active:scale-95"
-                      title="ดื่ม 1 ช็อตเพื่อแหกคุกทันที (โหมดวงเหล้า)"
-                    >
-                      <span>🍺 ดื่ม 1 ช็อต</span>
-                      <span className="text-[9px] text-rose-300/80 font-bold">(โหมดวงเหล้า)</span>
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    disabled={isRolling || isMoving}
+                    onClick={handleServeJailTurn}
+                    className="wood-btn-gold w-full py-3 rounded-xl font-black text-xs text-amber-950 flex items-center justify-center gap-1.5 shadow-lg active:scale-95 disabled:opacity-40"
+                  >
+                    <span>⛓️ รับทราบ (ส่งตาให้คนถัดไป)</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               ) : isCurrentPlayerResting ? (
                 <div className="flex flex-col gap-2 p-3 rounded-2xl bg-[#0c2438] border-2 border-sky-400/80 shadow-2xl text-center">
@@ -577,13 +658,16 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                     </span>
                   </button>
 
+                  {/* Passing without rolling was a free skip, so the turn can
+                      only be handed on once the dice have actually been thrown. */}
                   <button
                     type="button"
-                    disabled={isRolling || isMoving}
+                    disabled={isRolling || isMoving || !hasRolledThisTurn}
                     onClick={handleEndTurn}
-                    className="wood-btn-brown w-full py-2 rounded-xl font-bold text-xs text-amber-200 border border-[#54240a] flex items-center justify-center gap-1 active:scale-95 transition"
+                    title="ส่งตาได้หลังทอยเต๋าแล้วเท่านั้น"
+                    className="wood-btn-brown w-full py-2 rounded-xl font-bold text-xs text-amber-200 border border-[#54240a] flex items-center justify-center gap-1 active:scale-95 transition disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    <span>จบรอบตาเดิน (ส่งตา)</span>
+                    <span>{hasRolledThisTurn ? 'จบรอบตาเดิน (ส่งตา)' : 'ต้องทอยเต๋าก่อนถึงส่งตาได้'}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -641,17 +725,74 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
         </div>
       </div>
 
+      {/* Floating turn action.
+          The real controls sit in the right-hand column, which lands below the
+          board once the layout stacks - on a phone you had to scroll past the
+          whole board to roll. This keeps the one action you need in reach. */}
+      {(isMyTurn || isProxying) &&
+        rollOrderDone &&
+        !activePropertyModal &&
+        !activeCard &&
+        !activePenaltyModal && (
+          <div className="lg:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-1 pointer-events-none">
+            <span className="pointer-events-none px-2 py-0.5 rounded-full bg-black/70 border border-amber-600/50 text-[10px] font-black text-amber-200 shadow">
+              {isProxying && currentTurnPlayer
+                ? `เล่นแทน ${currentTurnPlayer.display_name}`
+                : 'ตาของคุณ'}
+            </span>
+
+            {isCurrentPlayerInJail ? (
+              <button
+                type="button"
+                disabled={isRolling || isMoving}
+                onClick={handleServeJailTurn}
+                className="pointer-events-auto wood-btn-gold px-7 py-3.5 rounded-full font-black text-sm shadow-2xl border-2 border-yellow-300/70 active:scale-95 disabled:opacity-40"
+              >
+                ⛓️ รับทราบ (ส่งตา)
+              </button>
+            ) : isCurrentPlayerResting ? (
+              <button
+                type="button"
+                disabled={isRolling || isMoving}
+                onClick={handleServeRestTurn}
+                className="pointer-events-auto wood-btn-gold px-7 py-3.5 rounded-full font-black text-sm shadow-2xl border-2 border-yellow-300/70 active:scale-95 disabled:opacity-40"
+              >
+                🏖️ หยุดพัก (ส่งตา)
+              </button>
+            ) : !hasRolledThisTurn ? (
+              <button
+                type="button"
+                disabled={isRolling || isMoving}
+                onClick={rollDice}
+                className="pointer-events-auto wood-btn-gold px-8 py-4 rounded-full font-black text-base shadow-2xl border-2 border-yellow-300/70 active:scale-95 disabled:opacity-50"
+              >
+                {isRolling ? 'กำลังทอย...' : isMoving ? 'กำลังเดิน...' : '🎲 ทอยลูกเต๋า'}
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={isRolling || isMoving}
+                onClick={handleEndTurn}
+                className="pointer-events-auto px-7 py-3.5 rounded-full font-black text-sm bg-[#3d1806] border-2 border-[#7d320b] text-amber-200 shadow-2xl active:scale-95 disabled:opacity-40"
+              >
+                ส่งตาเดิน ➜
+              </button>
+            )}
+          </div>
+        )}
+
       {/* Property Buy/Upgrade Modal */}
       <PropertyCardModal
         isOpen={Boolean(activePropertyModal || inspectTile)}
         tile={activePropertyModal || inspectTile}
-        ownership={
-          (activePropertyModal || inspectTile)
-            ? properties[(activePropertyModal || inspectTile)!.index] || null
-            : null
-        }
+        ownership={shownTileOwnership}
         currentCash={myCash}
         isMyTurn={Boolean(isMyTurn && activePropertyModal)}
+        ownerName={shownTileOwner?.display_name || null}
+        ownerColor={
+          shownTileOwner ? PLAYER_3D_COLORS[players.indexOf(shownTileOwner) % PLAYER_3D_COLORS.length] : null
+        }
+        isOwnedByMe={Boolean(shownTileOwner && currentPlayer && shownTileOwner.id === currentPlayer.id)}
         onClose={() => {
           if (activePropertyModal) {
             handleCloseActiveModal();
@@ -670,6 +811,15 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
         currentCash={myCash}
         isMyTurn={isMyTurn}
         onClose={handleCloseActiveModal}
+      />
+
+      {/* Read-only copy of whatever someone else just drew */}
+      <ChanceChestModal
+        isOpen={Boolean(spectatorCard)}
+        card={spectatorCard}
+        isMyTurn={false}
+        spectatorName={spectatorCardOwner?.display_name || null}
+        onClose={() => setDismissedDrawAt(drawnCard?.at ?? null)}
       />
 
       {/* Penalty / Rent Fee Modal */}

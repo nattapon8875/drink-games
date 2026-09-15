@@ -537,6 +537,48 @@ export const CHEST_CARDS: CardAction[] = [
     description: 'จ่ายค่าหมอและวิตามินบำรุงร่างกาย 0.5M',
     rewardMoney: -0.5,
   },
+  {
+    id: 'ch-7',
+    type: 'chest',
+    title: 'ขายที่ดินแปลงชานเมือง',
+    description: 'เทศบาลเวนคืนที่ดินที่ไม่ได้ใช้ รับเงิน 1.2M',
+    rewardMoney: 1.2,
+  },
+  {
+    id: 'ch-8',
+    type: 'chest',
+    title: 'ค่าส่วนกลางหมู่บ้าน',
+    description: 'ถึงรอบเก็บค่าส่วนกลางประจำปี จ่าย 0.7M',
+    rewardMoney: -0.7,
+  },
+  {
+    id: 'ch-9',
+    type: 'chest',
+    title: 'ถูกหวยรางวัลที่ 2',
+    description: 'ดวงเฮียนเกินคาด รับเงินรางวัล 3.0M',
+    rewardMoney: 3.0,
+  },
+  {
+    id: 'ch-10',
+    type: 'chest',
+    title: 'จ่ายค่าเทอร์มินอลขนส่ง',
+    description: 'ค่าขนส่งวัสดุก่อสร้างพุ่งสูง จ่าย 1.5M',
+    rewardMoney: -1.5,
+  },
+  {
+    id: 'ch-11',
+    type: 'chest',
+    title: 'เลี้ยงฉลองทั้งวง',
+    description: 'คุณเป็นเจ้ามือ จ่ายให้เพื่อนทุกคนคนละ 0.4M',
+    payToAll: 0.4,
+  },
+  {
+    id: 'ch-12',
+    type: 'chest',
+    title: 'ขายหุ้นได้กำไร',
+    description: 'พอร์ตโฟลิโต ขายทำกำไร รับเงิน 0.8M',
+    rewardMoney: 0.8,
+  },
 ];
 
 export const CHANCE_CARDS: CardAction[] = [
@@ -551,8 +593,8 @@ export const CHANCE_CARDS: CardAction[] = [
   {
     id: 'cc-2',
     type: 'chance',
-    title: 'บินลัดฟ้าไปภูเก็ต',
-    description: 'ได้ตั๋วเครื่องบินฟรี มุ่งตรงไปพักผ่อนที่ภูเก็ตทันที (ถ้าผ่านจุดเริ่มต้นรับ 2.0M)',
+    title: 'บินลัดฟ้าไปอุดรธานี',
+    description: 'ได้ตั๋วเครื่องบินฟรี มุ่งตรงไปลงทุนที่อุดรธานีทันที (ถ้าผ่านจุดเริ่มต้นรับ 2.0M)',
     teleportToIndex: 31,
   },
   {
@@ -583,14 +625,82 @@ export const CHANCE_CARDS: CardAction[] = [
     description: 'เก็งกำไรที่ดินสำเร็จ ได้รับผลตอบแทน 2.5M',
     rewardMoney: 2.5,
   },
+  {
+    id: 'cc-7',
+    type: 'chance',
+    title: 'ตรวจพบสิ่งผิดกฎหมาย',
+    description: 'เจ้าหน้าที่เรียกคุย ถูกส่งเข้าห้องขังทันที',
+    goJail: true,
+  },
+  {
+    id: 'cc-8',
+    type: 'chance',
+    title: 'เงินปันผลหุ้นก้อนโต',
+    description: 'หุ้นที่ถือไว้ราคาพุ่ง รับเงิน 1.8M',
+    rewardMoney: 1.8,
+  },
+  {
+    id: 'cc-9',
+    type: 'chance',
+    title: 'กลับไปตั้งหลักที่เชียงใหม่',
+    description: 'ย้ายฐานการค้าไปเชียงใหม่ทันที (ถ้าผ่านจุดเริ่มต้นรับ 2.00M)',
+    teleportToIndex: 21,
+  },
+  {
+    id: 'cc-10',
+    type: 'chance',
+    title: 'ค่าซ่อมรถครั้งใหญ่',
+    description: 'เครื่องพังกลางทาง จ่ายค่าซ่อม 1.2M',
+    rewardMoney: -1.2,
+  },
+  {
+    id: 'cc-11',
+    type: 'chance',
+    title: 'ได้งานประมูลเทศบาล',
+    description: 'รับเหมาสร้างถนน กำไรงาม รับเงิน 2.2M',
+    rewardMoney: 2.2,
+  },
+  {
+    id: 'cc-12',
+    type: 'chance',
+    title: 'เรียกคืนภาษีย้อนหลัง',
+    description: 'สรรพากรใจดี เก็บเงินจากเพื่อนทุกคน คนละ 0.3M',
+    collectFromAll: 0.3,
+  },
 ];
 
 export function formatMoneyM(amount: number): string {
-  if (Math.abs(amount) >= 1) {
-    // e.g. 1.5M, 15M, 100M
-    const formatted = (Math.round(amount * 100) / 100).toFixed(amount % 1 === 0 ? 0 : 1);
-    return `${formatted}M`;
+  // Always two decimals so every cash figure on screen lines up (15.00M, 1.40M, 0.60M)
+  const rounded = Math.round(amount * 100) / 100;
+  return `${rounded.toFixed(2)}M`;
+}
+
+// ---------------------------------------------------------------------------
+// Draw piles
+//
+// Cards used to be picked at random every time, so the same one came up again
+// and again. Each deck is now dealt out: a card is only reshuffled back in once
+// the whole pile has been used. The remaining ids live in game_state so every
+// client draws from the same pile.
+// ---------------------------------------------------------------------------
+
+function shuffleIds(cards: CardAction[]): string[] {
+  const ids = cards.map((c) => c.id);
+  for (let i = ids.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [ids[i], ids[j]] = [ids[j], ids[i]];
   }
-  // If less than 1M, show as decimals or thousands e.g. 0.5M
-  return `${amount.toFixed(2)}M`;
+  return ids;
+}
+
+export function drawFromDeck(
+  deck: string[] | undefined | null,
+  cards: CardAction[]
+): { card: CardAction; nextDeck: string[] } {
+  let pile = Array.isArray(deck) ? deck.filter((id) => cards.some((c) => c.id === id)) : [];
+  if (pile.length === 0) pile = shuffleIds(cards);
+
+  const [drawnId, ...rest] = pile;
+  const card = cards.find((c) => c.id === drawnId) || cards[0];
+  return { card, nextDeck: rest };
 }
