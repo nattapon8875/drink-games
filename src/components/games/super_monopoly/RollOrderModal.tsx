@@ -12,6 +12,7 @@ interface RollOrderModalProps {
   players: PlayerRecord[];
   currentPlayer: PlayerRecord | null;
   isHost: boolean;
+  hostId?: string;
   roomGameState: any;
   onUpdateGameState: (partialState: Record<string, any>) => Promise<void>;
   onReorderPlayers?: (orderedPlayerIds: string[]) => Promise<void>;
@@ -23,6 +24,7 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
   players,
   currentPlayer,
   isHost,
+  hostId,
   roomGameState,
   onUpdateGameState,
   onReorderPlayers,
@@ -30,6 +32,17 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
 }) => {
   const rolls: Record<string, { d1: number; d2: number; total: number; tiebreaker: number }> =
     roomGameState?.roll_order_rolls || {};
+
+  const rollsRef = useRef(rolls);
+  rollsRef.current = rolls;
+
+  const playersRef = useRef(players);
+  playersRef.current = players;
+
+  const isHostRef = useRef(isHost);
+  isHostRef.current = isHost;
+
+  const isRollingBotsRef = useRef(false);
 
   const [isLocalRolling, setIsLocalRolling] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
@@ -89,7 +102,7 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
 
   // Handle human roll
   const handleRollForMe = async () => {
-    if (!currentPlayer || rolls[currentPlayer.id] || isLocalRolling) return;
+    if (!currentPlayer || rollsRef.current[currentPlayer.id] || isLocalRolling) return;
     setIsLocalRolling(true);
     sfx.playDiceRoll();
 
@@ -101,7 +114,7 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
     setTimeout(async () => {
       sfx.playTileLand();
       const updatedRolls = {
-        ...rolls,
+        ...(rollsRef.current || {}),
         [currentPlayer.id]: { d1, d2, total, tiebreaker },
       };
 
@@ -109,46 +122,72 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
         roll_order_rolls: updatedRolls,
       });
       setIsLocalRolling(false);
-    }, 1000);
+    }, 700);
   };
 
-  // Host auto-rolls for all bots (staggered)
+  // Auto-roll for all bots (Reliable async loop that does NOT get cancelled by 400ms polling re-renders)
   useEffect(() => {
-    if (!isOpen || !isHost || allRolled) return;
+    if (!isOpen || allRolled) return;
 
-    const unrolledBots = players.filter(
-      (p) => (p.line_user_id === 'bot' || p.id.startsWith('bot-')) && !rolls[p.id]
+    const hasUnrolledBots = players.some(
+      (p) => (p.line_user_id === 'bot' || p.id.startsWith('bot-')) && !rollsRef.current[p.id]
     );
 
-    if (unrolledBots.length === 0) return;
+    if (!hasUnrolledBots || isRollingBotsRef.current) return;
 
-    const timer = setTimeout(async () => {
-      const targetBot = unrolledBots[0];
-      const d1 = Math.floor(Math.random() * 6) + 1;
-      const d2 = Math.floor(Math.random() * 6) + 1;
-      const total = d1 + d2;
-      const tiebreaker = Math.random() * 999;
+    const firstHuman = players.find(
+      (p) => p.line_user_id !== 'bot' && !p.id.startsWith('bot-')
+    );
+    const shouldIHandleBots = isHost || (currentPlayer && firstHuman && currentPlayer.id === firstHuman.id);
+    if (!shouldIHandleBots) return;
 
-      sfx.playDiceRoll();
+    isRollingBotsRef.current = true;
 
-      await onUpdateGameState({
-        roll_order_rolls: {
-          ...rolls,
-          [targetBot.id]: { d1, d2, total, tiebreaker },
-        },
-      });
-    }, 1200);
+    const runBotRolls = async () => {
+      // Small initial delay so users can see the modal appear
+      await new Promise((resolve) => setTimeout(resolve, 600));
 
-    return () => clearTimeout(timer);
-  }, [isOpen, isHost, players, rolls, allRolled, onUpdateGameState]);
+      const botsToRoll = playersRef.current.filter(
+        (p) => (p.line_user_id === 'bot' || p.id.startsWith('bot-')) && !rollsRef.current[p.id]
+      );
+
+      let currentRolls = { ...(rollsRef.current || {}) };
+
+      for (const bot of botsToRoll) {
+        if (currentRolls[bot.id]) continue;
+
+        const d1 = Math.floor(Math.random() * 6) + 1;
+        const d2 = Math.floor(Math.random() * 6) + 1;
+        const total = d1 + d2;
+        const tiebreaker = Math.random() * 999;
+
+        currentRolls = {
+          ...currentRolls,
+          ...rollsRef.current,
+          [bot.id]: { d1, d2, total, tiebreaker },
+        };
+
+        sfx.playDiceRoll();
+
+        await onUpdateGameState({
+          roll_order_rolls: currentRolls,
+        });
+
+        await new Promise((resolve) => setTimeout(resolve, 800));
+      }
+
+      isRollingBotsRef.current = false;
+    };
+
+    runBotRolls();
+  }, [isOpen, allRolled, isHost, currentPlayer, players, onUpdateGameState]);
 
   // Host button to roll for everyone who hasn't rolled yet
   const handleRollForAll = async () => {
-    if (!isHost) return;
     sfx.playDiceRoll();
-    const updated = { ...rolls };
+    const updated = { ...(rollsRef.current || {}) };
 
-    for (const p of players) {
+    for (const p of playersRef.current) {
       if (!updated[p.id]) {
         const d1 = Math.floor(Math.random() * 6) + 1;
         const d2 = Math.floor(Math.random() * 6) + 1;
@@ -241,12 +280,18 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
     }
   };
 
-  // Trigger finalize when countdown reaches 0 (Host only)
+  // Trigger finalize when countdown reaches 0
   useEffect(() => {
-    if (countdown === 0 && isHost && !finalizedRef.current) {
-      finalizeRollOrder();
+    if (countdown === 0 && !finalizedRef.current) {
+      const firstHuman = players.find(
+        (p) => p.line_user_id !== 'bot' && !p.id.startsWith('bot-')
+      );
+      const shouldIHandleFinalize = isHost || (currentPlayer && firstHuman && currentPlayer.id === firstHuman.id);
+      if (shouldIHandleFinalize) {
+        finalizeRollOrder();
+      }
     }
-  }, [countdown, isHost]);
+  }, [countdown, isHost, currentPlayer, players]);
 
   if (!isOpen) return null;
 
@@ -325,7 +370,7 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
                           BOT
                         </span>
                       )}
-                      {p.id === roomGameState?.host_id && (
+                      {(hostId ? p.id === hostId : p.id === roomGameState?.host_id || p.id === players[0]?.id) && (
                         <Crown className="w-3 h-3 text-yellow-400" />
                       )}
                     </div>

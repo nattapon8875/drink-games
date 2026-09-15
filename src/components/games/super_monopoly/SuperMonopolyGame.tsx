@@ -691,6 +691,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
         players={players}
         currentPlayer={currentPlayer}
         isHost={isHost}
+        hostId={room.host_id}
         roomGameState={room.game_state}
         onUpdateGameState={props.onUpdateGameState}
         onReorderPlayers={props.onReorderPlayers}
