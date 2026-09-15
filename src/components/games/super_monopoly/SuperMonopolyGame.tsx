@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BaseGameProps } from '@/types/game';
 import { useSuperMonopolyEngine } from './useSuperMonopolyEngine';
 import { SuperBoard } from './SuperBoard';
@@ -99,14 +99,14 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
 
     return (
       <div
-        className={`w-14 h-14 rounded-2xl bg-gradient-to-b from-[#ffffff] via-[#f7f5e8] to-[#e8dec0] border-2 border-b-4 border-[#826131] shadow-xl flex items-center justify-center transition-all ${
-          isRollingAnim ? 'animate-spin' : 'hover:scale-105'
+        className={`w-14 h-14 rounded-2xl bg-gradient-to-b from-[#ffffff] via-[#f7f5e8] to-[#e8dec0] border-2 border-b-4 border-[#826131] shadow-xl flex items-center justify-center ${
+          isRollingAnim ? 'animate-spin' : ''
         }`}
       >
         <div className="grid grid-cols-3 grid-rows-3 w-10 h-10 p-1 gap-0.5 pointer-events-none">
-          {dotClasses.map((cls, idx) => (
+          {dotClasses.map((cls) => (
             <span
-              key={idx}
+              key={cls}
               className={`w-2.5 h-2.5 rounded-full ${
                 val === 1 ? 'bg-red-600 ring-1 ring-red-400' : 'bg-[#1c0802]'
               } shadow-inner justify-self-center self-center ${cls}`}
@@ -168,6 +168,11 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
   const spectatorCardOwner = drawnCard
     ? players.find((p) => p.id === drawnCard.playerId) || null
     : null;
+
+  // A fresh arrow here on every render would defeat the memo on both boards.
+  const handleTileClick = useCallback((tile: SuperPropertyTile) => {
+    setInspectTile(tile);
+  }, []);
 
   return (
     <div className="w-full h-full min-h-[90vh] flex flex-col justify-between p-2 sm:p-4 select-none max-w-7xl mx-auto">
@@ -502,7 +507,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               players={players}
               currentTurnPlayerId={currentTurnPlayer?.id || null}
               activeStepTileIndex={activeStepTileIndex}
-              onTileClick={(tile) => setInspectTile(tile)}
+              onTileClick={handleTileClick}
             />
           ) : (
             <SuperBoard
@@ -511,7 +516,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               players={players}
               currentTurnPlayerId={currentTurnPlayer?.id || null}
               activeStepTileIndex={activeStepTileIndex}
-              onTileClick={(tile) => setInspectTile(tile)}
+              onTileClick={handleTileClick}
             />
           )}
           </div>

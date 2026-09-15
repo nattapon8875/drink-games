@@ -180,25 +180,21 @@ export function getSuperTile3DPosition(index: number): [number, number, number] 
 
 // Rotation for each tile:
 // 1. 4 corners are normal square tiles (NO diagonal slant)
-// 2. หัวการ์ด (Top / Banner) เข้าไปด้านในกระดาน
-// 3. ท้ายการ์ด (Bottom / Price) ออกมาด้านนอกทั้ง 4 ด้าน
+// 2. หัวการ์ด (Top / Banner) ออกด้านนอกกระดาน
+// 3. ท้ายการ์ด (Bottom / Price) เข้าด้านในทั้ง 4 ด้าน
 export function getSuperTile3DRotation(index: number): [number, number, number] {
   if (index >= 0 && index <= 10) {
-    // Bottom row & corners 0 and 10:
-    // Header (Top) faces INWARD (-Z), Bottom (Price) faces OUTWARD (+Z)
-    return [0, 0, 0];
-  } else if (index > 10 && index < 20) {
-    // Left col (11 -> 19):
-    // Header (Top) faces INWARD (+X), Bottom (Price) faces OUTWARD (-X)
-    return [0, Math.PI / 2, 0];
-  } else if (index >= 20 && index <= 30) {
-    // Top row & corners 20 and 30:
-    // Header (Top) faces INWARD (+Z), Bottom (Price) faces OUTWARD (-Z)
+    // Bottom row & corners 0 and 10: header OUTWARD (+Z), price toward the centre
     return [0, Math.PI, 0];
-  } else {
-    // Right col (31 -> 39):
-    // Header (Top) faces INWARD (-X), Bottom (Price) faces OUTWARD (+X)
+  } else if (index > 10 && index < 20) {
+    // Left col (11 -> 19): header OUTWARD (-X)
     return [0, -Math.PI / 2, 0];
+  } else if (index >= 20 && index <= 30) {
+    // Top row & corners 20 and 30: header OUTWARD (-Z)
+    return [0, 0, 0];
+  } else {
+    // Right col (31 -> 39): header OUTWARD (+X)
+    return [0, Math.PI / 2, 0];
   }
 }
 
@@ -911,7 +907,19 @@ const CenterDeck3D: React.FC = () => {
   );
 };
 
-export const SuperBoard3D: React.FC<SuperBoard3DProps> = ({
+// These MUST keep a stable identity. Passing fresh object literals made R3F
+// re-apply the camera on every render, which snapped the view back to the
+// default framing the moment anything changed - so panning and zooming never
+// survived a bot's move.
+//
+// dpr renders above CSS size and lets the browser downsample: a plain 1:1
+// buffer is what made the tile lettering look soft, and following the display's
+// own ratio would change nothing at all on a 1x monitor.
+const CANVAS_DPR: [number, number] = [1.5, 2];
+const CANVAS_CAMERA = { position: [0, 9.8, 9.8] as [number, number, number], fov: 42 };
+const CANVAS_GL = { antialias: true, toneMapping: THREE.ACESFilmicToneMapping };
+
+const SuperBoard3DBase: React.FC<SuperBoard3DProps> = ({
   positions,
   properties,
   players,
@@ -920,12 +928,11 @@ export const SuperBoard3D: React.FC<SuperBoard3DProps> = ({
   onTileClick,
 }) => {
   return (
-    <div className="w-full h-full min-h-[460px] sm:min-h-[560px] lg:min-h-[640px] aspect-square rounded-2xl overflow-hidden shadow-2xl relative bg-[#0f0703] border-2 border-[#54280a]">
-      <Canvas
-        shadows
-        camera={{ position: [0, 9.8, 9.8], fov: 42 }}
-        gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
-      >
+    <div
+      className="w-full h-full min-h-[460px] sm:min-h-[560px] lg:min-h-[640px] aspect-square rounded-2xl overflow-hidden shadow-2xl relative bg-[#0f0703] border-2 border-[#54280a]"
+      onContextMenu={(e) => e.preventDefault()}
+    >
+      <Canvas shadows dpr={CANVAS_DPR} camera={CANVAS_CAMERA} gl={CANVAS_GL}>
         <color attach="background" args={['#120703']} />
 
         {/* Ambient & Directional Warm Sunlight Lighting */}
@@ -943,10 +950,13 @@ export const SuperBoard3D: React.FC<SuperBoard3DProps> = ({
 
         {/* Orbit Camera Controls (Constrained to smooth isometric view) */}
         <OrbitControls
-          enablePan={false}
-          enableZoom={true}
-          minDistance={7}
-          maxDistance={15}
+          // Right-drag pans, left-drag orbits, wheel zooms. Panning used to be
+          // off and the near limit kept you too far out to read a tile.
+          enablePan
+          screenSpacePanning
+          enableZoom
+          minDistance={4}
+          maxDistance={16}
           maxPolarAngle={Math.PI / 2.15}
           minPolarAngle={Math.PI / 6}
         />
@@ -1007,3 +1017,8 @@ export const SuperBoard3D: React.FC<SuperBoard3DProps> = ({
     </div>
   );
 };
+
+// The walk animation rewrites game_state every 320ms and the poll republishes
+// it on top of that. Without this the entire scene rebuilt several times a
+// second, which is what made the board text shimmer while a token was moving.
+export const SuperBoard3D = React.memo(SuperBoard3DBase);

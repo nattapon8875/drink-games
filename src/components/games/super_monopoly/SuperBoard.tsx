@@ -13,7 +13,7 @@ interface SuperBoardProps {
   onTileClick: (tile: SuperPropertyTile) => void;
 }
 
-export const SuperBoard: React.FC<SuperBoardProps> = ({
+const SuperBoardBase: React.FC<SuperBoardProps> = ({
   positions,
   properties,
   players,
@@ -378,3 +378,8 @@ export const SuperBoard: React.FC<SuperBoardProps> = ({
     </div>
   );
 };
+
+// Same reason as the 3D board: the walk animation and the poll both rewrite
+// game_state several times a second, and re-rendering all 40 tiles each time
+// made the labels shimmer.
+export const SuperBoard = React.memo(SuperBoardBase);
