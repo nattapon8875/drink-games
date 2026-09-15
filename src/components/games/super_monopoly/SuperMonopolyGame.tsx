@@ -7,12 +7,14 @@ import { SuperBoard } from './SuperBoard';
 import { SuperBoard3D } from './SuperBoard3D';
 import { PropertyCardModal } from './PropertyCardModal';
 import { ChanceChestModal } from './ChanceChestModal';
+import { RulesModal } from './RulesModal';
 import { Modal } from '@/components/common/Modal';
 import { SUPER_MONOPOLY_TILES, formatMoneyM } from './superMonopolyData';
 import { Avatar } from '@/components/common/Avatar';
 import { SuperPropertyTile } from '@/types/database';
 import {
   Dices,
+  BookOpen,
   Crown,
   Building2,
   Home,
@@ -66,6 +68,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
   const [inspectTile, setInspectTile] = useState<SuperPropertyTile | null>(null);
   const [is3DMode, setIs3DMode] = useState<boolean>(true);
   const [showHistoryModal, setShowHistoryModal] = useState<boolean>(false);
+  const [showRulesModal, setShowRulesModal] = useState<boolean>(false);
 
   const myCash = currentPlayer ? cash[currentPlayer.id] ?? 15.0 : 15.0;
 
@@ -121,21 +124,34 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           </div>
         </div>
 
-        {/* Current Turn Announcement */}
-        <div className="flex items-center gap-2 bg-[#1f0b02] border border-[#522005] px-3 py-1 rounded-xl">
-          <Avatar
-            src={currentTurnPlayer?.avatar_url}
-            name={currentTurnPlayer?.display_name || 'Player'}
-            size="sm"
-            isTurn={true}
-          />
-          <div className="text-right">
-            <span className="text-[10px] text-amber-400/80 block leading-tight font-bold">
-              {isMyTurn ? 'ตาของคุณ!' : isBotTurn ? 'บอทกำลังเล่น:' : 'ตากำลังเล่น:'}
-            </span>
-            <span className="text-xs font-black text-amber-100 truncate max-w-[110px] block">
-              {currentTurnPlayer?.display_name}
-            </span>
+        {/* Right Header: Rules & Current Turn Announcement */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowRulesModal(true)}
+            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-700 via-amber-600 to-amber-700 hover:from-amber-600 hover:to-amber-500 border border-yellow-500/50 text-xs font-black text-amber-100 shadow flex items-center gap-1.5 transition active:scale-95 cursor-pointer"
+            title="ดูกฎและกติกาการเล่นซุปเปอร์เศรษฐี"
+          >
+            <BookOpen className="w-4 h-4 text-yellow-300" />
+            <span className="hidden sm:inline">กติกาการเล่น</span>
+            <span className="sm:hidden">กติกา</span>
+          </button>
+
+          <div className="flex items-center gap-2 bg-[#1f0b02] border border-[#522005] px-3 py-1 rounded-xl">
+            <Avatar
+              src={currentTurnPlayer?.avatar_url}
+              name={currentTurnPlayer?.display_name || 'Player'}
+              size="sm"
+              isTurn={true}
+            />
+            <div className="text-right">
+              <span className="text-[10px] text-amber-400/80 block leading-tight font-bold">
+                {isMyTurn ? 'ตาของคุณ!' : isBotTurn ? 'บอทกำลังเล่น:' : 'ตากำลังเล่น:'}
+              </span>
+              <span className="text-xs font-black text-amber-100 truncate max-w-[110px] block">
+                {currentTurnPlayer?.display_name}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -174,8 +190,17 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           )}
           <button
             type="button"
+            onClick={() => setShowRulesModal(true)}
+            className="px-2.5 py-1 rounded-xl bg-[#3d1806] hover:bg-[#522108] border border-[#7d320b] text-[11px] font-black text-amber-200 hover:text-white flex items-center gap-1.5 transition active:scale-95 shadow cursor-pointer"
+            title="ดูกฎและกติกาการเล่นซุปเปอร์เศรษฐี"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-yellow-400" />
+            <span>📖 กติกา</span>
+          </button>
+          <button
+            type="button"
             onClick={() => setShowHistoryModal(true)}
-            className="px-2.5 py-1 rounded-xl bg-[#3d1806] hover:bg-[#522108] border border-[#7d320b] text-[11px] font-black text-yellow-300 flex items-center gap-1.5 transition active:scale-95 shadow"
+            className="px-2.5 py-1 rounded-xl bg-[#3d1806] hover:bg-[#522108] border border-[#7d320b] text-[11px] font-black text-yellow-300 flex items-center gap-1.5 transition active:scale-95 shadow cursor-pointer"
             title="ดูประวัติการเดินและซื้อที่ดินทั้งหมด"
           >
             <span>📜 ประวัติ</span>
@@ -613,6 +638,12 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
         currentCash={myCash}
         isMyTurn={isMyTurn}
         onClose={handleCloseActiveModal}
+      />
+
+      {/* Game Rules Modal */}
+      <RulesModal
+        isOpen={showRulesModal}
+        onClose={() => setShowRulesModal(false)}
       />
 
       {/* All Moves & Game History Modal */}
