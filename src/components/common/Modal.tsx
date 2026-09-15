@@ -33,7 +33,7 @@ export const Modal: React.FC<ModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/92 animate-fadeIn">
       <div
         className={clsx(
           'relative w-full max-w-md rpg-dialog-box rounded-3xl p-5 sm:p-6 text-white overflow-hidden',

@@ -37,11 +37,11 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
   const channelRef = useRef<RealtimeChannel | null>(null);
   // When we last wrote game_state ourselves. A poll that was already in flight
   // carries state older than that write, and applying it snaps the board back.
-  const lastLocalWriteRef = useRef<number>(0);
-  // Just long enough to outlast one write's round trip. It was 700ms, which
-  // also swallowed everyone else's updates arriving in that window and made
-  // the roll-off stutter.
-  const LOCAL_WRITE_GRACE_MS = 220;
+  // Highest game_state revision we have accepted. A time window could not tell
+  // a stale poll from someone else's fresh update - too long and it swallowed
+  // their moves, too short and the token snapped back a tile. The revision says
+  // exactly which state is newer.
+  const lastAppliedRevRef = useRef<number>(0);
 
   // Fetch from Server API (works across Incognito, Normal tabs, and all devices)
   const fetchData = useCallback(async () => {
@@ -148,8 +148,9 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
           if (res.ok) {
             const data = await res.json();
             if (data.exists && data.room) {
-              const ourWriteIsNewer = Date.now() - lastLocalWriteRef.current < LOCAL_WRITE_GRACE_MS;
-              if (!ourWriteIsNewer) {
+              const rev = (data.room.game_state?.rev as number) || 0;
+              if (rev >= lastAppliedRevRef.current) {
+                lastAppliedRevRef.current = rev;
                 setRoom((prev) => keepIfUnchanged(prev, data.room));
               }
               setPlayers((prev) => keepIfUnchanged(prev, data.players || []));
@@ -400,22 +401,28 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
         // Show it immediately. Waiting for the round trip first meant every
         // step of a walk was paced by network latency, so the token moved in
         // uneven jerks rather than at a steady 320ms.
-        lastLocalWriteRef.current = Date.now();
         setRoom((prev) => (prev ? { ...prev, game_state: merged } : null));
 
-        await fetch('/api/room', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'update_state',
-            code: roomCode,
-            partialState,
-          }),
-        });
+        try {
+          const res = await fetch('/api/room', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'update_state',
+              code: roomCode,
+              partialState,
+            }),
+          });
+          if (res.ok) {
+            const saved = await res.json();
+            const rev = (saved?.room?.game_state?.rev as number) || 0;
+            if (rev > lastAppliedRevRef.current) lastAppliedRevRef.current = rev;
+          }
+        } catch {
+          // the next poll will reconcile
+        }
         return;
       }
-
-      lastLocalWriteRef.current = Date.now();
 
       await supabase
         .from('rooms')

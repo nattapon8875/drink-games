@@ -298,7 +298,7 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
   const myRoll = currentPlayer ? rolls[currentPlayer.id] : null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/92 animate-fadeIn">
       <div className="w-full max-w-xl bg-gradient-to-b from-[#2e1305] via-[#200c02] to-[#140601] border-3 border-[#78370e] rounded-3xl p-5 sm:p-6 shadow-[0_25px_60px_rgba(0,0,0,0.9)] relative overflow-hidden flex flex-col gap-4 text-center">
         {/* Glow ambient decoration */}
         <div className="absolute -top-16 -left-16 w-36 h-36 bg-amber-500/20 rounded-full blur-3xl pointer-events-none" />

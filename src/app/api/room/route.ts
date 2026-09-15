@@ -187,7 +187,11 @@ export async function POST(req: Request) {
           const { partialState } = body;
           const room = serverStore.rooms.get(roomCode);
           if (room) {
-            room.game_state = { ...(room.game_state || {}), ...partialState };
+            // Every write gets the next revision number. Clients use it to tell
+            // a genuinely newer state from a poll that was already in flight and
+            // is carrying an older board.
+            const rev = ((room.game_state?.rev as number) || 0) + 1;
+            room.game_state = { ...(room.game_state || {}), ...partialState, rev };
             serverStore.rooms.set(roomCode, room);
           }
           return NextResponse.json({ success: true, room });
