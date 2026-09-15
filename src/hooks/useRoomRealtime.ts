@@ -6,6 +6,16 @@ import { RoomRecord, PlayerRecord } from '@/types/database';
 import { UnifiedUser } from '@/lib/platforms/types';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
+// Presence tuning. A client refreshes its own row every HEARTBEAT_INTERVAL_MS;
+// the host removes anyone whose row has not been touched for STALE_AFTER_MS.
+const HEARTBEAT_INTERVAL_MS = 15000;
+const STALE_AFTER_MS = 45000;
+const REAP_INTERVAL_MS = 20000;
+
+function isBotPlayer(p: PlayerRecord): boolean {
+  return p.line_user_id === 'bot' || p.id.startsWith('bot-');
+}
+
 export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | null) {
   const [room, setRoom] = useState<RoomRecord | null>(null);
   const [players, setPlayers] = useState<PlayerRecord[]>([]);
@@ -256,6 +266,19 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
             })
             .eq('code', roomCode);
         }
+      } else if (
+        existing.display_name !== currentUser.displayName ||
+        existing.avatar_url !== currentUser.avatarUrl
+      ) {
+        await supabase
+          .from('players')
+          .update({
+            display_name: currentUser.displayName,
+            avatar_url: currentUser.avatarUrl,
+            is_connected: true,
+          })
+          .eq('room_code', roomCode)
+          .eq('id', currentUser.id);
       }
     } catch (err) {
       console.error('[Realtime] Join error:', err);
@@ -491,17 +514,37 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
       if (room) {
         const positions = { ...(room.game_state?.positions || {}) };
         delete positions[targetPlayerId];
-        await supabase
-          .from('rooms')
-          .update({
-            game_state: { ...room.game_state, positions },
-          })
-          .eq('code', roomCode);
+
+        const remaining = players.filter((p) => p.id !== targetPlayerId);
+        const roomUpdate: Partial<RoomRecord> = {
+          game_state: { ...room.game_state, positions },
+        };
+
+        // Hand over the room instead of leaving it headless (the mock API already does this)
+        if (room.host_id === targetPlayerId) {
+          if (remaining.length > 0) {
+            roomUpdate.host_id = remaining[0].id;
+          } else {
+            roomUpdate.status = 'finished';
+          }
+        }
+
+        // Never leave the turn pointing at someone who is gone
+        if (room.current_turn_player_id === targetPlayerId && remaining.length > 0) {
+          roomUpdate.current_turn_player_id = remaining[0].id;
+          roomUpdate.game_state = {
+            ...roomUpdate.game_state,
+            activeActionModal: false,
+            isRolling: false,
+          };
+        }
+
+        await supabase.from('rooms').update(roomUpdate).eq('code', roomCode);
       }
     } catch (err) {
       console.error('[Realtime] Leave room error:', err);
     }
-  }, [currentUser, roomCode, room]);
+  }, [currentUser, roomCode, room, players]);
 
   // Reorder Players (Host only)
   const reorderPlayers = useCallback(
@@ -758,6 +801,95 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
     },
     [roomCode, currentUser]
   );
+
+  // ---- Presence: heartbeat + stale player cleanup --------------------------
+  // Discord can tear down the Activity iframe without ever firing pagehide
+  // (force close, network drop, switching voice channel), so unload handlers
+  // alone are not enough to keep ghost players out of the room.
+  const playersRef = useRef<PlayerRecord[]>(players);
+  useEffect(() => {
+    playersRef.current = players;
+  }, [players]);
+
+  // leaveRoom is rebuilt whenever `room` changes, which is on every game_state
+  // update. Holding it in a ref keeps the reaper interval from being torn down
+  // and restarted constantly (it would otherwise never live long enough to fire).
+  const leaveRoomRef = useRef(leaveRoom);
+  useEffect(() => {
+    leaveRoomRef.current = leaveRoom;
+  }, [leaveRoom]);
+
+  // Each client only ever writes its OWN row, so heartbeats never contend
+  // with each other or with game_state updates.
+  useEffect(() => {
+    const playerId = currentUser?.id;
+    if (!roomCode || !playerId || playerId === 'guest-init') return;
+
+    let cancelled = false;
+
+    const beat = async () => {
+      if (cancelled) return;
+      try {
+        if (!isSupabaseConfigured()) {
+          await fetch('/api/room', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'heartbeat', code: roomCode, playerId }),
+          });
+          return;
+        }
+
+        await supabase
+          .from('players')
+          .update({ last_seen: new Date().toISOString(), is_connected: true })
+          .eq('room_code', roomCode)
+          .eq('id', playerId);
+      } catch {
+        // a missed beat is harmless; the next one covers it
+      }
+    };
+
+    beat();
+    const timer = setInterval(beat, HEARTBEAT_INTERVAL_MS);
+
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [roomCode, currentUser?.id]);
+
+  // Only the host reaps, so a stale row is not deleted N times over.
+  // Bots have no client and would otherwise be reaped immediately.
+  const isRoomHost = Boolean(room && currentUser && room.host_id === currentUser.id);
+  useEffect(() => {
+    if (!roomCode || !isRoomHost || !currentUser?.id) return;
+
+    let cancelled = false;
+
+    const reap = async () => {
+      if (cancelled) return;
+      const cutoff = Date.now() - STALE_AFTER_MS;
+
+      const stale = playersRef.current.filter((p) => {
+        if (isBotPlayer(p) || p.id === currentUser.id) return false;
+        if (!p.last_seen) return false; // never heartbeat: pre-migration row, leave alone
+        const seen = new Date(p.last_seen).getTime();
+        return Number.isFinite(seen) && seen < cutoff;
+      });
+
+      for (const p of stale) {
+        console.log('[Presence] Removing stale player:', p.display_name, p.id);
+        await leaveRoomRef.current(p.id);
+      }
+    };
+
+    const timer = setInterval(reap, REAP_INTERVAL_MS);
+
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [roomCode, isRoomHost, currentUser?.id]);
 
   return {
     room,

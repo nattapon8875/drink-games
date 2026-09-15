@@ -1,5 +1,6 @@
 import { DiscordSDK } from '@discord/embedded-app-sdk';
 import { UnifiedUser } from './types';
+import { getCustomNameFor } from './customName';
 
 let discordSdk: DiscordSDK | null = null;
 let isDiscordReady = false;
@@ -83,21 +84,31 @@ export async function initDiscord(): Promise<{
         });
 
         if (response.ok) {
-          const { access_token } = await response.json();
-          if (access_token) {
-            const auth = await discordSdk.commands.authenticate({ access_token });
-            if (auth.user) {
-              const avatarUrl = auth.user.avatar
-                ? `https://cdn.discordapp.com/avatars/${auth.user.id}/${auth.user.avatar}.png`
-                : `https://cdn.discordapp.com/embed/avatars/${parseInt(auth.user.discriminator || '0') % 5}.png`;
+          const data = await response.json();
+          const { access_token, user: serverUser } = data;
 
-              user = {
-                id: auth.user.id,
-                displayName: auth.user.global_name || auth.user.username,
-                avatarUrl,
-                platformType: 'discord',
-                rawPayload: auth.user,
-              };
+          if (serverUser) {
+            user = serverUser;
+          }
+
+          if (access_token) {
+            try {
+              const auth = await discordSdk.commands.authenticate({ access_token });
+              if (auth?.user && !user) {
+                const avatarUrl = auth.user.avatar
+                  ? `https://cdn.discordapp.com/avatars/${auth.user.id}/${auth.user.avatar}.png`
+                  : `https://cdn.discordapp.com/embed/avatars/${parseInt(auth.user.discriminator || '0') % 5}.png`;
+
+                user = {
+                  id: auth.user.id,
+                  displayName: auth.user.global_name || auth.user.username,
+                  avatarUrl,
+                  platformType: 'discord',
+                  rawPayload: auth.user,
+                };
+              }
+            } catch (authCmdErr) {
+              console.warn('[Discord] SDK authenticate notice:', authCmdErr);
             }
           }
         } else {
@@ -109,12 +120,25 @@ export async function initDiscord(): Promise<{
       }
     }
 
+    if (user) {
+      if (typeof window !== 'undefined') {
+        // Keep a custom name ONLY if this same Discord account is the one that set it.
+        // Legacy unscoped names are ignored here so the real profile name always wins.
+        const customName = getCustomNameFor(user.id);
+        if (customName) {
+          user.displayName = customName;
+        }
+        localStorage.setItem('party_discord_user', JSON.stringify(user));
+        localStorage.setItem('party_drink_guest_user', JSON.stringify(user));
+      }
+    }
+
     // Fallback if OAuth denied or skipped:
     // IMPORTANT: Never use discordSdk.instanceId as player ID because instanceId is shared by all users in the activity!
     if (!user) {
       let localUser: UnifiedUser | null = null;
       if (typeof window !== 'undefined') {
-        const stored = localStorage.getItem('party_discord_user');
+        const stored = localStorage.getItem('party_discord_user') || localStorage.getItem('party_drink_guest_user');
         if (stored) {
           try {
             localUser = JSON.parse(stored);
@@ -130,9 +154,15 @@ export async function initDiscord(): Promise<{
           avatarUrl: '/buffy-mascot.png',
           platformType: 'discord',
         };
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('party_discord_user', JSON.stringify(localUser));
+      }
+
+      if (typeof window !== 'undefined') {
+        const customName = getCustomNameFor(localUser.id, true);
+        if (customName) {
+          localUser.displayName = customName;
         }
+        localStorage.setItem('party_discord_user', JSON.stringify(localUser));
+        localStorage.setItem('party_drink_guest_user', JSON.stringify(localUser));
       }
 
       user = localUser;

@@ -52,6 +52,27 @@ export default function SuperPlayPage() {
     }
   }, [user, roomCode, roomLoading, platformLoading, joinRoom]);
 
+  // Discord closes the Activity iframe without any navigation, so without this the
+  // player row is never removed and they linger in the room as a ghost.
+  useEffect(() => {
+    if (!user || user.id === 'guest-init' || !roomCode) return;
+
+    const handleLeaveOnClose = () => {
+      // Host is kept so a quick refresh does not orphan the room
+      if (room && room.host_id !== user.id) {
+        leaveRoom();
+      }
+    };
+
+    window.addEventListener('pagehide', handleLeaveOnClose);
+    window.addEventListener('beforeunload', handleLeaveOnClose);
+
+    return () => {
+      window.removeEventListener('pagehide', handleLeaveOnClose);
+      window.removeEventListener('beforeunload', handleLeaveOnClose);
+    };
+  }, [user, roomCode, room, leaveRoom]);
+
   // Sync state transitions
   useEffect(() => {
     if (!room) return;

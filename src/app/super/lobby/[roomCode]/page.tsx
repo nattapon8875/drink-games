@@ -5,6 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { usePlatform } from '@/hooks/usePlatform';
 import { useRoomRealtime } from '@/hooks/useRoomRealtime';
 import { Avatar } from '@/components/common/Avatar';
+import { Modal } from '@/components/common/Modal';
+import { THAI_PARTY_NICKNAMES } from '@/lib/platforms/adapter';
 import { showToast, showConfirm } from '@/lib/alerts';
 import {
   Crown,
@@ -19,6 +21,7 @@ import {
   UserPlus,
   Trash2,
   Coins,
+  Edit2,
 } from 'lucide-react';
 import { BuffaloLogo } from '@/components/common/BuffaloLogo';
 
@@ -27,7 +30,7 @@ export default function SuperLobbyPage() {
   const router = useRouter();
   const roomCode = (params.roomCode as string)?.toUpperCase();
 
-  const { user, isLoading: platformLoading } = usePlatform();
+  const { user, isLoading: platformLoading, updateUserProfile } = usePlatform();
   const {
     room,
     players,
@@ -38,6 +41,7 @@ export default function SuperLobbyPage() {
     addBotPlayer,
     removePlayer,
     kickPlayer,
+    updatePlayerProfile,
     startGame,
     closeRoom,
   } = useRoomRealtime(roomCode, user);
@@ -47,12 +51,54 @@ export default function SuperLobbyPage() {
   const [copiedCode, setCopiedCode] = useState(false);
   const [showDiscordModal, setShowDiscordModal] = useState(false);
 
+  // Edit Name Modal in Lobby
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editName, setEditName] = useState('');
+
+  useEffect(() => {
+    if (user?.displayName) {
+      setEditName(user.displayName);
+    }
+  }, [user?.displayName]);
+
+  const handleSaveProfile = async () => {
+    if (!editName.trim()) return;
+    const newName = editName.trim();
+    // updateUserProfile persists the name scoped to this user id;
+    // updatePlayerProfile pushes it to the room so everyone sees it immediately
+    updateUserProfile(newName);
+    await updatePlayerProfile(newName);
+    setShowEditModal(false);
+    showToast(`เปลี่ยนชื่อเป็น "${newName}" สำเร็จ`, 'success');
+  };
+
   // Auto-join room
   useEffect(() => {
     if (user && roomCode && !roomLoading && !platformLoading) {
       joinRoom();
     }
   }, [user, roomCode, roomLoading, platformLoading, joinRoom]);
+
+  // Discord closes the Activity iframe without any navigation, so without this the
+  // player row is never removed and they linger in the room as a ghost.
+  useEffect(() => {
+    if (!user || user.id === 'guest-init' || !roomCode) return;
+
+    const handleLeaveOnClose = () => {
+      // Host is kept so a quick refresh does not orphan the room
+      if (room && room.host_id !== user.id) {
+        leaveRoom();
+      }
+    };
+
+    window.addEventListener('pagehide', handleLeaveOnClose);
+    window.addEventListener('beforeunload', handleLeaveOnClose);
+
+    return () => {
+      window.removeEventListener('pagehide', handleLeaveOnClose);
+      window.removeEventListener('beforeunload', handleLeaveOnClose);
+    };
+  }, [user, roomCode, room, leaveRoom]);
 
   // Redirect on game start or room close
   useEffect(() => {
@@ -232,6 +278,24 @@ export default function SuperLobbyPage() {
 
           {/* Room Code Badge */}
           <div className="flex items-center gap-2">
+            {/* Player Profile Chip */}
+            <button
+              type="button"
+              onClick={() => setShowEditModal(true)}
+              className="flex items-center gap-2 bg-[#170601] border border-[#4d1d05] hover:border-yellow-400/60 px-3 py-1.5 rounded-xl cursor-pointer transition shadow-inner group"
+              title="คลิกเพื่อเปลี่ยนชื่อของคุณ"
+            >
+              <Avatar src={user.avatarUrl} name={user.displayName} size="sm" />
+              <div className="text-left">
+                <span className="text-xs font-bold text-amber-100 group-hover:text-yellow-300 block leading-tight max-w-[120px] truncate">
+                  {user.displayName}
+                </span>
+                <span className="text-[9px] text-amber-400/60 font-semibold flex items-center gap-1">
+                  <Edit2 className="w-2.5 h-2.5" /> เปลี่ยนชื่อ
+                </span>
+              </div>
+            </button>
+
             <button
               type="button"
               onClick={() => setShowDiscordModal(true)}
@@ -522,6 +586,53 @@ export default function SuperLobbyPage() {
           </div>
         </div>
       </div>
+
+      {/* Edit Profile Modal */}
+      <Modal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        title="แก้ไขชื่อผู้เล่น"
+      >
+        <div className="flex flex-col gap-4">
+          <div>
+            <label className="text-xs font-bold text-amber-200 block mb-1">ชื่อเล่นของคุณ:</label>
+            <input
+              type="text"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              maxLength={20}
+              className="w-full px-3 py-2 rounded-xl bg-[#140501] border border-[#4d1c05] text-amber-100 focus:outline-none focus:border-yellow-400 font-bold text-sm"
+              placeholder="กรอกชื่อที่ต้องการ..."
+            />
+          </div>
+
+          <div>
+            <label className="text-[11px] font-bold text-amber-400/80 block mb-1.5">
+              หรือสุ่มชื่อสไตล์วงเหล้า:
+            </label>
+            <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto pr-1">
+              {THAI_PARTY_NICKNAMES.map((name) => (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => setEditName(name)}
+                  className="text-[11px] px-2.5 py-1 rounded-lg bg-[#270e03] hover:bg-[#3d1605] border border-[#4d1d05] text-amber-200 font-bold transition active:scale-95"
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleSaveProfile}
+            className="wood-btn-gold w-full py-2.5 rounded-xl font-black text-xs shadow-md mt-2"
+          >
+            บันทึกชื่อ
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

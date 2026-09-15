@@ -401,6 +401,7 @@ export default function SuperHomePage() {
 
   const handleSaveProfile = () => {
     if (editName.trim()) {
+      // updateUserProfile persists the name scoped to this user id
       updateUserProfile(editName.trim());
       setShowEditModal(false);
     }

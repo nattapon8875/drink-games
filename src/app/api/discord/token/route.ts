@@ -35,7 +35,42 @@ export async function POST(req: Request) {
     }
 
     console.log('[Discord Token API] Successfully exchanged token');
-    return NextResponse.json({ access_token: data.access_token });
+
+    // Fetch real Discord user profile directly from Discord REST API
+    let discordUser = null;
+    try {
+      const userRes = await fetch('https://discord.com/api/v10/users/@me', {
+        headers: {
+          Authorization: `Bearer ${data.access_token}`,
+        },
+      });
+
+      if (userRes.ok) {
+        const u = await userRes.json();
+        const avatarUrl = u.avatar
+          ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png`
+          : `https://cdn.discordapp.com/embed/avatars/${parseInt(u.discriminator || '0') % 5}.png`;
+
+        discordUser = {
+          id: u.id,
+          displayName: u.global_name || u.username,
+          avatarUrl,
+          platformType: 'discord',
+          rawPayload: u,
+        };
+        console.log('[Discord Token API] Successfully fetched user:', discordUser.displayName, discordUser.id);
+      } else {
+        const uErr = await userRes.json().catch(() => ({}));
+        console.warn('[Discord Token API] Failed to fetch /users/@me:', userRes.status, uErr);
+      }
+    } catch (uErr) {
+      console.error('[Discord Token API] Error fetching user profile:', uErr);
+    }
+
+    return NextResponse.json({
+      access_token: data.access_token,
+      user: discordUser,
+    });
   } catch (error: any) {
     console.error('[Discord Token API Exception]', error);
     return NextResponse.json(

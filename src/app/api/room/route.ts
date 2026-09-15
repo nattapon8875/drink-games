@@ -77,7 +77,9 @@ export async function POST(req: Request) {
           }
           serverStore.rooms.set(roomCode, room);
           if (player) {
-            serverStore.players.set(roomCode, [player]);
+            serverStore.players.set(roomCode, [
+              { ...player, last_seen: new Date().toISOString() },
+            ]);
           }
           return NextResponse.json({ success: true, room, players: [player] });
         }
@@ -104,6 +106,7 @@ export async function POST(req: Request) {
               ...updatedPlayers[existingIdx],
               ...player,
               is_connected: true,
+              last_seen: new Date().toISOString(),
             };
           } else {
             // If room had a dummy guest-init player, replace or filter it out
@@ -111,6 +114,7 @@ export async function POST(req: Request) {
             const newPlayer: PlayerRecord = {
               ...player,
               turn_order: cleaned.length,
+              last_seen: new Date().toISOString(),
             };
             updatedPlayers = [...cleaned, newPlayer];
 
@@ -201,6 +205,19 @@ export async function POST(req: Request) {
           );
           serverStore.players.set(roomCode, updatedPlayers);
           return NextResponse.json({ success: true, players: updatedPlayers });
+        }
+
+        case 'heartbeat': {
+          const { playerId } = body;
+          const currentPlayers = serverStore.players.get(roomCode) || [];
+          const now = new Date().toISOString();
+          serverStore.players.set(
+            roomCode,
+            currentPlayers.map((p) =>
+              p.id === playerId ? { ...p, last_seen: now, is_connected: true } : p
+            )
+          );
+          return NextResponse.json({ success: true });
         }
 
         case 'drink': {

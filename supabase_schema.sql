@@ -31,6 +31,7 @@ CREATE TABLE players (
     drinks_count INT NOT NULL DEFAULT 0,         -- จำนวนแก้ว/ช็อตที่ดื่มสะสม
     turn_order INT NOT NULL DEFAULT 0,           -- ลำดับการเล่น (0, 1, 2, ...)
     is_connected BOOLEAN NOT NULL DEFAULT true,
+    last_seen TIMESTAMPTZ DEFAULT NOW(),         -- heartbeat: ใช้เก็บกวาดผู้เล่นที่ปิดแอปไปเฉยๆ
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

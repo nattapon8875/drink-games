@@ -34,6 +34,7 @@ export interface PlayerRecord {
   drinks_count: number;
   turn_order: number;
   is_connected: boolean;
+  last_seen?: string | null;
   created_at?: string;
 }
 

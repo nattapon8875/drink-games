@@ -1,6 +1,9 @@
 import { initLiff, shareLiffInvite } from './liff';
 import { initDiscord, isDiscordActivity, channelIdToRoomCode } from './discord';
 import { PlatformType, UnifiedUser } from './types';
+import { saveCustomName } from './customName';
+
+export { saveCustomName, getCustomNameFor } from './customName';
 
 export const THAI_PARTY_NICKNAMES = [
   'เสี่ยสายเปย์',
@@ -65,6 +68,10 @@ export function getRandomGuestUser(): UnifiedUser {
 export function saveGuestUser(user: UnifiedUser) {
   if (typeof window !== 'undefined') {
     localStorage.setItem('party_drink_guest_user', JSON.stringify(user));
+    localStorage.setItem('party_discord_user', JSON.stringify(user));
+    if (user.displayName) {
+      saveCustomName(user.id, user.displayName);
+    }
   }
 }
 
