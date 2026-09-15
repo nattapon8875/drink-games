@@ -726,15 +726,15 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
       </div>
 
       {/* Floating turn action.
-          The real controls sit in the right-hand column, which lands below the
-          board once the layout stacks - on a phone you had to scroll past the
-          whole board to roll. This keeps the one action you need in reach. */}
+          Keeps the one action the turn needs within thumb reach at every width.
+          The right-hand column drops below the board once the layout stacks, so
+          on a phone rolling meant scrolling past the whole board first. */}
       {(isMyTurn || isProxying) &&
         rollOrderDone &&
         !activePropertyModal &&
         !activeCard &&
         !activePenaltyModal && (
-          <div className="lg:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-1 pointer-events-none">
+          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-1 pointer-events-none">
             <span className="pointer-events-none px-2 py-0.5 rounded-full bg-black/70 border border-amber-600/50 text-[10px] font-black text-amber-200 shadow">
               {isProxying && currentTurnPlayer
                 ? `เล่นแทน ${currentTurnPlayer.display_name}`
