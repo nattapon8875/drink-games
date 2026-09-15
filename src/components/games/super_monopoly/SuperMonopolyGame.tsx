@@ -7,6 +7,7 @@ import { SuperBoard } from './SuperBoard';
 import { SuperBoard3D } from './SuperBoard3D';
 import { PropertyCardModal } from './PropertyCardModal';
 import { ChanceChestModal } from './ChanceChestModal';
+import { PenaltyModal } from './PenaltyModal';
 import { RulesModal } from './RulesModal';
 import { Modal } from '@/components/common/Modal';
 import { SUPER_MONOPOLY_TILES, formatMoneyM } from './superMonopolyData';
@@ -49,6 +50,8 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     setActivePropertyModal,
     activeCard,
     setActiveCard,
+    activePenaltyModal,
+    handleAcknowledgePenalty,
     gameLogs,
     isCurrentPlayerInJail,
     isCurrentPlayerResting,
@@ -644,6 +647,13 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
         currentCash={myCash}
         isMyTurn={isMyTurn}
         onClose={handleCloseActiveModal}
+      />
+
+      {/* Penalty / Rent Fee Modal */}
+      <PenaltyModal
+        isOpen={Boolean(activePenaltyModal)}
+        notice={activePenaltyModal}
+        onAcknowledge={handleAcknowledgePenalty}
       />
 
       {/* Game Rules Modal */}

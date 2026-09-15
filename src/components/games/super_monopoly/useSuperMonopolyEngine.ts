@@ -16,6 +16,7 @@ import {
 import { sfx } from '@/lib/sound';
 import confetti from 'canvas-confetti';
 import { showToast } from '@/lib/alerts';
+import { PenaltyNotice } from './PenaltyModal';
 
 const INITIAL_CASH_M = 15.0; // 15M starting cash
 const SALARY_M = 2.0; // 2M for passing GO
@@ -31,6 +32,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   const [activeStepTileIndex, setActiveStepTileIndex] = useState<number | null>(null);
   const [activePropertyModal, setActivePropertyModal] = useState<SuperPropertyTile | null>(null);
   const [activeCard, setActiveCard] = useState<CardAction | null>(null);
+  const [activePenaltyModal, setActivePenaltyModal] = useState<PenaltyNotice | null>(null);
   const [hasRolledThisTurn, setHasRolledThisTurn] = useState<boolean>(false);
   const [isDouble, setIsDouble] = useState<boolean>(false);
 
@@ -72,6 +74,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     setIsDouble(false);
     setActivePropertyModal(null);
     setActiveCard(null);
+    setActivePenaltyModal(null);
     setActiveStepTileIndex(null);
   }, [room.current_turn_player_id]);
 
@@ -188,6 +191,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   const handleEndTurn = useCallback(async () => {
     setActivePropertyModal(null);
     setActiveCard(null);
+    setActivePenaltyModal(null);
     setHasRolledThisTurn(false);
     setIsDouble(false);
     setActiveStepTileIndex(null);
@@ -294,17 +298,33 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                 }
 
                 const actualRent = Math.min(playerCash, rentAmount);
-                updatedCash[currentTurnPlayer.id] = Math.max(0, playerCash - rentAmount);
+                const remainingCash = Math.max(0, playerCash - rentAmount);
+                updatedCash[currentTurnPlayer.id] = remainingCash;
                 if (owner) {
                   updatedCash[owner.id] = (updatedCash[owner.id] ?? INITIAL_CASH_M) + actualRent;
                 }
 
                 sfx.playDrinkPenalty();
                 newLogs = addLog(
-                  `💸 ${currentTurnPlayer.display_name} จ่ายค่าผ่านทางให้ ${owner?.display_name || 'เจ้าของ'} ${formatMoneyM(actualRent)} (เงินเหลือ ${formatMoneyM(updatedCash[currentTurnPlayer.id])})`,
+                  `💸 ${currentTurnPlayer.display_name} จ่ายค่าผ่านทางให้ ${owner?.display_name || 'เจ้าของ'} ${formatMoneyM(actualRent)} (เงินเหลือ ${formatMoneyM(remainingCash)})`,
                   '#ef4444',
                   newLogs
                 );
+
+                // Show Penalty Modal for Human to acknowledge
+                setActivePenaltyModal({
+                  type: 'rent',
+                  tileName: targetTile.name,
+                  tileIcon: targetTile.icon || '🏨',
+                  reason: `คุณเดินมาตกที่ดินของ [${owner?.display_name || 'เจ้าของที่ดิน'}]`,
+                  amount: actualRent,
+                  recipientName: owner?.display_name || 'เจ้าของที่ดิน',
+                  previousCash: playerCash,
+                  remainingCash: remainingCash,
+                  houses: ownership.houses,
+                  isUtility: targetTile.isUtility,
+                });
+                requiresUserModalAction = true;
               }
             } else if (targetTile.type === 'chest') {
               const card = CHEST_CARDS[Math.floor(Math.random() * CHEST_CARDS.length)];
@@ -353,9 +373,23 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               }
               newLogs = addLog(chanceDesc, '#eab308', newLogs);
             } else if (targetTile.type === 'tax') {
-              updatedCash[currentTurnPlayer.id] = Math.max(0, playerCash - 1.0);
+              const taxAmount = 1.0;
+              const remainingCash = Math.max(0, playerCash - taxAmount);
+              updatedCash[currentTurnPlayer.id] = remainingCash;
               sfx.playDrinkPenalty();
-              newLogs = addLog(`💰 ${currentTurnPlayer.display_name} จ่ายภาษี ${formatMoneyM(1.0)}`, '#f97316', newLogs);
+              newLogs = addLog(`💰 ${currentTurnPlayer.display_name} จ่ายภาษี ${formatMoneyM(taxAmount)} (เงินเหลือ ${formatMoneyM(remainingCash)})`, '#f97316', newLogs);
+
+              // Show Penalty Modal for Tax
+              setActivePenaltyModal({
+                type: 'tax',
+                tileName: targetTile.name,
+                tileIcon: '💰',
+                reason: 'คุณเดินมาตกช่องภาษี ต้องชำระภาษีบำรุงเมืองเข้ากองกลาง',
+                amount: taxAmount,
+                previousCash: playerCash,
+                remainingCash: remainingCash,
+              });
+              requiresUserModalAction = true;
             } else if (targetTile.type === 'go_to_jail') {
               updatedPositions[currentTurnPlayer.id] = 10;
               updatedJail[currentTurnPlayer.id] = 1;
@@ -768,6 +802,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
     setActivePropertyModal(null);
     setActiveCard(null);
+    setActivePenaltyModal(null);
 
     if (isMyTurn && hasRolledThisTurn) {
       if (isDouble) {
@@ -778,6 +813,19 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       }
     }
   };
+
+  // Acknowledge Penalty/Rent Modal and Auto Advance Turn
+  const handleAcknowledgePenalty = useCallback(async () => {
+    setActivePenaltyModal(null);
+    if (isMyTurn && hasRolledThisTurn) {
+      if (isDouble) {
+        showToast('🎉 ได้แต้มคู่! คุณมีสิทธิ์ทอยเต๋าต่ออีกรอบ', 'success');
+        setHasRolledThisTurn(false);
+      } else {
+        await handleEndTurn();
+      }
+    }
+  }, [isMyTurn, hasRolledThisTurn, isDouble, handleEndTurn]);
 
   // -------------------------------------------------------------
   // BOT AUTO-PLAY ENGINE (Rock-Solid: No Deadlocks, No Freezes)
@@ -1181,6 +1229,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     setActivePropertyModal,
     activeCard,
     setActiveCard,
+    activePenaltyModal,
+    setActivePenaltyModal,
+    handleAcknowledgePenalty,
     gameLogs,
     rollDice,
     handlePayJailBail,
