@@ -29,22 +29,30 @@ export const PLAYER_3D_COLORS = [
 ];
 
 // Coordinate mapping for 40 tiles around 11x11 perimeter
+// Exact geometry: edge ribbons width 0.94, centered at edgeD = 4.16.
+// Corner tiles are 0.94 x 0.94 square boxes at (+-4.16, +-4.16) forming flush 90-degree corners.
 export function getSuperTile3DPosition(index: number): [number, number, number] {
   const step = 0.82;
-  const half = 4.1;
+  const edgeD = 4.16; // Exact ribbon center line
 
   if (index >= 0 && index <= 10) {
     // Bottom row (0 -> 10): right to left
-    return [half - index * step, 0, half];
-  } else if (index >= 10 && index <= 20) {
-    // Left col (10 -> 20): bottom to top
-    return [-half, 0, half - (index - 10) * step];
+    // 0 is bottom-right corner, 1..9 are edge tiles, 10 is bottom-left corner
+    const x = index === 0 ? edgeD : index === 10 ? -edgeD : (5 - index) * step;
+    return [x, 0, edgeD];
+  } else if (index > 10 && index < 20) {
+    // Left col (11 -> 19): bottom to top
+    const z = (15 - index) * step;
+    return [-edgeD, 0, z];
   } else if (index >= 20 && index <= 30) {
     // Top row (20 -> 30): left to right
-    return [-half + (index - 20) * step, 0, -half];
+    // 20 is top-left corner, 21..29 are edge tiles, 30 is top-right corner
+    const x = index === 20 ? -edgeD : index === 30 ? edgeD : (index - 25) * step;
+    return [x, 0, -edgeD];
   } else {
-    // Right col (30 -> 39): top to bottom
-    return [half, 0, -half + (index - 30) * step];
+    // Right col (31 -> 39): top to bottom
+    const z = (index - 35) * step;
+    return [edgeD, 0, z];
   }
 }
 
@@ -89,7 +97,7 @@ function getTileShortName(name: string): string {
 const tileTextureCache = new Map<string, THREE.CanvasTexture>();
 
 function createSuperTileTexture(tile: SuperPropertyTile): THREE.CanvasTexture {
-  const cacheKey = `v3_${tile.index}_${tile.name}_${tile.color || 'none'}`;
+  const cacheKey = `v4_${tile.index}_${tile.name}_${tile.color || 'none'}`;
   if (tileTextureCache.has(cacheKey)) {
     return tileTextureCache.get(cacheKey)!;
   }
@@ -453,8 +461,8 @@ const Tile3D: React.FC<{
 
   const tileGeo = useMemo(() => {
     if (isCorner) {
-      // 4 corners are square tiles aligned with the board grid
-      return new RoundedBoxGeometry(0.96, 0.22, 0.96, 2, 0.03);
+      // 4 corners are perfect 90-degree square tiles flush with board perimeter
+      return new RoundedBoxGeometry(0.94, 0.22, 0.94, 2, 0.03);
     }
     // Normal perimeter tiles
     return new RoundedBoxGeometry(0.80, 0.22, 0.94, 2, 0.03);
@@ -493,7 +501,7 @@ const Tile3D: React.FC<{
       {/* Owner Color Base Flag / Trim */}
       {ownerColor && (
         <mesh position={[0, -0.06, 0]}>
-          <boxGeometry args={[isCorner ? 0.98 : 0.82, 0.12, isCorner ? 0.98 : 0.96]} />
+          <boxGeometry args={[isCorner ? 0.96 : 0.82, 0.12, isCorner ? 0.96 : 0.96]} />
           <meshStandardMaterial color={ownerColor} roughness={0.3} metalness={0.5} />
         </mesh>
       )}
@@ -623,7 +631,7 @@ const CenterDeck3D: React.FC = () => {
 
       {/* 2. Center Felt Playing Mat (Silver-Gray Luxury Mat like Image 1) */}
       <mesh position={[0, 0.02, 0]} receiveShadow>
-        <boxGeometry args={[6.7, 0.18, 6.7]} />
+        <boxGeometry args={[7.34, 0.18, 7.34]} />
         <meshStandardMaterial color="#cbd5e1" roughness={0.8} metalness={0.05} />
       </mesh>
 
