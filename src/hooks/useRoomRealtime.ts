@@ -38,7 +38,10 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
   // When we last wrote game_state ourselves. A poll that was already in flight
   // carries state older than that write, and applying it snaps the board back.
   const lastLocalWriteRef = useRef<number>(0);
-  const LOCAL_WRITE_GRACE_MS = 700;
+  // Just long enough to outlast one write's round trip. It was 700ms, which
+  // also swallowed everyone else's updates arriving in that window and made
+  // the roll-off stutter.
+  const LOCAL_WRITE_GRACE_MS = 220;
 
   // Fetch from Server API (works across Incognito, Normal tabs, and all devices)
   const fetchData = useCallback(async () => {

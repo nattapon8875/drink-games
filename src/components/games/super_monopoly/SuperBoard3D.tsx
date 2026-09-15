@@ -183,21 +183,21 @@ export function getSuperTile3DPosition(index: number): [number, number, number] 
 // 2. หัวการ์ด (Top / Banner) เข้าไปด้านในกระดาน
 // 3. ท้ายการ์ด (Bottom / Price) ออกมาด้านนอกทั้ง 4 ด้าน
 export function getSuperTile3DRotation(index: number): [number, number, number] {
-  // Readability wins over a consistent header direction. The artwork has a
-  // fixed top and bottom, so a card turned to face the board centre also turns
-  // its lettering: the far row used to read upside down from the camera the way
-  // a physical board does. Near and far rows now share the same rotation, so
-  // both read upright; the side columns keep their quarter turn.
+  // Bottom row (0-10, START and JAIL) reads upright, and the right column
+  // (31-39, TAX through GO TO JAIL) was rendering upside down until it was
+  // turned the other way. The artwork has a fixed top and bottom, so each side
+  // is set by which way its lettering ends up, not by a uniform header rule.
   if (index >= 0 && index <= 10) {
     return [0, 0, 0];
   } else if (index > 10 && index < 20) {
     return [0, Math.PI / 2, 0];
   } else if (index >= 20 && index <= 30) {
-    return [0, 0, 0];
+    return [0, Math.PI, 0];
   } else {
-    return [0, -Math.PI / 2, 0];
+    return [0, Math.PI / 2, 0];
   }
 }
+
 
 // Shorten tile names for clean 3D typography without clipping
 function getTileShortName(name: string): string {
