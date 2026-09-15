@@ -13,6 +13,18 @@ const HEARTBEAT_INTERVAL_MS = 15000;
 const STALE_AFTER_MS = 45000;
 const REAP_INTERVAL_MS = 20000;
 
+// The poll runs every 400ms and previously replaced room/players state with fresh
+// object identities every single time, re-rendering the whole game and tearing
+// down any effect keyed on those arrays (the bot turn engine among them).
+// Only publish a new object when the contents actually changed.
+function keepIfUnchanged<T>(prev: T, next: T): T {
+  try {
+    return JSON.stringify(prev) === JSON.stringify(next) ? prev : next;
+  } catch {
+    return next;
+  }
+}
+
 function isBotPlayer(p: PlayerRecord): boolean {
   return p.line_user_id === 'bot' || p.id.startsWith('bot-');
 }
@@ -129,8 +141,8 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
           if (res.ok) {
             const data = await res.json();
             if (data.exists && data.room) {
-              setRoom(data.room);
-              setPlayers(data.players || []);
+              setRoom((prev) => keepIfUnchanged(prev, data.room));
+              setPlayers((prev) => keepIfUnchanged(prev, data.players || []));
             }
           }
         } catch {

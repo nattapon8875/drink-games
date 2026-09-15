@@ -64,6 +64,10 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
   // Turn management ref to prevent duplicate or frozen bot turns
   const handledTurnKeyRef = useRef<string>('');
+  // Whether a bot turn is actually in flight. Without this, a turn torn down
+  // mid-flight stays blocked forever: the key still matches, so the effect
+  // refuses to start it again and the bot freezes with no watchdog left.
+  const botTurnRunningRef = useRef<boolean>(false);
   const botWatchdogTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Ordered players based on initial roll order scores / database turn_order
@@ -75,6 +79,11 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       return rankA - rankB;
     });
   }, [players, rawState.roll_order_scores]);
+
+  // The bot turn effect must not depend on this array. It is rebuilt whenever the
+  // roster is refetched, and its cleanup aborts whatever bot turn is in flight.
+  const orderedPlayersRef = useRef<PlayerRecord[]>(orderedPlayers);
+  orderedPlayersRef.current = orderedPlayers;
 
   const currentTurnPlayer = orderedPlayers.find((p) => p.id === room.current_turn_player_id) || orderedPlayers[0];
   const isMyTurn = Boolean(currentPlayer && currentPlayer.id === currentTurnPlayer?.id);
@@ -111,6 +120,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
   // Reset local turn modal state when current turn player changes
   useEffect(() => {
+    // Declared before the bot effect, so this runs first on a turn change and
+    // lets the same bot take its next turn instead of being skipped forever.
+    handledTurnKeyRef.current = '';
     setHasRolledThisTurn(false);
     setIsDouble(false);
     setActivePropertyModal(null);
@@ -787,14 +799,25 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   // BOT AUTO-PLAY ENGINE (Rock-Solid: No Deadlocks, No Freezes)
   // -------------------------------------------------------------
   useEffect(() => {
-    if (!isHost || !isBotTurn || !rawState.roll_order_done) return;
+    if (!isHost || !rawState.roll_order_done) return;
 
     const turnPlayerId = room.current_turn_player_id;
     if (!turnPlayerId) return;
 
-    // Ensure we don't start the exact same bot turn twice
-    if (handledTurnKeyRef.current === turnPlayerId) return;
+    // Whether it is a bot's turn is decided from the turn id itself, never from
+    // isBotTurn. That value comes from sorting the roster, so it flickers false
+    // for a render whenever the room update and the players update land on
+    // different polls - and a flicker used to tear the running turn down while
+    // handledTurnKeyRef blocked it from ever restarting.
+    const turnPlayer = orderedPlayersRef.current.find((p) => p.id === turnPlayerId);
+    const turnIsBot = turnPlayerId.startsWith('bot-') || turnPlayer?.line_user_id === 'bot';
+    if (!turnIsBot) return;
+
+    // Don't start the same bot turn twice, but do restart one that was torn
+    // down before it finished.
+    if (handledTurnKeyRef.current === turnPlayerId && botTurnRunningRef.current) return;
     handledTurnKeyRef.current = turnPlayerId;
+    botTurnRunningRef.current = true;
 
     let isMounted = true;
 
@@ -803,9 +826,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     botWatchdogTimerRef.current = setTimeout(async () => {
       console.warn('[Bot Watchdog] Bot took too long! Auto-passing turn...');
       if (!isMounted) return;
-      const currentIndex = orderedPlayers.findIndex((p) => p.id === turnPlayerId);
-      const nextIndex = (currentIndex + 1) % orderedPlayers.length;
-      const nextPlayer = orderedPlayers[nextIndex];
+      const currentIndex = orderedPlayersRef.current.findIndex((p) => p.id === turnPlayerId);
+      const nextIndex = (currentIndex + 1) % orderedPlayersRef.current.length;
+      const nextPlayer = orderedPlayersRef.current[nextIndex];
       if (nextPlayer) {
         await onNextTurn(nextPlayer.id);
       }
@@ -1116,9 +1139,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
         await new Promise((resolve) => setTimeout(resolve, 1800));
         if (!isMounted) return;
 
-        const currentIndex = orderedPlayers.findIndex((p) => p.id === turnPlayerId);
-        const nextIndex = (currentIndex + 1) % orderedPlayers.length;
-        const nextPlayer = orderedPlayers[nextIndex];
+        const currentIndex = orderedPlayersRef.current.findIndex((p) => p.id === turnPlayerId);
+        const nextIndex = (currentIndex + 1) % orderedPlayersRef.current.length;
+        const nextPlayer = orderedPlayersRef.current[nextIndex];
 
         botTurnLogs = addLog(`🎲 ส่งตาให้ [${nextPlayer.display_name}]`, '#93c5fd', botTurnLogs);
         await onUpdateGameState({
@@ -1131,13 +1154,14 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       } catch (err) {
         console.error('Bot turn error:', err);
         // Guaranteed recovery on error
-        const currentIndex = orderedPlayers.findIndex((p) => p.id === turnPlayerId);
-        const nextIndex = (currentIndex + 1) % orderedPlayers.length;
-        const nextPlayer = orderedPlayers[nextIndex];
+        const currentIndex = orderedPlayersRef.current.findIndex((p) => p.id === turnPlayerId);
+        const nextIndex = (currentIndex + 1) % orderedPlayersRef.current.length;
+        const nextPlayer = orderedPlayersRef.current[nextIndex];
         if (nextPlayer) {
           await onNextTurn(nextPlayer.id);
         }
       } finally {
+        botTurnRunningRef.current = false;
         if (botWatchdogTimerRef.current) {
           clearTimeout(botWatchdogTimerRef.current);
           botWatchdogTimerRef.current = null;
@@ -1149,12 +1173,13 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
     return () => {
       isMounted = false;
+      botTurnRunningRef.current = false;
       if (botWatchdogTimerRef.current) {
         clearTimeout(botWatchdogTimerRef.current);
         botWatchdogTimerRef.current = null;
       }
     };
-  }, [room.current_turn_player_id, isHost, isBotTurn, rawState.roll_order_done, orderedPlayers]);
+  }, [room.current_turn_player_id, isHost, rawState.roll_order_done]);
 
   return {
     dice,
