@@ -347,30 +347,8 @@ export const SuperBoard: React.FC<SuperBoardProps> = ({
             </p>
           </div>
 
-          {/* Center 3D Interactive Cards: หีบสมบัติ & ประตูดวง */}
-          <div className="flex items-center justify-center gap-3 sm:gap-7 my-auto w-full z-10">
-            {/* Chest Deck (Pink/Rose) */}
-            <div className="w-24 sm:w-36 aspect-[4/3] bg-gradient-to-br from-rose-500 via-red-600 to-rose-900 rounded-2xl border-2 border-yellow-200/80 shadow-[0_10px_25px_rgba(225,29,72,0.35)] flex flex-col items-center justify-center text-white p-2 transform -rotate-3 hover:rotate-0 hover:scale-105 transition duration-200 cursor-pointer">
-              <span className="text-2xl sm:text-4xl drop-shadow-md">🎁</span>
-              <span className="text-[11px] sm:text-sm font-black tracking-wider drop-shadow mt-1">
-                หีบสมบัติ
-              </span>
-              <span className="text-[7.5px] sm:text-[9px] font-bold text-yellow-200 opacity-90 uppercase">
-                TREASURE CHEST
-              </span>
-            </div>
-
-            {/* Chance Deck (Imperial Gold) */}
-            <div className="w-24 sm:w-36 aspect-[4/3] bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-700 rounded-2xl border-2 border-yellow-100 shadow-[0_10px_25px_rgba(245,158,11,0.35)] flex flex-col items-center justify-center text-amber-950 p-2 transform rotate-3 hover:rotate-0 hover:scale-105 transition duration-200 cursor-pointer">
-              <span className="text-2xl sm:text-4xl drop-shadow-md">⛩️</span>
-              <span className="text-[11px] sm:text-sm font-black tracking-wider drop-shadow mt-1">
-                ประตูดวง
-              </span>
-              <span className="text-[7.5px] sm:text-[9px] font-bold text-amber-950/80 uppercase">
-                CHANCE
-              </span>
-            </div>
-          </div>
+          {/* Clean Nostalgic Center Area - Decks removed as requested */}
+          <div className="flex-1" />
 
           {/* Bottom Slogan & Quick Rule Badges */}
           <div className="flex flex-col items-center gap-1 z-10 pb-0.5 text-center">
