@@ -8,6 +8,7 @@ import { Avatar } from '@/components/common/Avatar';
 import { Modal } from '@/components/common/Modal';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
 import { THAI_PARTY_NICKNAMES } from '@/lib/platforms/adapter';
+import { isDiscordActivity } from '@/lib/platforms/discord';
 import {
   Sparkles,
   Gamepad2,
@@ -93,6 +94,17 @@ export default function HomePage() {
   // Profile Edit Modal
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [editName, setEditName] = useState<string>('');
+
+  // Auto-redirect to Super Monopoly immediately if opened in Discord Activity
+  const [isDiscordRedirecting, setIsDiscordRedirecting] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (isDiscordActivity() || platform === 'discord') {
+      setIsDiscordRedirecting(true);
+      const search = typeof window !== 'undefined' ? window.location.search : '';
+      router.replace(`/super${search}`);
+    }
+  }, [platform, router]);
 
   useEffect(() => {
     if (user?.displayName) {
@@ -243,6 +255,16 @@ export default function HomePage() {
     }
   };
 
+  if (isDiscordRedirecting) {
+    return (
+      <main className="w-full min-h-screen flex flex-col items-center justify-center p-6 bg-[#140501] text-amber-100">
+        <div className="animate-spin w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full mb-4" />
+        <p className="text-base font-black text-amber-200">กำลังเข้าสู่เกมซุปเปอร์เศรษฐีใน Discord...</p>
+        <p className="text-xs text-amber-400/60 font-semibold mt-1">กรุณารอสักครู่ ระบบกำลังพาไปยังหน้าเกม</p>
+      </main>
+    );
+  }
+
   return (
     <main className="w-full flex-1 flex flex-col items-center justify-between p-4 sm:p-5 select-none">
       {/* Top Bar: User Profile & Platform Info (Rustic Wood Plaque) */}
@@ -334,26 +356,6 @@ export default function HomePage() {
           </Button>
         </form>
       </section>
-
-      {/* Discord Quick Join Banner if detected */}
-      {discordRoomCode && (
-        <div className="w-full bg-[#5865F2]/20 border-2 border-[#5865F2]/60 p-3.5 rounded-3xl mb-3 text-center shadow-lg">
-          <p className="text-xs text-indigo-300 font-black mb-1">
-            🎮 ตรวจพบ Discord Voice Channel
-          </p>
-          <p className="text-xs text-gray-200 mb-2 font-medium">
-            รหัสห้องอัตโนมัติสำหรับห้องพูดคุยนี้คือ: <b className="text-yellow-300 font-mono font-black">{discordRoomCode}</b>
-          </p>
-          <Button
-            variant="wood-gold"
-            size="sm"
-            fullWidth
-            onClick={() => router.push(`/lobby/${discordRoomCode}`)}
-          >
-            เข้าห้องตี้ใน Discord ทันที
-          </Button>
-        </div>
-      )}
 
       {/* Game Selector Catalog */}
       <section className="w-full space-y-3 my-2">

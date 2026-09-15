@@ -353,6 +353,29 @@ export default function SuperHomePage() {
               </div>
             )}
 
+            {/* Discord Voice Quick Join Banner */}
+            {discordRoomCode && (
+              <div className="mb-5 bg-[#5865F2]/25 border-2 border-[#5865F2]/70 p-4 rounded-2xl shadow-xl">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-base">🎮</span>
+                  <p className="text-xs sm:text-sm text-indigo-200 font-black">
+                    ตรวจพบการเข้าเล่นผ่าน Discord Voice Channel
+                  </p>
+                </div>
+                <p className="text-xs text-gray-200 mb-3 font-medium">
+                  รหัสห้องอัตโนมัติสำหรับช่องสนทนานี้คือ: <b className="text-yellow-300 font-mono font-black text-sm">{discordRoomCode}</b>
+                </p>
+                <button
+                  type="button"
+                  onClick={() => router.push(`/super/lobby/${discordRoomCode}`)}
+                  className="wood-btn-gold px-5 py-2.5 rounded-xl text-xs font-black shadow-md flex items-center gap-2 active:scale-95 transition"
+                >
+                  <span>เข้าสู่ห้องตี้ใน Discord ทันที ({discordRoomCode})</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
             {/* Primary Action Buttons */}
             <div className="flex flex-wrap gap-3">
               <button
