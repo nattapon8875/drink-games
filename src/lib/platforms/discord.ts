@@ -60,48 +60,82 @@ export async function initDiscord(): Promise<{
 
     // Try OAuth authorize and authenticate with backend token endpoint
     let user: UnifiedUser | null = null;
+    let authCode: string | null = null;
+
     try {
-      const { code } = await discordSdk.commands.authorize({
+      // Call authorize without prompt: 'none' so Discord can open the consent modal if not authorized yet
+      const authRes = await discordSdk.commands.authorize({
         client_id: clientId,
         response_type: 'code',
-        state: '',
-        prompt: 'none',
-        scope: ['identify', 'guilds'],
+        scope: ['identify'],
       });
+      authCode = authRes.code;
+    } catch (authErr) {
+      console.warn('[Discord] Authorize cancelled or failed:', authErr);
+    }
 
-      const response = await fetch('/api/discord/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code }),
-      });
+    if (authCode) {
+      try {
+        const response = await fetch('/api/discord/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: authCode }),
+        });
 
-      if (response.ok) {
-        const { access_token } = await response.json();
-        const auth = await discordSdk.commands.authenticate({ access_token });
-        if (auth.user) {
-          const avatarUrl = auth.user.avatar
-            ? `https://cdn.discordapp.com/avatars/${auth.user.id}/${auth.user.avatar}.png`
-            : `https://cdn.discordapp.com/embed/avatars/${parseInt(auth.user.discriminator || '0') % 5}.png`;
+        if (response.ok) {
+          const { access_token } = await response.json();
+          if (access_token) {
+            const auth = await discordSdk.commands.authenticate({ access_token });
+            if (auth.user) {
+              const avatarUrl = auth.user.avatar
+                ? `https://cdn.discordapp.com/avatars/${auth.user.id}/${auth.user.avatar}.png`
+                : `https://cdn.discordapp.com/embed/avatars/${parseInt(auth.user.discriminator || '0') % 5}.png`;
 
-          user = {
-            id: auth.user.id,
-            displayName: auth.user.global_name || auth.user.username,
-            avatarUrl,
-            platformType: 'discord',
-            rawPayload: auth.user,
-          };
+              user = {
+                id: auth.user.id,
+                displayName: auth.user.global_name || auth.user.username,
+                avatarUrl,
+                platformType: 'discord',
+                rawPayload: auth.user,
+              };
+            }
+          }
+        } else {
+          const errData = await response.json().catch(() => ({}));
+          console.warn('[Discord] Token endpoint error:', response.status, errData);
+        }
+      } catch (exchangeErr) {
+        console.warn('[Discord] Token exchange network error:', exchangeErr);
+      }
+    }
+
+    // Fallback if OAuth denied or skipped:
+    // IMPORTANT: Never use discordSdk.instanceId as player ID because instanceId is shared by all users in the activity!
+    if (!user) {
+      let localUser: UnifiedUser | null = null;
+      if (typeof window !== 'undefined') {
+        const stored = localStorage.getItem('party_discord_user');
+        if (stored) {
+          try {
+            localUser = JSON.parse(stored);
+          } catch {}
         }
       }
-    } catch (authErr) {
-      console.warn('[Discord] OAuth authentication skipped or failed, using channel fallback:', authErr);
-      // Fallback guest Discord profile using instanceId
-      const fallbackId = discordSdk.instanceId || 'dc-' + Math.random().toString(36).substring(2, 8);
-      user = {
-        id: fallbackId,
-        displayName: 'เพื่อนใน Discord',
-        avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=${fallbackId}`,
-        platformType: 'discord',
-      };
+
+      if (!localUser || !localUser.id || localUser.id.startsWith('i-')) {
+        const randomSeed = Math.random().toString(36).substring(2, 8);
+        localUser = {
+          id: `dc-${randomSeed}`,
+          displayName: `เพื่อนใน Discord (${randomSeed.substring(0, 4).toUpperCase()})`,
+          avatarUrl: '/buffy-mascot.png',
+          platformType: 'discord',
+        };
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('party_discord_user', JSON.stringify(localUser));
+        }
+      }
+
+      user = localUser;
     }
 
     return { user, channelId, roomCode };

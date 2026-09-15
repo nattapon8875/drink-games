@@ -30,11 +30,14 @@ export async function POST(req: Request) {
     const data = await response.json();
 
     if (!response.ok) {
+      console.error('[Discord Token API Error]', response.status, data);
       return NextResponse.json(data, { status: response.status });
     }
 
+    console.log('[Discord Token API] Successfully exchanged token');
     return NextResponse.json({ access_token: data.access_token });
   } catch (error: any) {
+    console.error('[Discord Token API Exception]', error);
     return NextResponse.json(
       { error: error.message || 'Failed to exchange token' },
       { status: 500 }
