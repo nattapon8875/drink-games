@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useRef, useMemo, useState } from 'react';
+import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Text } from '@react-three/drei';
+import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { SuperPropertyTile, PropertyOwnership, PlayerRecord } from '@/types/database';
@@ -48,123 +48,386 @@ export function getSuperTile3DPosition(index: number): [number, number, number] 
   }
 }
 
-// 3D House Model
+// Rotation for each tile to align text & banner toward the outer perimeter
+export function getSuperTile3DRotation(index: number): [number, number, number] {
+  if (index === 0) {
+    return [0, Math.PI * 0.75, 0]; // Corner 0 (Start): angled forward
+  } else if (index === 10) {
+    return [0, -Math.PI * 0.75, 0]; // Corner 10 (Jail)
+  } else if (index === 20) {
+    return [0, -Math.PI * 0.25, 0]; // Corner 20 (Rest)
+  } else if (index === 30) {
+    return [0, Math.PI * 0.25, 0]; // Corner 30 (Go To Jail)
+  } else if (index > 0 && index < 10) {
+    return [0, Math.PI, 0]; // Bottom row: banner on outer edge
+  } else if (index > 10 && index < 20) {
+    return [0, -Math.PI / 2, 0]; // Left col: banner on outer edge
+  } else if (index > 20 && index < 30) {
+    return [0, 0, 0]; // Top row: banner on outer edge
+  } else {
+    return [0, Math.PI / 2, 0]; // Right col: banner on outer edge
+  }
+}
+
+// Shorten tile names for clean 3D typography without clipping
+function getTileShortName(name: string): string {
+  if (name.length <= 8) return name;
+  return name
+    .replace('โรงแรม', 'รร.')
+    .replace('การประปานครหลวง', 'การประปา')
+    .replace('โรงไฟฟ้านครหลวง', 'โรงไฟฟ้า')
+    .replace('พระนครศรีอยุธยา', 'อยุธยา')
+    .replace('เซ็นทารา แกรนด์', 'เซ็นทารา')
+    .replace('แมนดาริน โอเรียนเต็ล', 'โอเรียนเต็ล')
+    .replace('สยามเคมปินสกี้', 'เคมปินสกี้');
+}
+
+// Ultra-sharp 512x512 Canvas Texture Generator (LINE เกมเศรษฐี Style)
+const tileTextureCache = new Map<string, THREE.CanvasTexture>();
+
+function createSuperTileTexture(tile: SuperPropertyTile): THREE.CanvasTexture {
+  const cacheKey = `v3_${tile.index}_${tile.name}_${tile.color || 'none'}`;
+  if (tileTextureCache.has(cacheKey)) {
+    return tileTextureCache.get(cacheKey)!;
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+
+  if (ctx) {
+    const isCorner = tile.index % 10 === 0;
+
+    // 1. Tile Base Background (Crisp Solid White / Pastel Ivory)
+    ctx.fillStyle = isCorner ? '#f8fafc' : '#ffffff';
+    ctx.fillRect(0, 0, 512, 512);
+
+    // 2. Subtle Outer Bevel / Drop Shadow border
+    ctx.lineWidth = 12;
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.strokeRect(6, 6, 500, 500);
+
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = '#94a3b8';
+    ctx.strokeRect(14, 14, 484, 484);
+
+    // 3. Custom Corner Tiles (LINE เกมเศรษฐี Iconic Corner Artwork)
+    if (tile.index === 0) {
+      // START (จุดเริ่มต้น)
+      ctx.fillStyle = '#ecfdf5';
+      ctx.fillRect(16, 16, 480, 480);
+
+      // Green Header Pill
+      ctx.fillStyle = '#10b981';
+      ctx.beginPath();
+      ctx.roundRect(40, 40, 432, 90, 24);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 48px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('START ➔', 256, 102);
+
+      // Center Icon
+      ctx.font = '110px sans-serif';
+      ctx.fillText('🏁', 256, 250);
+
+      // Subtitle
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 36px sans-serif';
+      ctx.fillText('จุดเริ่มต้น', 256, 340);
+
+      // Money badge
+      ctx.fillStyle = '#047857';
+      ctx.beginPath();
+      ctx.roundRect(80, 390, 352, 80, 20);
+      ctx.fill();
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = '900 42px monospace';
+      ctx.fillText('รับ +2.0M', 256, 446);
+    } else if (tile.index === 10) {
+      // JAIL (ห้องขัง / เกาะร้าง)
+      ctx.fillStyle = '#fff7ed';
+      ctx.fillRect(16, 16, 480, 480);
+
+      ctx.fillStyle = '#ea580c';
+      ctx.beginPath();
+      ctx.roundRect(40, 40, 432, 90, 24);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 46px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('ห้องขัง JAIL', 256, 102);
+
+      ctx.font = '110px sans-serif';
+      ctx.fillText('⛓️', 256, 250);
+
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 36px sans-serif';
+      ctx.fillText('เกาะร้าง / คุก', 256, 340);
+
+      ctx.fillStyle = '#c2410c';
+      ctx.beginPath();
+      ctx.roundRect(60, 390, 392, 80, 20);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 32px sans-serif';
+      ctx.fillText('หยุด 1 ตา / ปรับ 0.5M', 256, 442);
+    } else if (tile.index === 20) {
+      // REST AREA (จุดพักผ่อน / มาร์เบิลเวิลด์คัพ)
+      ctx.fillStyle = '#f0fdfa';
+      ctx.fillRect(16, 16, 480, 480);
+
+      ctx.fillStyle = '#0284c7';
+      ctx.beginPath();
+      ctx.roundRect(40, 40, 432, 90, 24);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 44px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('จุดพักผ่อน', 256, 102);
+
+      ctx.font = '110px sans-serif';
+      ctx.fillText('🏖️', 256, 250);
+
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 36px sans-serif';
+      ctx.fillText('REST AREA', 256, 340);
+
+      ctx.fillStyle = '#0369a1';
+      ctx.beginPath();
+      ctx.roundRect(80, 390, 352, 80, 20);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 34px sans-serif';
+      ctx.fillText('หยุดทอย 1 ตา', 256, 444);
+    } else if (tile.index === 30) {
+      // GO TO JAIL (ไปห้องขัง / เที่ยวรอบโลก)
+      ctx.fillStyle = '#fef2f2';
+      ctx.fillRect(16, 16, 480, 480);
+
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.roundRect(40, 40, 432, 90, 24);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 44px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('ไปห้องขัง!', 256, 102);
+
+      ctx.font = '110px sans-serif';
+      ctx.fillText('🚨', 256, 250);
+
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 36px sans-serif';
+      ctx.fillText('GO TO JAIL', 256, 340);
+
+      ctx.fillStyle = '#991b1b';
+      ctx.beginPath();
+      ctx.roundRect(60, 390, 392, 80, 20);
+      ctx.fill();
+      ctx.fillStyle = '#fef08a';
+      ctx.font = 'bold 34px sans-serif';
+      ctx.fillText('ส่งตัวเข้าคุกทันที', 256, 444);
+    } else if (tile.type === 'chest') {
+      // CHEST (หีบสมบัติ)
+      ctx.fillStyle = '#fdf2f8';
+      ctx.fillRect(16, 16, 480, 480);
+
+      ctx.fillStyle = '#ec4899';
+      ctx.fillRect(16, 16, 480, 100);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 44px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('หีบสมบัติ', 256, 82);
+
+      ctx.font = '120px sans-serif';
+      ctx.fillText('🎁', 256, 260);
+
+      ctx.fillStyle = '#be185d';
+      ctx.beginPath();
+      ctx.roundRect(80, 390, 352, 74, 18);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 34px sans-serif';
+      ctx.fillText('สุ่มการ์ดโชคลาภ', 256, 440);
+    } else if (tile.type === 'chance') {
+      // CHANCE (ประตูดวง)
+      ctx.fillStyle = '#fffbeb';
+      ctx.fillRect(16, 16, 480, 480);
+
+      ctx.fillStyle = '#eab308';
+      ctx.fillRect(16, 16, 480, 100);
+
+      ctx.fillStyle = '#451a03';
+      ctx.font = '900 44px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('ประตูดวง', 256, 82);
+
+      ctx.font = '120px sans-serif';
+      ctx.fillText('⛩️', 256, 260);
+
+      ctx.fillStyle = '#b45309';
+      ctx.beginPath();
+      ctx.roundRect(80, 390, 352, 74, 18);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 34px sans-serif';
+      ctx.fillText('สุ่มชะตากรรม', 256, 440);
+    } else if (tile.type === 'tax') {
+      // TAX (ภาษี)
+      ctx.fillStyle = '#fff1f2';
+      ctx.fillRect(16, 16, 480, 480);
+
+      ctx.fillStyle = '#f43f5e';
+      ctx.fillRect(16, 16, 480, 100);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 44px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('ภาษี TAX', 256, 82);
+
+      ctx.font = '120px sans-serif';
+      ctx.fillText('💰', 256, 260);
+
+      ctx.fillStyle = '#e11d48';
+      ctx.beginPath();
+      ctx.roundRect(80, 390, 352, 74, 18);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 36px monospace';
+      ctx.fillText('จ่าย 1.0M', 256, 440);
+    } else {
+      // NORMAL PROPERTY OR UTILITY TILE (LINE เกมเศรษฐี Colorful Property Style)
+      // 1. Vibrant Top Color Strip
+      const bannerColor = tile.color || (tile.isUtility ? '#0284c7' : '#10b981');
+      ctx.fillStyle = bannerColor;
+      ctx.fillRect(16, 16, 480, 115);
+
+      // Subtle gloss line across banner
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+      ctx.fillRect(16, 16, 480, 24);
+
+      // Tile Icon in Banner or Center
+      ctx.font = '75px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(tile.icon || (tile.isUtility ? '⚡' : '🏛️'), 256, 225);
+
+      // 2. Property Name (Bold, High Contrast Charcoal #0f172a)
+      ctx.fillStyle = '#0f172a';
+      ctx.font = '900 44px sans-serif';
+      const shortName = getTileShortName(tile.name);
+      ctx.fillText(shortName, 256, 320);
+
+      // 3. Price Pill Badge at the Bottom
+      ctx.fillStyle = '#059669';
+      ctx.beginPath();
+      ctx.roundRect(70, 385, 372, 85, 22);
+      ctx.fill();
+
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#34d399';
+      ctx.strokeRect(70, 385, 372, 85);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 40px monospace';
+      ctx.fillText(formatMoneyM(tile.cost || 0.6), 256, 442);
+    }
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.generateMipmaps = true;
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.anisotropy = 16; // Maximum crispness at oblique viewing angles!
+  texture.needsUpdate = true;
+
+  tileTextureCache.set(cacheKey, texture);
+  return texture;
+}
+
+// 3D House Model (LINE เกมเศรษฐี Cute Cottage Style)
 const House3D: React.FC<{ position: [number, number, number] }> = ({ position }) => {
   return (
     <group position={position}>
       {/* House Body (White / Cream) */}
-      <mesh position={[0, 0.08, 0]} castShadow>
-        <boxGeometry args={[0.16, 0.16, 0.16]} />
-        <meshStandardMaterial color="#fef9c3" roughness={0.4} />
+      <mesh position={[0, 0.12, 0]} castShadow>
+        <boxGeometry args={[0.22, 0.24, 0.22]} />
+        <meshStandardMaterial color="#fef9c3" roughness={0.3} />
       </mesh>
       {/* Roof (Vibrant Green) */}
-      <mesh position={[0, 0.20, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
-        <coneGeometry args={[0.14, 0.12, 4]} />
-        <meshStandardMaterial color="#10b981" roughness={0.3} metalness={0.1} />
+      <mesh position={[0, 0.30, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
+        <coneGeometry args={[0.20, 0.18, 4]} />
+        <meshStandardMaterial color="#10b981" roughness={0.2} metalness={0.1} />
       </mesh>
-      {/* Tiny Chimney */}
-      <mesh position={[0.04, 0.22, 0.04]}>
-        <boxGeometry args={[0.03, 0.08, 0.03]} />
-        <meshStandardMaterial color="#b91c1c" />
+      {/* Chimney */}
+      <mesh position={[0.06, 0.34, 0.06]}>
+        <boxGeometry args={[0.04, 0.10, 0.04]} />
+        <meshStandardMaterial color="#ef4444" />
       </mesh>
     </group>
   );
 };
 
-// 3D Hotel Model (Glorious Red & Gold)
+// 3D Hotel Model (LINE เกมเศรษฐี Luxurious Landmark Hotel)
 const Hotel3D: React.FC<{ position: [number, number, number] }> = ({ position }) => {
   return (
     <group position={position}>
-      {/* Main Building Base */}
-      <mesh position={[0, 0.16, 0]} castShadow>
-        <boxGeometry args={[0.32, 0.32, 0.22]} />
+      {/* Main Building Base (Grand Red) */}
+      <mesh position={[0, 0.22, 0]} castShadow>
+        <boxGeometry args={[0.42, 0.44, 0.30]} />
         <meshStandardMaterial color="#b91c1c" roughness={0.3} metalness={0.2} />
       </mesh>
-      {/* Hotel Roof (Golden trim) */}
-      <mesh position={[0, 0.35, 0]} castShadow>
-        <boxGeometry args={[0.34, 0.06, 0.24]} />
-        <meshStandardMaterial color="#fbbf24" metalness={0.8} roughness={0.2} />
+      {/* Top Roof (Golden Crown) */}
+      <mesh position={[0, 0.48, 0]} castShadow>
+        <boxGeometry args={[0.46, 0.08, 0.34]} />
+        <meshStandardMaterial color="#f59e0b" metalness={0.8} roughness={0.2} />
       </mesh>
-      {/* Windows glow */}
-      <mesh position={[0, 0.16, 0.115]}>
-        <planeGeometry args={[0.26, 0.22]} />
+      {/* Glowing Windows */}
+      <mesh position={[0, 0.22, 0.155]}>
+        <planeGeometry args={[0.34, 0.32]} />
         <meshBasicMaterial color="#fef08a" />
       </mesh>
     </group>
   );
 };
 
-// Procedural Canvas Texture for 3D Tile
-const tileTextureCache = new Map<string, THREE.CanvasTexture>();
+// 3D Money Stack (LINE เกมเศรษฐี Banknote Bundles around the table corners)
+const MoneyStack3D: React.FC<{ position: [number, number, number]; rotation?: [number, number, number] }> = ({
+  position,
+  rotation = [0, 0, 0],
+}) => {
+  return (
+    <group position={position} rotation={rotation}>
+      {/* Stack 1 */}
+      <mesh position={[-0.22, 0.12, 0]} castShadow>
+        <boxGeometry args={[0.38, 0.24, 0.55]} />
+        <meshStandardMaterial color="#93c5fd" roughness={0.6} />
+      </mesh>
+      {/* Paper Band */}
+      <mesh position={[-0.22, 0.12, 0]}>
+        <boxGeometry args={[0.39, 0.25, 0.14]} />
+        <meshStandardMaterial color="#fef08a" roughness={0.3} metalness={0.5} />
+      </mesh>
 
-function createSuperTileTexture(tile: SuperPropertyTile): THREE.CanvasTexture {
-  const cacheKey = `${tile.index}_${tile.name}_${tile.color || 'none'}`;
-  if (tileTextureCache.has(cacheKey)) {
-    return tileTextureCache.get(cacheKey)!;
-  }
-
-  const canvas = document.createElement('canvas');
-  canvas.width = 256;
-  canvas.height = 256;
-  const ctx = canvas.getContext('2d');
-
-  if (ctx) {
-    // 1. Background Ivory / Antique Paper texture
-    const isCorner = tile.index % 8 === 0;
-    ctx.fillStyle = isCorner ? '#fff2b2' : '#fffae8';
-    ctx.fillRect(0, 0, 256, 256);
-
-    // 2. Wood-style border
-    ctx.lineWidth = 10;
-    ctx.strokeStyle = '#3d1b06';
-    ctx.strokeRect(5, 5, 246, 246);
-
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = '#d4af37';
-    ctx.strokeRect(12, 12, 232, 232);
-
-    // 3. Property Color Banner
-    if (tile.type === 'property' && tile.color) {
-      ctx.fillStyle = tile.color;
-      ctx.fillRect(14, 14, 228, 54);
-
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = '#270e02';
-      ctx.strokeRect(14, 14, 228, 54);
-    }
-
-    // 4. Tile Icon
-    ctx.font = '48px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(tile.icon || '🏠', 128, tile.type === 'property' ? 120 : 100);
-
-    // 5. Tile Name
-    ctx.fillStyle = '#1c0802';
-    ctx.font = 'bold 22px sans-serif';
-    ctx.fillText(tile.name, 128, tile.type === 'property' ? 175 : 165);
-
-    // 6. Cost or Subtitle
-    if (tile.cost) {
-      ctx.fillStyle = '#047857';
-      ctx.font = 'bold 20px monospace';
-      ctx.fillText(formatMoneyM(tile.cost), 128, 215);
-    } else if (tile.type === 'start') {
-      ctx.fillStyle = '#b45309';
-      ctx.font = 'bold 18px sans-serif';
-      ctx.fillText('+2.0M', 128, 215);
-    } else if (tile.type === 'tax') {
-      ctx.fillStyle = '#b91c1c';
-      ctx.font = 'bold 18px sans-serif';
-      ctx.fillText('จ่าย 1.0M', 128, 215);
-    }
-  }
-
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  tileTextureCache.set(cacheKey, texture);
-  return texture;
-}
+      {/* Stack 2 */}
+      <mesh position={[0.22, 0.16, 0.06]} castShadow>
+        <boxGeometry args={[0.38, 0.32, 0.55]} />
+        <meshStandardMaterial color="#bfdbfe" roughness={0.6} />
+      </mesh>
+      <mesh position={[0.22, 0.16, 0.06]}>
+        <boxGeometry args={[0.39, 0.33, 0.14]} />
+        <meshStandardMaterial color="#fef08a" roughness={0.3} metalness={0.5} />
+      </mesh>
+    </group>
+  );
+};
 
 // 3D Tile Component
 const Tile3D: React.FC<{
@@ -176,7 +439,7 @@ const Tile3D: React.FC<{
 }> = ({ tile, ownership, ownerColor, isStepActive, onClick }) => {
   const [hovered, setHovered] = useState(false);
   const [x, y, z] = getSuperTile3DPosition(tile.index);
-  const isCorner = tile.index % 8 === 0;
+  const rot = getSuperTile3DRotation(tile.index);
 
   const topTexture = useMemo(() => {
     if (typeof window === 'undefined') return null;
@@ -184,14 +447,14 @@ const Tile3D: React.FC<{
   }, [tile]);
 
   const tileGeo = useMemo(() => {
-    return new RoundedBoxGeometry(0.96, 0.22, 0.96, 2, 0.04);
+    return new RoundedBoxGeometry(0.80, 0.22, 0.94, 2, 0.03);
   }, []);
 
   const houses = ownership?.houses || 0;
   const hasHotel = houses === 4;
 
   return (
-    <group position={[x, y, z]}>
+    <group position={[x, y, z]} rotation={rot}>
       {/* 3D Tile Block */}
       <mesh
         geometry={tileGeo}
@@ -209,43 +472,43 @@ const Tile3D: React.FC<{
       >
         <meshStandardMaterial
           map={topTexture || undefined}
-          roughness={0.4}
-          metalness={0.1}
-          color={isStepActive ? '#fffbeb' : hovered ? '#ffffff' : '#f8f4eb'}
-          emissive={isStepActive ? '#fbbf24' : hovered ? '#fef08a' : '#000000'}
-          emissiveIntensity={isStepActive ? 0.6 : hovered ? 0.3 : 0}
+          roughness={0.25}
+          metalness={0.05}
+          color={isStepActive ? '#fef08a' : hovered ? '#ffffff' : '#fcfcfc'}
+          emissive={isStepActive ? '#eab308' : hovered ? '#fde047' : '#000000'}
+          emissiveIntensity={isStepActive ? 0.7 : hovered ? 0.3 : 0}
         />
       </mesh>
 
-      {/* Owner Color Base Pin / Border */}
+      {/* Owner Color Base Flag / Trim */}
       {ownerColor && (
-        <mesh position={[0, -0.05, 0]}>
-          <boxGeometry args={[1.0, 0.12, 1.0]} />
-          <meshStandardMaterial color={ownerColor} roughness={0.3} metalness={0.4} />
+        <mesh position={[0, -0.06, 0]}>
+          <boxGeometry args={[0.82, 0.12, 0.96]} />
+          <meshStandardMaterial color={ownerColor} roughness={0.3} metalness={0.5} />
         </mesh>
       )}
 
       {/* Step Shockwave Ring Effect */}
       {isStepActive && (
-        <group position={[0, 0.13, 0]}>
-          <pointLight color="#fde047" intensity={3.5} distance={1.8} />
+        <group position={[0, 0.15, 0]}>
+          <pointLight color="#fde047" intensity={4.0} distance={2.0} />
           <mesh rotation={[-Math.PI / 2, 0, 0]}>
-            <ringGeometry args={[0.25, 0.45, 24]} />
-            <meshBasicMaterial color="#fde047" transparent opacity={0.8} />
+            <ringGeometry args={[0.22, 0.46, 24]} />
+            <meshBasicMaterial color="#fde047" transparent opacity={0.85} />
           </mesh>
         </group>
       )}
 
       {/* 3D Houses / Hotel sitting on Tile */}
       {houses > 0 && (
-        <group position={[0, 0.11, 0]}>
+        <group position={[0, 0.11, -0.15]}>
           {hasHotel ? (
             <Hotel3D position={[0, 0, 0]} />
           ) : (
             <>
-              {houses >= 1 && <House3D position={[-0.26, 0, 0]} />}
+              {houses >= 1 && <House3D position={[-0.24, 0, 0]} />}
               {houses >= 2 && <House3D position={[0, 0, 0]} />}
-              {houses >= 3 && <House3D position={[0.26, 0, 0]} />}
+              {houses >= 3 && <House3D position={[0.24, 0, 0]} />}
             </>
           )}
         </group>
@@ -254,139 +517,163 @@ const Tile3D: React.FC<{
   );
 };
 
-// 3D Player Token / Pawn
+// 3D Animated Player Pawn with Pin Pointer (LINE เกมเศรษฐี Style)
 const PlayerToken3D: React.FC<{
   player: PlayerRecord;
   targetTileIndex: number;
   playerIndex: number;
   isCurrentTurn: boolean;
-}> = ({ targetTileIndex, playerIndex, isCurrentTurn }) => {
-  const meshRef = useRef<THREE.Group>(null);
-  const turnBeamRef = useRef<THREE.Group>(null);
-  const basePos = getSuperTile3DPosition(targetTileIndex);
+}> = ({ player, targetTileIndex, playerIndex, isCurrentTurn }) => {
+  const groupRef = useRef<THREE.Group>(null);
+  const pointerRef = useRef<THREE.Group>(null);
 
-  // Offset players so they don't overlap on the same tile
-  const totalSlots = 8;
-  const slot = playerIndex % totalSlots;
-  const radius = 0.22;
-  const angle = (slot * Math.PI * 2) / totalSlots;
-  const offsetX = Math.cos(angle) * radius;
-  const offsetZ = Math.sin(angle) * radius;
-
-  const targetX = basePos[0] + offsetX;
-  const targetZ = basePos[2] + offsetZ;
+  const [tx, ty, tz] = getSuperTile3DPosition(targetTileIndex);
   const color = PLAYER_3D_COLORS[playerIndex % PLAYER_3D_COLORS.length];
 
-  useFrame((_, delta) => {
-    if (!meshRef.current) return;
-    meshRef.current.position.x = THREE.MathUtils.lerp(meshRef.current.position.x, targetX, delta * 12);
-    meshRef.current.position.z = THREE.MathUtils.lerp(meshRef.current.position.z, targetZ, delta * 12);
+  // Slight offset per player so tokens don't overlap when on same tile
+  const offsetX = ((playerIndex % 2) - 0.5) * 0.28;
+  const offsetZ = (Math.floor(playerIndex / 2) - 0.5) * 0.28;
 
-    const dist = Math.hypot(meshRef.current.position.x - targetX, meshRef.current.position.z - targetZ);
-    const hop = dist > 0.06 ? Math.sin(Math.min(dist * 4, Math.PI)) * 0.35 : 0;
-    const turnBob = isCurrentTurn ? Math.sin(Date.now() * 0.008) * 0.05 : 0;
+  useFrame(({ clock }) => {
+    if (!groupRef.current) return;
+    const targetX = tx + offsetX;
+    const targetZ = tz + offsetZ;
 
-    meshRef.current.position.y = 0.35 + hop + turnBob;
+    // Smooth lerp to destination tile
+    groupRef.current.position.x = THREE.MathUtils.lerp(groupRef.current.position.x, targetX, 0.18);
+    groupRef.current.position.z = THREE.MathUtils.lerp(groupRef.current.position.z, targetZ, 0.18);
 
-    if (turnBeamRef.current) {
-      turnBeamRef.current.rotation.y += delta * 2.5;
-      turnBeamRef.current.position.y = 0.85 + Math.sin(Date.now() * 0.007) * 0.06;
+    // Turn bobbing pin animation
+    if (isCurrentTurn && pointerRef.current) {
+      pointerRef.current.position.y = 0.95 + Math.sin(clock.getElapsedTime() * 5) * 0.12;
+      pointerRef.current.rotation.y += 0.04;
     }
   });
 
   return (
-    <group ref={meshRef} position={[targetX, 0.35, targetZ]}>
-      {/* Turn Indicator Arrow */}
+    <group ref={groupRef} position={[tx + offsetX, 0.12, tz + offsetZ]}>
+      {/* Glowing Turn Pointer Pin (Blue / Gold Arrow bobbing over head like Image 1) */}
       {isCurrentTurn && (
-        <group ref={turnBeamRef} position={[0, 0.85, 0]}>
-          <pointLight color="#fde047" intensity={2.0} distance={1.2} />
+        <group ref={pointerRef} position={[0, 0.95, 0]}>
+          <pointLight color="#38bdf8" intensity={2.5} distance={1.5} />
           <mesh rotation={[Math.PI, 0, 0]}>
-            <coneGeometry args={[0.11, 0.22, 4]} />
-            <meshStandardMaterial color="#fbbf24" emissive="#f59e0b" emissiveIntensity={0.8} />
+            <coneGeometry args={[0.13, 0.26, 4]} />
+            <meshStandardMaterial color="#0284c7" emissive="#38bdf8" emissiveIntensity={0.8} />
           </mesh>
         </group>
       )}
 
-      {/* Pawn Base */}
-      <mesh position={[0, 0.06, 0]} castShadow>
-        <cylinderGeometry args={[0.13, 0.16, 0.12, 16]} />
-        <meshStandardMaterial color="#1e0b02" roughness={0.3} metalness={0.7} />
+      {/* Glossy Pedestal Base */}
+      <mesh position={[0, 0.05, 0]} castShadow>
+        <cylinderGeometry args={[0.16, 0.18, 0.10, 24]} />
+        <meshStandardMaterial color="#0f172a" metalness={0.8} roughness={0.2} />
       </mesh>
 
-      {/* Pawn Body */}
-      <mesh position={[0, 0.22, 0]} castShadow>
-        <cylinderGeometry args={[0.09, 0.14, 0.24, 16]} />
-        <meshStandardMaterial color={color} roughness={0.3} metalness={0.2} />
+      {/* Colored Ring */}
+      <mesh position={[0, 0.12, 0]} castShadow>
+        <cylinderGeometry args={[0.13, 0.15, 0.06, 24]} />
+        <meshStandardMaterial color={color} metalness={0.5} roughness={0.3} />
       </mesh>
 
-      {/* Pawn Head */}
-      <mesh position={[0, 0.40, 0]} castShadow>
-        <sphereGeometry args={[0.12, 16, 16]} />
-        <meshStandardMaterial color="#fef08a" roughness={0.2} />
+      {/* Pawn Figurine Body */}
+      <mesh position={[0, 0.28, 0]} castShadow>
+        <cylinderGeometry args={[0.08, 0.13, 0.26, 24]} />
+        <meshStandardMaterial color={color} roughness={0.3} metalness={0.1} />
       </mesh>
 
-      {/* Buffalo Horns or Hat */}
-      <mesh position={[-0.09, 0.47, 0]} rotation={[0, 0, Math.PI / 4]}>
-        <coneGeometry args={[0.035, 0.12, 8]} />
-        <meshStandardMaterial color="#f59e0b" metalness={0.6} />
+      {/* Pawn Head (Glossy Pearl) */}
+      <mesh position={[0, 0.46, 0]} castShadow>
+        <sphereGeometry args={[0.13, 24, 24]} />
+        <meshStandardMaterial color="#fef9c3" roughness={0.2} metalness={0.2} />
       </mesh>
-      <mesh position={[0.09, 0.47, 0]} rotation={[0, 0, -Math.PI / 4]}>
-        <coneGeometry args={[0.035, 0.12, 8]} />
-        <meshStandardMaterial color="#f59e0b" metalness={0.6} />
+
+      {/* Crown for Player */}
+      <mesh position={[0, 0.58, 0]}>
+        <cylinderGeometry args={[0.09, 0.07, 0.08, 6]} />
+        <meshStandardMaterial color="#f59e0b" metalness={0.9} roughness={0.2} />
       </mesh>
     </group>
   );
 };
 
-// 3D Center Deck & Emblem
+// 3D Center Deck & Play Mat (LINE เกมเศรษฐี Elegant Silver/Cream Play Mat & Watermark)
 const CenterDeck3D: React.FC = () => {
   return (
     <group position={[0, 0, 0]}>
-      {/* Center Mahogany Board Surface */}
-      <mesh position={[0, -0.05, 0]} receiveShadow>
-        <boxGeometry args={[7.0, 0.15, 7.0]} />
-        <meshStandardMaterial color="#1f0a02" roughness={0.6} metalness={0.2} />
+      {/* 1. Large Mahogany Table Base (Extends under the board) */}
+      <mesh position={[0, -0.22, 0]} receiveShadow>
+        <boxGeometry args={[13.2, 0.35, 13.2]} />
+        <meshStandardMaterial color="#2d1609" roughness={0.5} metalness={0.2} />
+      </mesh>
+      {/* Table Gold/Brass Bevel Border */}
+      <mesh position={[0, -0.04, 0]}>
+        <boxGeometry args={[13.3, 0.04, 13.3]} />
+        <meshStandardMaterial color="#542c13" roughness={0.4} />
       </mesh>
 
-      {/* Center Gold Trim Ring */}
-      <mesh position={[0, 0.03, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[2.0, 2.08, 32]} />
-        <meshStandardMaterial color="#d4af37" metalness={0.8} roughness={0.2} />
+      {/* 2. Center Felt Playing Mat (Silver-Gray Luxury Mat like Image 1) */}
+      <mesh position={[0, 0.02, 0]} receiveShadow>
+        <boxGeometry args={[6.7, 0.18, 6.7]} />
+        <meshStandardMaterial color="#cbd5e1" roughness={0.8} metalness={0.05} />
       </mesh>
 
-      {/* Buffalo Mascot 3D Coin in Center */}
-      <mesh position={[0, 0.05, 0]}>
-        <cylinderGeometry args={[1.2, 1.2, 0.08, 32]} />
-        <meshStandardMaterial color="#3d1806" roughness={0.4} metalness={0.7} />
-      </mesh>
-      <mesh position={[0, 0.10, 0]}>
-        <cylinderGeometry args={[1.05, 1.05, 0.04, 32]} />
-        <meshStandardMaterial color="#f59e0b" metalness={0.9} roughness={0.2} />
+      {/* 3. Gold Trim Ring around Center */}
+      <mesh position={[0, 0.12, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[2.2, 2.30, 48]} />
+        <meshStandardMaterial color="#f59e0b" metalness={0.8} roughness={0.2} />
       </mesh>
 
-      {/* 3D Chest Cards Deck (Left Center) */}
-      <group position={[-1.8, 0.15, -0.8]} rotation={[0, 0.1, 0]}>
+      {/* 4. Embossed Center Emblem (Watermark Seal "ซุปเปอร์เศรษฐี") */}
+      <mesh position={[0, 0.125, 0]}>
+        <cylinderGeometry args={[1.4, 1.4, 0.02, 32]} />
+        <meshStandardMaterial color="#94a3b8" roughness={0.6} metalness={0.3} />
+      </mesh>
+      <mesh position={[0, 0.14, 0]}>
+        <cylinderGeometry args={[1.2, 1.2, 0.02, 32]} />
+        <meshStandardMaterial color="#e2e8f0" roughness={0.7} />
+      </mesh>
+
+      {/* 5. Center Round / Turn Dashboard Plaque (like Image 1's "รอบ 28 / เวลา 22:30") */}
+      <group position={[0, 0.20, 0]}>
         <mesh castShadow>
-          <boxGeometry args={[1.1, 0.22, 1.4]} />
-          <meshStandardMaterial color="#ec4899" roughness={0.4} />
+          <boxGeometry args={[2.2, 0.10, 0.8]} />
+          <meshStandardMaterial color="#1e293b" roughness={0.3} metalness={0.7} />
         </mesh>
-        <mesh position={[0, 0.12, 0]}>
-          <boxGeometry args={[1.12, 0.02, 1.42]} />
-          <meshStandardMaterial color="#fbcfe8" roughness={0.3} />
+        <mesh position={[0, 0.06, 0]}>
+          <boxGeometry args={[2.1, 0.04, 0.7]} />
+          <meshStandardMaterial color="#f8fafc" roughness={0.2} />
         </mesh>
       </group>
 
-      {/* 3D Chance Cards Deck (Right Center) */}
-      <group position={[1.8, 0.15, 0.8]} rotation={[0, -0.1, 0]}>
+      {/* 6. 3D Chest Cards Deck (Left Center) */}
+      <group position={[-1.7, 0.22, -0.9]} rotation={[0, 0.2, 0]}>
         <mesh castShadow>
-          <boxGeometry args={[1.1, 0.22, 1.4]} />
-          <meshStandardMaterial color="#eab308" roughness={0.4} />
+          <boxGeometry args={[1.1, 0.24, 1.4]} />
+          <meshStandardMaterial color="#ec4899" roughness={0.3} />
         </mesh>
-        <mesh position={[0, 0.12, 0]}>
-          <boxGeometry args={[1.12, 0.02, 1.42]} />
-          <meshStandardMaterial color="#fef08a" roughness={0.3} />
+        <mesh position={[0, 0.13, 0]}>
+          <boxGeometry args={[1.08, 0.03, 1.38]} />
+          <meshStandardMaterial color="#fbcfe8" roughness={0.2} />
         </mesh>
       </group>
+
+      {/* 7. 3D Chance Cards Deck (Right Center) */}
+      <group position={[1.7, 0.22, 0.9]} rotation={[0, -0.2, 0]}>
+        <mesh castShadow>
+          <boxGeometry args={[1.1, 0.24, 1.4]} />
+          <meshStandardMaterial color="#eab308" roughness={0.3} />
+        </mesh>
+        <mesh position={[0, 0.13, 0]}>
+          <boxGeometry args={[1.08, 0.03, 1.38]} />
+          <meshStandardMaterial color="#fef08a" roughness={0.2} />
+        </mesh>
+      </group>
+
+      {/* 8. Money Stacks around Table Corners (Iconic LINE เกมเศรษฐี Atmosphere) */}
+      <MoneyStack3D position={[-5.6, 0.02, -5.6]} rotation={[0, Math.PI / 4, 0]} />
+      <MoneyStack3D position={[5.6, 0.02, -5.6]} rotation={[0, -Math.PI / 4, 0]} />
+      <MoneyStack3D position={[-5.6, 0.02, 5.6]} rotation={[0, -Math.PI / 4, 0]} />
+      <MoneyStack3D position={[5.6, 0.02, 5.6]} rotation={[0, Math.PI / 4, 0]} />
     </group>
   );
 };
@@ -400,81 +687,87 @@ export const SuperBoard3D: React.FC<SuperBoard3DProps> = ({
   onTileClick,
 }) => {
   return (
-    <div className="w-full h-full min-h-[460px] sm:min-h-[560px] lg:min-h-[640px] aspect-square rounded-2xl overflow-hidden shadow-2xl relative bg-[#0a0301] border-2 border-[#471904]">
+    <div className="w-full h-full min-h-[460px] sm:min-h-[560px] lg:min-h-[640px] aspect-square rounded-2xl overflow-hidden shadow-2xl relative bg-[#0f0703] border-2 border-[#54280a]">
       <Canvas
         shadows
-        camera={{ position: [0, 9.2, 7.8], fov: 48 }}
-        gl={{ antialias: true }}
+        camera={{ position: [0, 9.8, 9.8], fov: 42 }}
+        gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
       >
-        <color attach="background" args={['#0c0401']} />
+        <color attach="background" args={['#120703']} />
 
-        {/* Ambient & Directional Warm Tavern Lighting */}
-        <ambientLight intensity={0.8} color="#fff1e6" />
+        {/* Ambient & Directional Warm Sunlight Lighting */}
+        <ambientLight intensity={0.9} color="#fff8ed" />
         <directionalLight
-          position={[6, 14, 8]}
-          intensity={1.8}
+          position={[8, 16, 10]}
+          intensity={2.2}
           castShadow
-          shadow-mapSize-width={1024}
-          shadow-mapSize-height={1024}
+          shadow-mapSize-width={2048}
+          shadow-mapSize-height={2048}
+          shadow-bias={-0.0001}
           color="#fffdf5"
         />
-        <pointLight position={[0, 4, 0]} intensity={1.2} color="#fef08a" distance={10} />
+        <pointLight position={[0, 5, 0]} intensity={1.5} color="#fef08a" distance={12} />
 
-        {/* Orbit Camera Controls (Smooth and constrained) */}
+        {/* Orbit Camera Controls (Constrained to smooth isometric view) */}
         <OrbitControls
           enablePan={false}
           enableZoom={true}
-          minDistance={6}
+          minDistance={7}
           maxDistance={15}
           maxPolarAngle={Math.PI / 2.15}
           minPolarAngle={Math.PI / 6}
         />
 
-        {/* Center Board & Emblem */}
-        <CenterDeck3D />
+        {/* Entire Board in Isometric Diamond Rotation (LINE เกมเศรษฐี Classic 45° Angle!) */}
+        <group rotation={[0, -Math.PI / 4, 0]}>
+          {/* Center Play Mat, Table Base & Money Stacks */}
+          <CenterDeck3D />
 
-        {/* 32 Tiles around board */}
-        {SUPER_MONOPOLY_TILES.map((tile) => {
-          const ownership = properties[tile.index] || null;
-          const ownerPlayer = ownership ? players.find((p) => p.id === ownership.ownerId) : null;
-          const ownerIdx = ownerPlayer ? players.indexOf(ownerPlayer) : -1;
-          const ownerColor = ownerIdx >= 0 ? PLAYER_3D_COLORS[ownerIdx % PLAYER_3D_COLORS.length] : null;
+          {/* 40 Tiles around board with ultra-sharp textures & authentic orientation */}
+          {SUPER_MONOPOLY_TILES.map((tile) => {
+            const ownership = properties[tile.index] || null;
+            const ownerPlayer = ownership ? players.find((p) => p.id === ownership.ownerId) : null;
+            const ownerIdx = ownerPlayer ? players.indexOf(ownerPlayer) : -1;
+            const ownerColor = ownerIdx >= 0 ? PLAYER_3D_COLORS[ownerIdx % PLAYER_3D_COLORS.length] : null;
 
-          return (
-            <Tile3D
-              key={tile.index}
-              tile={tile}
-              ownership={ownership}
-              ownerColor={ownerColor}
-              isStepActive={activeStepTileIndex === tile.index}
-              onClick={() => onTileClick(tile)}
-            />
-          );
-        })}
+            return (
+              <Tile3D
+                key={tile.index}
+                tile={tile}
+                ownership={ownership}
+                ownerColor={ownerColor}
+                isStepActive={activeStepTileIndex === tile.index}
+                onClick={() => onTileClick(tile)}
+              />
+            );
+          })}
 
-        {/* 3D Animated Player Pawns */}
-        {players.map((p, idx) => {
-          const isTurn = p.id === currentTurnPlayerId;
-          const targetIndex =
-            isTurn && activeStepTileIndex !== null && activeStepTileIndex !== undefined
-              ? activeStepTileIndex
-              : positions[p.id] ?? 0;
+          {/* 3D Animated Player Pawns with Turn Pointer */}
+          {players.map((p, idx) => {
+            const isTurn = p.id === currentTurnPlayerId;
+            const targetIndex =
+              isTurn && activeStepTileIndex !== null && activeStepTileIndex !== undefined
+                ? activeStepTileIndex
+                : positions[p.id] ?? 0;
 
-          return (
-            <PlayerToken3D
-              key={p.id}
-              player={p}
-              targetTileIndex={targetIndex}
-              playerIndex={idx}
-              isCurrentTurn={isTurn}
-            />
-          );
-        })}
+            return (
+              <PlayerToken3D
+                key={p.id}
+                player={p}
+                targetTileIndex={targetIndex}
+                playerIndex={idx}
+                isCurrentTurn={isTurn}
+              />
+            );
+          })}
+        </group>
       </Canvas>
 
       {/* Overlay Hint */}
-      <div className="absolute bottom-2 left-2 pointer-events-none px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur border border-amber-500/30 text-[10px] text-amber-200/80 font-bold">
-        🖱️ คลิกซ้ายลากเพื่อหมุนกระดาน 3D • เลื่อนลูกกลิ้งเพื่อซูม
+      <div className="absolute bottom-2 left-2 pointer-events-none px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur border border-amber-500/30 text-[10px] text-amber-200/90 font-bold flex items-center gap-1.5 shadow">
+        <span>🎮 มุมมอง 3D สไตล์เกมเศรษฐี</span>
+        <span className="text-amber-400/50">•</span>
+        <span>ลากเพื่อหมุน • เลื่อนลูกกลิ้งเพื่อซูม</span>
       </div>
     </div>
   );
