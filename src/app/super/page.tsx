@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { usePlatform } from '@/hooks/usePlatform';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
-import { THAI_PARTY_NICKNAMES } from '@/lib/platforms/adapter';
+import { THAI_PARTY_NICKNAMES, getRandomGuestUser } from '@/lib/platforms/adapter';
 import { Avatar } from '@/components/common/Avatar';
 import { Modal } from '@/components/common/Modal';
 import {
@@ -23,6 +23,7 @@ import {
   ArrowLeft,
   Crown,
   HelpCircle,
+  Loader2,
 } from 'lucide-react';
 import { BuffaloLogo } from '@/components/common/BuffaloLogo';
 
@@ -35,6 +36,11 @@ export default function SuperHomePage() {
   const [isJoining, setIsJoining] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // Discord Auto-join / Auto-create for voice channel
+  const [isDiscordAutoConnecting, setIsDiscordAutoConnecting] = useState<boolean>(false);
+  const [discordConnectStatus, setDiscordConnectStatus] = useState<string>('');
+  const hasAttemptedAutoConnect = useRef<boolean>(false);
+
   // Edit Name Modal
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [editName, setEditName] = useState<string>('');
@@ -44,13 +50,6 @@ export default function SuperHomePage() {
       setEditName(user.displayName);
     }
   }, [user?.displayName]);
-
-  // Discord Auto-join
-  useEffect(() => {
-    if (discordRoomCode) {
-      setJoinCode(discordRoomCode);
-    }
-  }, [discordRoomCode]);
 
   // Generate 4-character room code
   const generateRoomCode = (): string => {
@@ -65,15 +64,149 @@ export default function SuperHomePage() {
   const getHostUser = () => {
     let hostUser = user;
     if (hostUser.id === 'guest-init') {
-      const stored = localStorage.getItem('party_drink_guest_user');
+      const stored = typeof window !== 'undefined' ? localStorage.getItem('party_drink_guest_user') : null;
       if (stored) {
         try {
           hostUser = JSON.parse(stored);
         } catch {}
       }
+      if (!hostUser || hostUser.id === 'guest-init') {
+        hostUser = getRandomGuestUser();
+      }
     }
     return hostUser;
   };
+
+  // Auto-connect to existing room or auto-create for first person in Discord Voice Channel
+  const autoConnectDiscordRoom = useCallback(async (code: string) => {
+    setIsDiscordAutoConnecting(true);
+    setDiscordConnectStatus('กำลังตรวจหาห้องสำหรับ Discord Voice Channel...');
+
+    try {
+      let existingRoom: any = null;
+      if (isSupabaseConfigured()) {
+        const { data, error } = await supabase
+          .from('rooms')
+          .select('*')
+          .eq('code', code)
+          .maybeSingle();
+        if (!error && data) {
+          existingRoom = data;
+        }
+      } else {
+        const res = await fetch(`/api/room?code=${code}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.exists && json.room) {
+            existingRoom = json.room;
+          }
+        }
+      }
+
+      // Case 1: Room already exists and is active!
+      if (existingRoom && existingRoom.status !== 'finished') {
+        if (existingRoom.status === 'playing') {
+          setDiscordConnectStatus(`พบห้อง ${code} กำลังเล่นอยู่ กำลังเข้าสู่สนามประลอง...`);
+          router.replace(`/super/play/${code}`);
+        } else {
+          setDiscordConnectStatus(`พบห้อง ${code} ของเพื่อนใน Voice กำลังพาเข้าห้องรอ...`);
+          router.replace(`/super/lobby/${code}`);
+        }
+        return;
+      }
+
+      // Case 2: Room does not exist or was finished -> Auto create room for the first person!
+      setDiscordConnectStatus(`คุณคือคนแรกในช่องสนทนา กำลังสร้างห้อง ${code} ให้อัตโนมัติ...`);
+      const hostUser = getHostUser();
+
+      if (isSupabaseConfigured()) {
+        if (existingRoom && existingRoom.status === 'finished') {
+          await supabase.from('players').delete().eq('room_code', code);
+          await supabase.from('rooms').delete().eq('code', code);
+        }
+
+        const { error: roomError } = await supabase.from('rooms').insert({
+          code,
+          host_id: hostUser.id,
+          game_type: 'super-monopoly',
+          status: 'waiting',
+          current_turn_player_id: hostUser.id,
+          game_state: { positions: { [hostUser.id]: 0 } },
+        });
+
+        if (roomError && roomError.code !== '23505') {
+          console.error('Error creating room in Supabase:', roomError);
+        }
+
+        await supabase.from('players').upsert({
+          id: hostUser.id,
+          room_code: code,
+          line_user_id: hostUser.id,
+          display_name: hostUser.displayName,
+          avatar_url: hostUser.avatarUrl,
+          turn_order: 0,
+          drinks_count: 0,
+          is_connected: true,
+        });
+      } else {
+        // Mock API
+        const initialRoom = {
+          code,
+          host_id: hostUser.id,
+          game_type: 'super-monopoly',
+          status: 'waiting',
+          current_turn_player_id: hostUser.id,
+          game_state: { positions: { [hostUser.id]: 0 } },
+          created_at: new Date().toISOString(),
+        };
+        const initialPlayer = {
+          id: hostUser.id,
+          room_code: code,
+          line_user_id: hostUser.id,
+          display_name: hostUser.displayName,
+          avatar_url: hostUser.avatarUrl,
+          drinks_count: 0,
+          turn_order: 0,
+          is_connected: true,
+        };
+
+        await fetch('/api/room', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'create',
+            code,
+            room: initialRoom,
+            player: initialPlayer,
+          }),
+        });
+      }
+
+      setDiscordConnectStatus(`สร้างห้อง ${code} เรียบร้อย กำลังเข้าสู่ห้องรอ...`);
+      router.replace(`/super/lobby/${code}`);
+    } catch (err: any) {
+      console.error('Discord auto-connect error:', err);
+      setIsDiscordAutoConnecting(false);
+      setErrorMsg('ไม่สามารถเชื่อมต่อห้อง Discord อัตโนมัติได้ กรุณากดปุ่มเข้าห้องด้วยตนเอง');
+    }
+  }, [router, user]);
+
+  // Auto-connect effect when entering in Discord
+  useEffect(() => {
+    if (isLoading || !discordRoomCode || hasAttemptedAutoConnect.current) return;
+
+    const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const isManualParam = urlParams?.get('manual') === '1';
+    const isManualStorage = typeof window !== 'undefined' && sessionStorage.getItem('discord_manual_exit') === discordRoomCode;
+
+    if (isManualParam || isManualStorage) {
+      setJoinCode(discordRoomCode);
+      return;
+    }
+
+    hasAttemptedAutoConnect.current = true;
+    autoConnectDiscordRoom(discordRoomCode);
+  }, [isLoading, discordRoomCode, autoConnectDiscordRoom]);
 
   // Create standard Super Monopoly room
   const handleCreateRoom = async () => {
@@ -273,6 +406,53 @@ export default function SuperHomePage() {
     }
   };
 
+  if (isDiscordAutoConnecting) {
+    return (
+      <div className="w-full min-h-screen flex flex-col items-center justify-center p-4 select-none">
+        <div className="w-full max-w-sm bg-[#240e03]/95 border-2 border-yellow-500/40 rounded-3xl p-6 shadow-2xl flex flex-col items-center text-center">
+          <div className="relative mb-4">
+            <BuffaloLogo className="w-16 h-16 drop-shadow-lg animate-bounce" />
+            <span className="absolute -bottom-1 -right-1 text-2xl">🎮</span>
+          </div>
+
+          <h2 className="text-lg font-black text-amber-100 mb-1">
+            Discord Voice Activity
+          </h2>
+          <p className="text-xs text-amber-300/80 font-semibold mb-4">
+            ระบบซิงก์ห้องเกมอัตโนมัติสำหรับ Voice Channel
+          </p>
+
+          <div className="w-full bg-[#140501] border border-[#522107] rounded-2xl py-3 px-4 mb-4 flex items-center justify-center gap-3 shadow-inner">
+            <span className="text-xs text-amber-400/80 font-bold">รหัสห้อง:</span>
+            <span className="font-mono text-2xl font-black text-yellow-300 tracking-widest">
+              {discordRoomCode}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2.5 mb-5 bg-[#170601] px-4 py-2 rounded-xl border border-[#4a1c05]">
+            <Loader2 className="w-4 h-4 text-yellow-400 animate-spin shrink-0" />
+            <span className="text-xs font-bold text-amber-200">
+              {discordConnectStatus || 'กำลังเชื่อมต่อห้อง...'}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== 'undefined' && discordRoomCode) {
+                sessionStorage.setItem('discord_manual_exit', discordRoomCode);
+              }
+              setIsDiscordAutoConnecting(false);
+            }}
+            className="text-xs text-amber-400/70 hover:text-amber-200 underline font-semibold transition cursor-pointer"
+          >
+            ยกเลิก / ไปยังหน้าหลัก
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full flex-1 flex flex-col items-center justify-between p-4 sm:p-8">
       {/* Container with widescreen max width */}
@@ -364,10 +544,18 @@ export default function SuperHomePage() {
                 </div>
                 <p className="text-xs text-gray-200 mb-3 font-medium">
                   รหัสห้องอัตโนมัติสำหรับช่องสนทนานี้คือ: <b className="text-yellow-300 font-mono font-black text-sm">{discordRoomCode}</b>
+                  <span className="block text-[11px] text-indigo-300/80 mt-0.5">
+                    คลิกปุ่มด้านล่างเพื่อเข้าห้องทันที (หากห้องยังไม่มี ระบบจะสร้างห้องให้อัตโนมัติ)
+                  </span>
                 </p>
                 <button
                   type="button"
-                  onClick={() => router.push(`/super/lobby/${discordRoomCode}`)}
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      sessionStorage.removeItem('discord_manual_exit');
+                    }
+                    autoConnectDiscordRoom(discordRoomCode);
+                  }}
                   className="wood-btn-gold px-5 py-2.5 rounded-xl text-xs font-black shadow-md flex items-center gap-2 active:scale-95 transition"
                 >
                   <span>เข้าสู่ห้องตี้ใน Discord ทันที ({discordRoomCode})</span>

@@ -57,8 +57,11 @@ export default function SuperPlayPage() {
     if (!room) return;
 
     if (user && room.game_state?.kicked_player_ids?.includes(user.id)) {
+      if (typeof window !== 'undefined' && roomCode) {
+        sessionStorage.setItem('discord_manual_exit', roomCode);
+      }
       showToast('คุณถูกหัวหน้าห้องเตะออกจากห้องแล้ว', 'warning');
-      router.push('/super');
+      router.push('/super?manual=1');
       return;
     }
 
@@ -66,8 +69,11 @@ export default function SuperPlayPage() {
       router.push(`/super/lobby/${roomCode}`);
     }
     if (room.status === 'finished') {
+      if (typeof window !== 'undefined' && roomCode) {
+        sessionStorage.setItem('discord_manual_exit', roomCode);
+      }
       showToast('หัวหน้าห้องได้ทำการปิดห้องเกมแล้ว', 'info');
-      router.push('/super');
+      router.push('/super?manual=1');
     }
   }, [room, roomCode, router, user]);
 
@@ -88,8 +94,11 @@ export default function SuperPlayPage() {
         <p className="text-xs text-gray-400 mb-4">{error || 'ห้องนี้อาจถูกปิดไปแล้ว'}</p>
         <button
           onClick={() => {
+            if (typeof window !== 'undefined' && roomCode) {
+              sessionStorage.setItem('discord_manual_exit', roomCode);
+            }
             leaveRoom();
-            router.push('/super');
+            router.push('/super?manual=1');
           }}
           className="wood-btn-gold px-6 py-2.5 rounded-xl font-bold text-xs"
         >
@@ -126,8 +135,11 @@ export default function SuperPlayPage() {
       'warning'
     );
     if (confirmed) {
+      if (typeof window !== 'undefined' && roomCode) {
+        sessionStorage.setItem('discord_manual_exit', roomCode);
+      }
       await closeRoom();
-      router.push('/super');
+      router.push('/super?manual=1');
     }
   };
 
@@ -139,8 +151,11 @@ export default function SuperPlayPage() {
       'เล่นต่อ'
     );
     if (confirmed) {
+      if (typeof window !== 'undefined' && roomCode) {
+        sessionStorage.setItem('discord_manual_exit', roomCode);
+      }
       await leaveRoom();
-      router.push('/super');
+      router.push('/super?manual=1');
     }
   };
 

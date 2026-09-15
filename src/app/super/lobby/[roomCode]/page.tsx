@@ -59,8 +59,11 @@ export default function SuperLobbyPage() {
     if (!room) return;
 
     if (user && room.game_state?.kicked_player_ids?.includes(user.id)) {
+      if (typeof window !== 'undefined' && roomCode) {
+        sessionStorage.setItem('discord_manual_exit', roomCode);
+      }
       showToast('คุณถูกหัวหน้าห้องเตะออกจากห้องแล้ว', 'warning');
-      router.push('/super');
+      router.push('/super?manual=1');
       return;
     }
 
@@ -68,8 +71,11 @@ export default function SuperLobbyPage() {
       router.push(`/super/play/${roomCode}`);
     }
     if (room.status === 'finished') {
+      if (typeof window !== 'undefined' && roomCode) {
+        sessionStorage.setItem('discord_manual_exit', roomCode);
+      }
       showToast('หัวหน้าห้องได้ทำการปิดห้องเกมแล้ว', 'info');
-      router.push('/super');
+      router.push('/super?manual=1');
     }
   }, [room, roomCode, router, user]);
 
@@ -101,8 +107,11 @@ export default function SuperLobbyPage() {
       'warning'
     );
     if (confirmed) {
+      if (typeof window !== 'undefined' && roomCode) {
+        sessionStorage.setItem('discord_manual_exit', roomCode);
+      }
       await closeRoom();
-      router.push('/super');
+      router.push('/super?manual=1');
     }
   };
 
@@ -114,8 +123,11 @@ export default function SuperLobbyPage() {
       'ยกเลิก'
     );
     if (confirmed) {
+      if (typeof window !== 'undefined' && roomCode) {
+        sessionStorage.setItem('discord_manual_exit', roomCode);
+      }
       await leaveRoom();
-      router.push('/super');
+      router.push('/super?manual=1');
     }
   };
 
@@ -175,7 +187,12 @@ export default function SuperLobbyPage() {
         <h2 className="text-lg font-black text-amber-100 mb-1">ไม่พบห้องที่ระบุ</h2>
         <p className="text-xs text-amber-300/70 mb-4">{error || 'ห้องนี้อาจถูกปิดไปแล้วหรือรหัสไม่ถูกต้อง'}</p>
         <button
-          onClick={() => router.push('/super')}
+          onClick={() => {
+            if (typeof window !== 'undefined' && roomCode) {
+              sessionStorage.setItem('discord_manual_exit', roomCode);
+            }
+            router.push('/super?manual=1');
+          }}
           className="wood-btn-gold px-6 py-2.5 rounded-xl font-bold text-xs"
         >
           กลับสู่หน้าซุปเปอร์เศรษฐี

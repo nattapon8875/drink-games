@@ -199,7 +199,7 @@ export const DiscordGuideModal: React.FC<DiscordGuideModalProps> = ({
                   ขั้นที่ 4
                 </span>
                 <span>
-                  เลือกเกม <strong>"ซุปเปอร์เศรษฐี"</strong> ➔ กด <strong>"เข้าร่วมห้อง"</strong> แล้วใส่รหัสห้อง <strong className="text-yellow-300 font-mono text-sm">{roomCode}</strong> หรือหากหัวห้องเปิดกิจกรรมอยู่แล้ว เพื่อนสามารถกดคลิก <strong>"Join Activity"</strong> เพื่อเข้าสู่เกมได้ทันที!
+                  <strong>ระบบ Auto-Sync:</strong> หากเพื่อนเปิดกิจกรรมในห้อง Voice เดียวกัน ระบบจะตรวจพบและพาเข้าห้อง <strong className="text-yellow-300 font-mono text-sm">{roomCode}</strong> ให้โดยอัตโนมัติทันที! (คนแรกที่เข้าจะสร้างห้องให้อัตโนมัติ คนถัดไปจะซิงก์เข้ามารวมกันทันทีโดยไม่ต้องกรอกรหัส)
                 </span>
               </div>
             </div>
