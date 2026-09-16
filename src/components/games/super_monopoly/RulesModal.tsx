@@ -295,7 +295,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                     <div>
                       <span className="text-xs font-black text-sky-300 block">ช่อง 20: จุดพักผ่อน (Rest Area)</span>
                       <span className="text-[11px] text-amber-100 font-medium">
-                        เมื่อเดินมาตกช่องนี้ จะต้องหยุดพัก 1 ตาในรอบถัดไป (ข้ามการทอยลูกเต๋า 1 รอบ)
+                        เมื่อเดินมาตกช่องนี้ ปลอดภัยจากค่าผ่านทาง ไม่เสียอะไร และไม่ถูกข้ามตา
                       </span>
                     </div>
                   </div>

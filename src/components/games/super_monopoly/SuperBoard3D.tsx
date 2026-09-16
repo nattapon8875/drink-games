@@ -304,7 +304,7 @@ function createSuperTileTexture(tile: SuperPropertyTile): THREE.CanvasTexture {
       ctx.fill();
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 32px sans-serif';
-      ctx.fillText('หยุด 1 ตา / ปรับ 0.5M', 256, 442);
+      ctx.fillText('มาเยี่ยม ปลอดภัย', 256, 442);
     } else if (tile.index === 20) {
       // REST AREA (จุดพักผ่อน / มาร์เบิลเวิลด์คัพ)
       ctx.fillStyle = '#f0fdfa';
@@ -332,8 +332,8 @@ function createSuperTileTexture(tile: SuperPropertyTile): THREE.CanvasTexture {
       ctx.roundRect(80, 390, 352, 80, 20);
       ctx.fill();
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 34px sans-serif';
-      ctx.fillText('หยุดทอย 1 ตา', 256, 444);
+      ctx.font = 'bold 32px sans-serif';
+      ctx.fillText('ปลอดภัย เดินต่อได้', 256, 444);
     } else if (tile.index === 30) {
       // GO TO JAIL (ไปห้องขัง / เที่ยวรอบโลก)
       ctx.fillStyle = '#fef2f2';

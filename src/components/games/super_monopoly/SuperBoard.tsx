@@ -149,7 +149,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
                       </span>
                     </div>
                     <span className="text-[6.5px] sm:text-[8px] font-bold text-red-700">
-                      หยุด 1 ตา / 0.5M
+                      มาเยี่ยม ปลอดภัย
                     </span>
                   </div>
                 )}
@@ -165,7 +165,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
                       จุดพัก
                     </span>
                     <span className="text-[6.5px] sm:text-[8px] font-black text-white bg-sky-600 px-1 py-0.2 rounded-full shadow-sm">
-                      หยุดทอย 1 ตา
+                      ปลอดภัย
                     </span>
                   </div>
                 )}
@@ -385,9 +385,9 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
             <div className="flex flex-wrap items-center justify-center gap-1.5 text-[7px] sm:text-[9px] font-bold text-amber-950/80 bg-amber-100/70 border border-amber-300/60 px-2.5 py-0.5 rounded-full shadow-sm">
               <span>🏁 ผ่านจุดเริ่มต้น รับ +2M</span>
               <span>•</span>
-              <span>🏖️ จุดพัก หยุดทอย 1 ตา</span>
+              <span>🏖️ จุดพัก ปลอดภัย เดินต่อได้</span>
               <span>•</span>
-              <span>⛓️ ประกันคุก 0.5M</span>
+              <span>⛓️ ติดคุก หยุด 1 ตา</span>
             </div>
           </div>
         </div>

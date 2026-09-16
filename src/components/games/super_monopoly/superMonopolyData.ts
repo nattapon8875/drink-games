@@ -252,7 +252,7 @@ export const SUPER_MONOPOLY_TILES: SuperPropertyTile[] = [
     index: 20,
     name: 'จุดพักผ่อน',
     type: 'parking',
-    description: 'จุดพักผ่อนริมชายหาด ปลอดภัยจากค่าผ่านทาง แต่ต้องหยุดทอยลูกเต๋า 1 ตา!',
+    description: 'จุดพักผ่อนริมชายหาด ปลอดภัยจากค่าผ่านทาง และเดินต่อได้ตามปกติ',
     icon: '🏖️',
   },
 
