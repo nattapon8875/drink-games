@@ -304,7 +304,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             // Jail and the rest stop cancel the extra roll, so the line should
             // not celebrate one the player is not getting.
             moveLog +=
-              targetTile.type === 'go_to_jail'
+              targetTile.type === 'go_to_jail' || targetTile.type === 'jail'
                 ? ' (แต้มคู่ แต่ติดคุก ไม่ได้ทอยต่อ)'
                 : targetTile.type === 'parking'
                 ? ' (แต้มคู่ แต่ต้องพัก ไม่ได้ทอยต่อ)'
@@ -518,8 +518,19 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                 requiresUserModalAction = true;
               }
             } else if (targetTile.type === 'jail') {
-              sfx.playSuccess();
-              newLogs = addLog(`⛓️ ${currentTurnPlayer.display_name} แวะเยี่ยมคุก (เป็นผู้มาเยือน ปลอดภัย)`, '#a855f7', newLogs);
+              // No such thing as just visiting here: standing on the cell means
+              // you are in it, exactly as if the police had sent you.
+              updatedJail[currentTurnPlayer.id] = 1;
+              sfx.playDrinkPenalty();
+              newLogs = addLog(
+                `⛓️ ${currentTurnPlayer.display_name} เดินมาตกห้องขัง ➜ ติดคุก!`,
+                '#dc2626',
+                newLogs
+              );
+              if (canActThisTurn) {
+                setJailNotice({ tileName: targetTile.name, wasDouble: isDoubleRoll });
+                requiresUserModalAction = true;
+              }
             } else if (targetTile.type === 'parking') {
               // Costs a turn the way jail does: safe from rent, but you sit the
               // next one out.
@@ -1137,7 +1148,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
           }
           if (isDoubleRoll) {
             logText +=
-              targetTile.type === 'go_to_jail'
+              targetTile.type === 'go_to_jail' || targetTile.type === 'jail'
                 ? ' (แต้มคู่ แต่ติดคุก ไม่ได้ทอยต่อ)'
                 : targetTile.type === 'parking'
                 ? ' (แต้มคู่ แต่ต้องพัก ไม่ได้ทอยต่อ)'
@@ -1345,7 +1356,12 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             currentPos = 10;
             botTurnLogs = addLog(`⛓️ 🤖 ${currentTurnPlayer.display_name} โดนจับส่งเข้าห้องขัง!`, '#dc2626', botTurnLogs);
           } else if (targetTile.type === 'jail') {
-            botTurnLogs = addLog(`⛓️ 🤖 ${currentTurnPlayer.display_name} แวะเยี่ยมคุก ชิลๆ ไม่ถูกขัง`, '#a855f7', botTurnLogs);
+            botJailState[turnPlayerId] = 1;
+            botTurnLogs = addLog(
+              `⛓️ 🤖 ${currentTurnPlayer.display_name} เดินมาตกห้องขัง ➜ ติดคุก!`,
+              '#dc2626',
+              botTurnLogs
+            );
           } else if (targetTile.type === 'parking') {
             // Costs a turn the way jail does
             botRestState[turnPlayerId] = 1;

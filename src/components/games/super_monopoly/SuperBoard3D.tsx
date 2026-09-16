@@ -296,7 +296,7 @@ function createSuperTileTexture(tile: SuperPropertyTile): THREE.CanvasTexture {
 
       ctx.fillStyle = '#0f172a';
       ctx.font = 'bold 36px sans-serif';
-      ctx.fillText('เกาะร้าง / คุก', 256, 340);
+      ctx.fillText('ตกเองก็ติดคุก', 256, 340);
 
       ctx.fillStyle = '#c2410c';
       ctx.beginPath();

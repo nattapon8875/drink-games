@@ -122,9 +122,9 @@ export const SUPER_MONOPOLY_TILES: SuperPropertyTile[] = [
   },
   {
     index: 10,
-    name: 'ช่องเข้าคุก',
+    name: 'ห้องขัง',
     type: 'jail',
-    description: 'คุกคุมขัง / ผู้มาเยือน หากไม่ได้ถูกส่งเข้าคุก แวะมาเยี่ยมเพื่อนได้ตามสบาย',
+    description: 'เดินมาตกช่องนี้ก็ติดคุกเหมือนกัน ตาถัดไปต้องจ่ายค่าปรับ 0.5M หรือหยุด 1 ตา',
     icon: '⛓️',
   },
 
@@ -378,9 +378,9 @@ export const SUPER_MONOPOLY_TILES: SuperPropertyTile[] = [
   },
   {
     index: 30,
-    name: 'ช่องไปเข้าคุก',
+    name: 'ไปเข้าคุก!',
     type: 'go_to_jail',
-    description: 'ติดคุกทันที! โดนตำรวจจับส่งเข้าห้องขังที่ช่อง 10',
+    description: 'ติดคุกทันที! โดนตำรวจจับส่งไปห้องขังที่ช่อง 10',
     icon: '👮',
   },
 

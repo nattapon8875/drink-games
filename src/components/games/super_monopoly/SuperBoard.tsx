@@ -61,10 +61,10 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
       case 'ประจวบคีรีขันธ์': return 'ประจวบฯ';
       case 'สุราษฎร์ธานี': return 'สุราษฎร์ฯ';
       case 'นครราชสีมา': return 'โคราช';
-      case 'ช่องไปเข้าคุก': return 'ไปเข้าคุก';
+      case 'ไปเข้าคุก!': return 'ไปเข้าคุก';
       case 'เสียภาษีรายได้': return 'เสียภาษี';
       case 'จุดพักผ่อน': return 'จุดพักผ่อน';
-      case 'ช่องเข้าคุก': return 'ห้องขัง';
+      case 'ห้องขัง': return 'ห้องขัง';
       default: return name;
     }
   };

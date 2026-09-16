@@ -277,9 +277,9 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                   <div className="p-2.5 rounded-xl bg-[#2e0e07] border-2 border-orange-700/60 flex items-start gap-2.5">
                     <span className="text-xl">⛓️</span>
                     <div>
-                      <span className="text-xs font-black text-orange-300 block">ช่อง 10: ห้องขัง (Jail)</span>
+                      <span className="text-xs font-black text-orange-300 block">ช่อง 10: ห้องขัง (Jail) - ตกเองก็ติด</span>
                       <span className="text-[11px] text-amber-100 font-medium block leading-relaxed">
-                        เมื่อถูกส่งเข้าคุก ตาถัดไปของคุณจะเลือกได้ 2 ทาง:
+                        เดินมาตกช่องนี้เอง หรือถูกส่งมาจากช่อง 30 ก็ติดคุกเหมือนกัน ตาถัดไปของคุณจะเลือกได้ 2 ทาง:
                       </span>
                       <ul className="list-disc list-inside text-[11px] text-amber-200/90 font-medium mt-1 space-y-0.5">
                         <li><strong>จ่ายค่าปรับ:</strong> เสียเงิน 0.5M ออกจากคุกและทอยเต๋าต่อได้ในตานั้นเลย</li>
