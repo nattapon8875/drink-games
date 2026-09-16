@@ -35,13 +35,27 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
-  // When we last wrote game_state ourselves. A poll that was already in flight
-  // carries state older than that write, and applying it snaps the board back.
-  // Highest game_state revision we have accepted. A time window could not tell
-  // a stale poll from someone else's fresh update - too long and it swallowed
-  // their moves, too short and the token snapped back a tile. The revision says
-  // exactly which state is newer.
-  const lastAppliedRevRef = useRef<number>(0);
+  // A poll that left before our own game_state write landed comes back carrying
+  // a board from before it, and applying that walks the token back a tile -
+  // which replays the step sound with it. So a polled board is only trusted
+  // when none of our writes are in flight AND the poll left after the last one
+  // had already been saved. Anything a poll picked up later than that is
+  // genuinely newer, including everyone else's moves, so nothing is swallowed.
+  const inFlightWritesRef = useRef<number>(0);
+  const lastWriteSettledAtRef = useRef<number>(0);
+
+  // joinRoom reads the current roster and room through these instead of taking
+  // them as dependencies. It used to close over room and players directly, so
+  // every join response gave the callback a new identity, the auto-join effect
+  // that depends on it fired again, and the client hammered the server with
+  // joins a dozen times a second - which republished the board mid-walk and
+  // made the token stutter, the screen flicker and the step sound repeat.
+  const roomRef = useRef<RoomRecord | null>(null);
+  const playersRef = useRef<PlayerRecord[]>([]);
+  roomRef.current = room;
+  playersRef.current = players;
+  // One join per room per identity. Anything more is the loop coming back.
+  const joinedKeyRef = useRef<string>('');
 
   // Fetch from Server API (works across Incognito, Normal tabs, and all devices)
   const fetchData = useCallback(async () => {
@@ -143,14 +157,15 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
     if (!isSupabaseConfigured()) {
       // Fast polling (400ms) for snappy real-time sync across players
       const pollTimer = setInterval(async () => {
+        const pollLeftAt = Date.now();
         try {
           const res = await fetch(`/api/room?code=${roomCode}`);
           if (res.ok) {
             const data = await res.json();
             if (data.exists && data.room) {
-              const rev = (data.room.game_state?.rev as number) || 0;
-              if (rev >= lastAppliedRevRef.current) {
-                lastAppliedRevRef.current = rev;
+              const sawOurLastWrite =
+                inFlightWritesRef.current === 0 && pollLeftAt >= lastWriteSettledAtRef.current;
+              if (sawOurLastWrite) {
                 setRoom((prev) => keepIfUnchanged(prev, data.room));
               }
               setPlayers((prev) => keepIfUnchanged(prev, data.players || []));
@@ -206,7 +221,11 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
 
     // Never re-add someone the host kicked. The auto-join effect re-runs on every
     // room update, so without this it races the redirect and puts them back in.
-    if (room?.game_state?.kicked_player_ids?.includes(currentUser.id)) return;
+    if (roomRef.current?.game_state?.kicked_player_ids?.includes(currentUser.id)) return;
+
+    const joinKey = `${roomCode}:${currentUser.id}`;
+    if (joinedKeyRef.current === joinKey) return;
+    joinedKeyRef.current = joinKey;
 
     if (!isSupabaseConfigured()) {
       const newPlayer: PlayerRecord = {
@@ -216,7 +235,7 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
         display_name: currentUser.displayName,
         avatar_url: currentUser.avatarUrl,
         drinks_count: 0,
-        turn_order: players.length,
+        turn_order: playersRef.current.length,
         is_connected: true,
       };
 
@@ -232,13 +251,15 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
         });
         if (res.ok) {
           const data = await res.json();
-          if (data.room) setRoom(data.room);
-          if (data.players) setPlayers(data.players);
+          if (data.room) setRoom((prev) => keepIfUnchanged(prev, data.room));
+          if (data.players) setPlayers((prev) => keepIfUnchanged(prev, data.players));
         } else if (res.status === 403) {
           const errData = await res.json().catch(() => ({}));
           setError(errData.error || 'คุณถูกเตะออกจากห้องนี้แล้ว');
         }
       } catch (err) {
+        // Let a later attempt retry rather than leaving the player out of the room.
+        joinedKeyRef.current = '';
         console.error('[Mock API] Join error:', err);
       }
       return;
@@ -253,7 +274,7 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
         .maybeSingle();
 
       if (!existing) {
-        const newOrder = players.length;
+        const newOrder = playersRef.current.length;
         await supabase.from('players').insert({
           id: currentUser.id,
           room_code: roomCode,
@@ -265,11 +286,12 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
           is_connected: true,
         });
 
-        if (room) {
-          const positions = room.game_state?.positions || {};
+        const joinedRoom = roomRef.current;
+        if (joinedRoom) {
+          const positions = joinedRoom.game_state?.positions || {};
           positions[currentUser.id] = 0;
 
-          const costumes = { ...(room.game_state?.costumes || {}) };
+          const costumes = { ...(joinedRoom.game_state?.costumes || {}) };
           if (costumes[currentUser.id] === undefined) {
             const usedCostumes = new Set(Object.values(costumes));
             const availableCostumes = Array.from({ length: 20 }, (_, i) => i).filter(
@@ -286,7 +308,7 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
           await supabase
             .from('rooms')
             .update({
-              game_state: { ...room.game_state, positions, costumes },
+              game_state: { ...joinedRoom.game_state, positions, costumes },
             })
             .eq('code', roomCode);
         }
@@ -305,9 +327,10 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
           .eq('id', currentUser.id);
       }
     } catch (err) {
+      joinedKeyRef.current = '';
       console.error('[Realtime] Join error:', err);
     }
-  }, [currentUser, roomCode, players, room]);
+  }, [currentUser, roomCode]);
 
   // Start Game (Host only)
   const startGame = useCallback(async () => {
@@ -403,8 +426,9 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
         // uneven jerks rather than at a steady 320ms.
         setRoom((prev) => (prev ? { ...prev, game_state: merged } : null));
 
+        inFlightWritesRef.current += 1;
         try {
-          const res = await fetch('/api/room', {
+          await fetch('/api/room', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -413,13 +437,11 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
               partialState,
             }),
           });
-          if (res.ok) {
-            const saved = await res.json();
-            const rev = (saved?.room?.game_state?.rev as number) || 0;
-            if (rev > lastAppliedRevRef.current) lastAppliedRevRef.current = rev;
-          }
         } catch {
           // the next poll will reconcile
+        } finally {
+          inFlightWritesRef.current = Math.max(0, inFlightWritesRef.current - 1);
+          lastWriteSettledAtRef.current = Date.now();
         }
         return;
       }
@@ -890,11 +912,6 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
   // Discord can tear down the Activity iframe without ever firing pagehide
   // (force close, network drop, switching voice channel), so unload handlers
   // alone are not enough to keep ghost players out of the room.
-  const playersRef = useRef<PlayerRecord[]>(players);
-  useEffect(() => {
-    playersRef.current = players;
-  }, [players]);
-
   // leaveRoom is rebuilt whenever `room` changes, which is on every game_state
   // update. Holding it in a ref keeps the reaper interval from being torn down
   // and restarted constantly (it would otherwise never live long enough to fire).
