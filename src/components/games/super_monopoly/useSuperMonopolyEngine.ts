@@ -807,6 +807,19 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       properties: updatedProperties,
       gameLogs: newLogs,
     });
+
+    // Building has to settle the turn the way buying does. The card used to
+    // close itself afterwards and the close handler did this - so once the card
+    // stopped closing twice, building a house quietly ate the reroll a double
+    // had earned and left the turn waiting on "pass".
+    if (isDouble && !isCurrentPlayerInJail && !isCurrentPlayerResting) {
+      showToast('🎉 ได้แต้มคู่! คุณมีสิทธิ์ทอยเต๋าต่ออีกรอบ', 'success');
+      setHasRolledThisTurn(false);
+    } else {
+      setTimeout(() => {
+        handleEndTurn();
+      }, 1200);
+    }
   };
 
   // Close Active Modal and Auto Advance Turn
