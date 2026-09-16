@@ -60,6 +60,8 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     setActiveCard,
     activePenaltyModal,
     handleAcknowledgePenalty,
+    jailNotice,
+    handleAcknowledgeJail,
     gameLogs,
     isCurrentPlayerInJail,
     isCurrentPlayerResting,
@@ -556,7 +558,12 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                   <span className="text-[11px] font-black text-amber-100">
                     {dice[0] + dice[1]} แต้ม
                     {dice[0] === dice[1] && (
-                      <span className="text-yellow-300"> · แต้มคู่!</span>
+                      // A double normally buys another roll, but not one that
+                      // landed you in jail - saying "double!" there reads like a
+                      // reroll is coming when the turn is actually over.
+                      <span className={isCurrentPlayerInJail ? 'text-rose-300' : 'text-yellow-300'}>
+                        {isCurrentPlayerInJail ? ' · แต้มคู่ (ติดคุก ไม่ได้ทอยต่อ)' : ' · แต้มคู่!'}
+                      </span>
                     )}
                   </span>
                 )}
@@ -588,16 +595,18 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
             />
           )}
 
-          </div>
         {(isMyTurn || isProxying) &&
           rollOrderDone &&
           !activePropertyModal &&
           !activeCard &&
-          !activePenaltyModal && (
-            <div // Sticky, not fixed: it stays within reach at the bottom of the screen
-              // without having to scroll, but it is centred on the board column
-              // rather than on the browser window.
-              className="sticky bottom-4 z-40 mt-2 flex flex-col items-center gap-1 pointer-events-none">
+          !activePenaltyModal &&
+          !jailNotice && (
+            <div
+              // On the board itself, at the bottom edge - reachable without
+              // scrolling past the whole board, and centred on the game rather
+              // than on the browser window.
+              className="absolute bottom-3 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-1 pointer-events-none"
+            >
               <span
                 className={`pointer-events-none px-2 py-0.5 rounded-full border text-[10px] font-black shadow ${
                   isProxying
@@ -649,6 +658,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               )}
             </div>
           )}
+          </div>
         </div>
 
         {/* Right Column: 2 Dice Roll Controls & Live Game Logs (3 cols) */}
@@ -786,6 +796,35 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
         spectatorName={spectatorCardOwner?.display_name || null}
         onClose={() => setDismissedDrawAt(drawnCard?.at ?? null)}
       />
+
+      {/* Being sent to jail ends the turn even on a double - say so out loud */}
+      <Modal
+        isOpen={Boolean(jailNotice)}
+        onClose={handleAcknowledgeJail}
+        title="⛓️ โดนจับเข้าห้องขัง"
+      >
+        <div className="flex flex-col gap-3 text-center">
+          <span className="text-5xl">🚓</span>
+          <p className="text-sm font-black text-rose-200">
+            คุณเดินไปตกช่อง [{jailNotice?.tileName}] ➜ ถูกส่งเข้าห้องขังทันที
+          </p>
+          {jailNotice?.wasDouble && (
+            <p className="text-xs font-bold text-rose-300/90 px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/40">
+              แม้จะทอยได้แต้มคู่ ก็ไม่ได้ทอยต่อ เพราะโดนจับเข้าคุกแล้ว จบตานี้ทันที
+            </p>
+          )}
+          <p className="text-[11px] font-bold text-amber-200/80">
+            ตาถัดไปของคุณจะเป็นการรับโทษ 1 ตา แล้วจึงออกมาเดินต่อได้ตามปกติ
+          </p>
+          <button
+            type="button"
+            onClick={handleAcknowledgeJail}
+            className="wood-btn-gold w-full py-3 rounded-2xl text-sm font-black shadow-lg active:scale-95"
+          >
+            รับทราบ (ส่งตาให้คนถัดไป)
+          </button>
+        </div>
+      </Modal>
 
       {/* What the other side of a rent payment looks like */}
       <RentReceiptModal

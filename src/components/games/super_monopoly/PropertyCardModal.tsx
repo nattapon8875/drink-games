@@ -39,11 +39,15 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
   const houses = ownership?.houses || 0;
   const hasHotel = houses === 4;
 
+  // Buying and building close the card themselves and decide what happens to
+  // the turn. Calling onClose as well ran the skip branch on top of the
+  // purchase: the feed showed "did not buy" right after "bought", with the cash
+  // from before the sale, and the turn was handed over twice. It also closed the
+  // card when a purchase had been refused for lack of money.
   const handleBuy = async () => {
     setLoading(true);
     try {
       await onBuyLand();
-      onClose();
     } finally {
       setLoading(false);
     }
@@ -53,7 +57,6 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
     setLoading(true);
     try {
       await onBuildHouse();
-      onClose();
     } finally {
       setLoading(false);
     }

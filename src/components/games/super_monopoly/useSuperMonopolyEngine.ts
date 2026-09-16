@@ -83,6 +83,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   const [activePropertyModal, setActivePropertyModal] = useState<SuperPropertyTile | null>(null);
   const [activeCard, setActiveCard] = useState<CardAction | null>(null);
   const [activePenaltyModal, setActivePenaltyModal] = useState<PenaltyNotice | null>(null);
+  // Being sent to jail on a double used to just end the turn while the dice
+  // still said "double!", which reads like another roll is coming. Say it.
+  const [jailNotice, setJailNotice] = useState<{ tileName: string; wasDouble: boolean } | null>(null);
   const [hasRolledThisTurn, setHasRolledThisTurn] = useState<boolean>(false);
   const [isDouble, setIsDouble] = useState<boolean>(false);
 
@@ -153,6 +156,12 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     prevStepTileRef.current = activeStepTileIndex;
   }, [activeStepTileIndex]);
 
+  // Whose turn we have already handed over. Several paths end a turn - a modal
+  // being acknowledged, a delayed timer after a purchase, the walk finishing
+  // with nothing to decide - and two of them firing meant the feed showed the
+  // handover twice and the turn skipped a player.
+  const endedTurnRef = useRef<string>('');
+
   // Reset local turn modal state when current turn player changes
   useEffect(() => {
     // Declared before the bot effect, so this runs first on a turn change and
@@ -164,6 +173,8 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     setActivePropertyModal(null);
     setActiveCard(null);
     setActivePenaltyModal(null);
+    setJailNotice(null);
+    endedTurnRef.current = '';
   }, [room.current_turn_player_id]);
 
   // Ensure cash initialized for all players
@@ -211,6 +222,12 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
   // End Turn & Pass to Next Player
   const handleEndTurn = useCallback(async () => {
+    const endingTurnId = currentTurnPlayer?.id;
+    if (endingTurnId) {
+      if (endedTurnRef.current === endingTurnId) return;
+      endedTurnRef.current = endingTurnId;
+    }
+
     setActivePropertyModal(null);
     setActiveCard(null);
     setActivePenaltyModal(null);
@@ -484,6 +501,10 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               updatedJail[currentTurnPlayer.id] = 1;
               sfx.playDrinkPenalty();
               newLogs = addLog(`⛓️ ${currentTurnPlayer.display_name} โดนจับส่งเข้าห้องขัง!`, '#dc2626', newLogs);
+              if (canActThisTurn) {
+                setJailNotice({ tileName: targetTile.name, wasDouble: isDoubleRoll });
+                requiresUserModalAction = true;
+              }
             } else if (targetTile.type === 'jail') {
               sfx.playSuccess();
               newLogs = addLog(`⛓️ ${currentTurnPlayer.display_name} แวะเยี่ยมคุก (เป็นผู้มาเยือน ปลอดภัย)`, '#a855f7', newLogs);
@@ -674,7 +695,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       gameLogs: newLogs,
     });
 
-    if (isDouble) {
+    if (isDouble && !isCurrentPlayerInJail) {
       showToast('🎉 ได้แต้มคู่! คุณมีสิทธิ์ทอยเต๋าต่ออีกรอบ', 'success');
       setHasRolledThisTurn(false);
     } else {
@@ -827,7 +848,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     }
 
     if (canActThisTurn && hasRolledThisTurn) {
-      if (isDouble) {
+      if (isDouble && !isCurrentPlayerInJail) {
         showToast('🎉 ได้แต้มคู่! คุณมีสิทธิ์ทอยเต๋าต่ออีกรอบ', 'success');
         setHasRolledThisTurn(false);
       } else {
@@ -840,14 +861,19 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   const handleAcknowledgePenalty = useCallback(async () => {
     setActivePenaltyModal(null);
     if (canActThisTurn && hasRolledThisTurn) {
-      if (isDouble) {
+      if (isDouble && !isCurrentPlayerInJail) {
         showToast('🎉 ได้แต้มคู่! คุณมีสิทธิ์ทอยเต๋าต่ออีกรอบ', 'success');
         setHasRolledThisTurn(false);
       } else {
         await handleEndTurn();
       }
     }
-  }, [isMyTurn, hasRolledThisTurn, isDouble, handleEndTurn]);
+  }, [isMyTurn, hasRolledThisTurn, isDouble, isCurrentPlayerInJail, handleEndTurn]);
+
+  const handleAcknowledgeJail = useCallback(async () => {
+    setJailNotice(null);
+    await handleEndTurn();
+  }, [handleEndTurn]);
 
   // -------------------------------------------------------------
   // BOT AUTO-PLAY ENGINE (Rock-Solid: No Deadlocks, No Freezes)
@@ -1336,6 +1362,8 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     activePenaltyModal,
     setActivePenaltyModal,
     handleAcknowledgePenalty,
+    jailNotice,
+    handleAcknowledgeJail,
     gameLogs,
     rollDice,
     handleBuyLand,
