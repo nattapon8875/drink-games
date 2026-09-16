@@ -279,10 +279,11 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                     <div>
                       <span className="text-xs font-black text-orange-300 block">ช่อง 10: ห้องขัง (Jail)</span>
                       <span className="text-[11px] text-amber-100 font-medium block leading-relaxed">
-                        เมื่อถูกส่งเข้าคุก ตาถัดไปของคุณจะเลือกได้ 2 ทาง:
+                        เมื่อถูกส่งเข้าคุก ตาถัดไปของคุณจะเลือกได้ 3 ทาง:
                       </span>
                       <ul className="list-disc list-inside text-[11px] text-amber-200/90 font-medium mt-1 space-y-0.5">
                         <li><strong>จ่ายค่าปรับ:</strong> เสียเงิน 0.5M ออกจากคุกและทอยเต๋าต่อได้ในตานั้นเลย</li>
+                        <li><strong>ทอยเสี่ยงออก:</strong> ทอยเต๋า ถ้าได้แต้มคู่จะออกจากคุกและเดินตามแต้มที่ทอยได้ทันที (แต่ไม่ได้ทอยซ้ำอีกรอบ) ถ้าไม่ได้คู่ถือว่าเสียตานั้นไป</li>
                         <li><strong>รับโทษ:</strong> ยอมหยุดเล่น 1 ตา แล้วรอบถัดไปจึงเดินได้ตามปกติ</li>
                       </ul>
                     </div>

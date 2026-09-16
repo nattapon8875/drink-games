@@ -656,6 +656,78 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     }, 1500);
   }, [currentPlayer, isMyTurn, isCurrentPlayerInJail, isRolling, isMoving, inJailTurns, addLog, gameLogs, onUpdateGameState, handleEndTurn]);
 
+  // Jail Option 3: Roll for it. A double opens the door and you move those
+  // spaces; anything else and you have spent the turn sitting there - which is
+  // what serving the turn costs anyway, so the gamble is free and the fine is
+  // what buys certainty.
+  const handleTryJailEscape = useCallback(async () => {
+    if (!currentTurnPlayer || !canActThisTurn || !isCurrentPlayerInJail || isRolling || isMoving) return;
+
+    const d1 = Math.floor(Math.random() * 6) + 1;
+    const d2 = Math.floor(Math.random() * 6) + 1;
+    const escaped = d1 === d2;
+
+    setHasRolledThisTurn(true);
+    // Escaping on a double does not also earn another roll.
+    setIsDouble(false);
+
+    await onUpdateGameState({
+      dice: [d1, d2],
+      isRolling: true,
+      isMoving: false,
+      activeStepTileIndex: null,
+    });
+
+    setTimeout(async () => {
+      await onUpdateGameState({
+        dice: [d1, d2],
+        isRolling: false,
+        isMoving: false,
+        activeStepTileIndex: null,
+      });
+
+      if (escaped) {
+        sfx.playSuccess();
+        const escapeLogs = addLog(
+          `🔓 ${currentTurnPlayer.display_name} ทอยได้แต้มคู่ [${d1}][${d2}] ➔ ออกจากคุกและเดินต่อ ${d1 + d2} ช่อง`,
+          '#22c55e'
+        );
+        await onUpdateGameState({
+          inJailTurns: { ...inJailTurns, [currentTurnPlayer.id]: 0 },
+          gameLogs: escapeLogs,
+        });
+        setTimeout(() => {
+          executeHumanWalk(d1, d2);
+        }, 800);
+        return;
+      }
+
+      sfx.playDrinkPenalty();
+      const failLogs = addLog(
+        `⛓️ ${currentTurnPlayer.display_name} ทอยเสี่ยงออกไม่สำเร็จ [${d1}][${d2}] ➔ ติดคุกต่อ จบตานี้`,
+        '#a855f7'
+      );
+      await onUpdateGameState({
+        inJailTurns: { ...inJailTurns, [currentTurnPlayer.id]: 0 },
+        gameLogs: failLogs,
+      });
+      setTimeout(() => {
+        handleEndTurn();
+      }, 1200);
+    }, 1200);
+  }, [
+    currentTurnPlayer,
+    canActThisTurn,
+    isCurrentPlayerInJail,
+    isRolling,
+    isMoving,
+    inJailTurns,
+    addLog,
+    onUpdateGameState,
+    executeHumanWalk,
+    handleEndTurn,
+  ]);
+
   // Jail Option 2: Pay the fine and carry on with this turn
   const handlePayJailBail = useCallback(async () => {
     if (!currentTurnPlayer || !canActThisTurn || !isCurrentPlayerInJail || isRolling || isMoving) return;
@@ -1458,6 +1530,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     restTurns,
     handleServeJailTurn,
     handlePayJailBail,
+    handleTryJailEscape,
     jailBailCost: JAIL_BAIL_M,
     handleServeRestTurn,
     currentTurnPlayer,
