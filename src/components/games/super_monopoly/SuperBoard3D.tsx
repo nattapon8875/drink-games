@@ -944,7 +944,11 @@ const CenterDeck3D: React.FC = () => {
 // buffer is what made the tile lettering look soft, and following the display's
 // own ratio would change nothing at all on a 1x monitor.
 const CANVAS_DPR: [number, number] = [1.5, 2];
-const CANVAS_CAMERA = { position: [0, 9.8, 9.8] as [number, number, number], fov: 42 };
+// Framed so the whole board fits with table showing all round it, sitting a
+// little above centre - the old framing cut the near corner off at the bottom
+// edge on a wide canvas. Aiming below the board is what lifts it in the frame.
+const CANVAS_CAMERA = { position: [0, 10.7, 11.6] as [number, number, number], fov: 42 };
+const CANVAS_TARGET: [number, number, number] = [0, -0.7, 0];
 const CANVAS_GL = { antialias: true, toneMapping: THREE.ACESFilmicToneMapping };
 
 const SuperBoard3DBase: React.FC<SuperBoard3DProps> = ({
@@ -983,6 +987,7 @@ const SuperBoard3DBase: React.FC<SuperBoard3DProps> = ({
         <OrbitControls
           // Right-drag pans, left-drag orbits, wheel zooms. Panning used to be
           // off and the near limit kept you too far out to read a tile.
+          target={CANVAS_TARGET}
           enablePan
           screenSpacePanning
           enableZoom
