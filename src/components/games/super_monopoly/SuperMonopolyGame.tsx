@@ -8,6 +8,7 @@ import { SuperBoard3D, PLAYER_3D_COLORS } from './SuperBoard3D';
 import { PropertyCardModal } from './PropertyCardModal';
 import { ChanceChestModal } from './ChanceChestModal';
 import { PenaltyModal } from './PenaltyModal';
+import { RentReceiptModal } from './RentReceiptModal';
 import { RulesModal } from './RulesModal';
 import { RollOrderModal } from './RollOrderModal';
 import { showConfirm } from '@/lib/alerts';
@@ -45,6 +46,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     activeStepTileIndex,
     isMyTurn,
     drawnCard,
+    rentReceipt,
     isProxying,
     startProxyTurn,
     isBotTurn,
@@ -153,6 +155,17 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
   // The player who drew keeps their own interactive card; everyone else gets a
   // read-only copy that clears itself.
   const [dismissedDrawAt, setDismissedDrawAt] = useState<number | null>(null);
+
+  // Landlords were only told through the log that someone had paid them. This is
+  // theirs alone - it is keyed on the receipt's owner, so nobody else sees it.
+  const [dismissedReceiptAt, setDismissedReceiptAt] = useState<number | null>(null);
+  const myReceipt =
+    rentReceipt &&
+    currentPlayer &&
+    rentReceipt.ownerId === currentPlayer.id &&
+    dismissedReceiptAt !== rentReceipt.at
+      ? rentReceipt
+      : null;
 
   useEffect(() => {
     if (!drawnCard) return;
@@ -790,6 +803,13 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
         isMyTurn={false}
         spectatorName={spectatorCardOwner?.display_name || null}
         onClose={() => setDismissedDrawAt(drawnCard?.at ?? null)}
+      />
+
+      {/* What the other side of a rent payment looks like */}
+      <RentReceiptModal
+        isOpen={Boolean(myReceipt)}
+        receipt={myReceipt}
+        onClose={() => setDismissedReceiptAt(rentReceipt?.at ?? null)}
       />
 
       {/* Penalty / Rent Fee Modal */}

@@ -19,6 +19,7 @@ import { sfx } from '@/lib/sound';
 import confetti from 'canvas-confetti';
 import { showToast } from '@/lib/alerts';
 import { PenaltyNotice } from './PenaltyModal';
+import { RentReceipt } from './RentReceiptModal';
 
 const INITIAL_CASH_M = 15.0; // 15M starting cash
 const SALARY_M = 2.0; // 2M for passing GO
@@ -56,6 +57,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   const inJailTurns: Record<string, number> = rawState.inJailTurns || {};
   const restTurns: Record<string, number> = rawState.restTurns || {};
   const gameLogs: Array<{ text: string; time: string; color?: string }> = rawState.gameLogs || [];
+  const rentReceipt: RentReceipt | null = (rawState.rentReceipt as RentReceipt | null) || null;
 
   // Synchronized across all screens via Supabase Realtime
   const isRolling = Boolean(rawState.isRolling);
@@ -190,14 +192,21 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     }
   }, [players, isHost, cash, positions, onUpdateGameState]);
 
+  // The history as of right now, not as of the render this callback was built
+  // in. A walk writes its lines and immediately opens a modal; acknowledging it
+  // added the next line onto the snapshot from before the walk, which dropped
+  // the rent and penalty lines that had just been written.
+  const gameLogsRef = useRef(gameLogs);
+  gameLogsRef.current = gameLogs;
+
   const addLog = useCallback(
     (text: string, color?: string, currentLogs?: Array<{ text: string; time: string; color?: string }>) => {
       const time = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-      const base = currentLogs ?? gameLogs;
+      const base = currentLogs ?? gameLogsRef.current;
       const newLogs = [{ text, time, color }, ...base.slice(0, 50)];
       return newLogs;
     },
-    [gameLogs]
+    []
   );
 
   // End Turn & Pass to Next Player
@@ -214,7 +223,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     const nextIndex = (currentIndex + 1) % orderedPlayers.length;
     const nextPlayer = orderedPlayers[nextIndex];
 
-    const newLogs = addLog(`🎲 ส่งตาให้ [${nextPlayer.display_name}]`, '#93c5fd', gameLogs);
+    const newLogs = addLog(`🎲 ส่งตาให้ [${nextPlayer.display_name}]`, '#93c5fd');
 
     await onUpdateGameState({
       gameLogs: newLogs,
@@ -282,6 +291,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
           let updatedChanceDeck: string[] | undefined;
           // Everyone should see what was drawn, not just the person who drew it
           let drawnCardBroadcast: { cardId: string; playerId: string; at: number } | null = null;
+          // The owner of the land only saw their balance quietly go up. Tell them
+          // who paid, how much, and what they are holding now.
+          let rentReceiptBroadcast: RentReceipt | null = null;
 
           // Wait 500ms on final tile before showing action/modal
           setTimeout(async () => {
@@ -353,6 +365,18 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                   '#ef4444',
                   newLogs
                 );
+
+                if (owner) {
+                  rentReceiptBroadcast = {
+                    ownerId: owner.id,
+                    payerName: currentTurnPlayer.display_name,
+                    tileName: targetTile.name,
+                    tileIcon: targetTile.icon || '🏨',
+                    amount: actualRent,
+                    ownerCashAfter: updatedCash[owner.id],
+                    at: Date.now(),
+                  };
+                }
 
                 // Show Penalty Modal for Human to acknowledge
                 setActivePenaltyModal({
@@ -486,6 +510,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               ...(updatedChestDeck ? { chestDeck: updatedChestDeck } : {}),
               ...(updatedChanceDeck ? { chanceDeck: updatedChanceDeck } : {}),
               drawnCard: drawnCardBroadcast,
+              rentReceipt: rentReceiptBroadcast,
             });
 
             // If no modal required:
@@ -558,8 +583,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     setIsProxying(true);
     const proxyLog = addLog(
       `👑 หัวหน้าห้องเล่นแทน [${currentTurnPlayer.display_name}]`,
-      '#a855f7',
-      gameLogs
+      '#a855f7'
     );
     await onUpdateGameState({ gameLogs: proxyLog });
   }, [isHost, isMyTurn, isBotTurn, currentTurnPlayer, addLog, gameLogs, onUpdateGameState]);
@@ -573,8 +597,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
     const newLogs = addLog(
       `⛓️ ${currentTurnPlayer.display_name} เลือกหยุดรับโทษในคุก 1 ตา (ข้ามตาเดิน) ➔ ในรอบถัดไปจะได้รับอิสรภาพ`,
-      '#a855f7',
-      gameLogs
+      '#a855f7'
     );
 
     showToast('คุณเลือกหยุดรับโทษ 1 ตา ในรอบถัดไปจะสามารถเดินได้ตามปกติ', 'info');
@@ -598,8 +621,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
     const newLogs = addLog(
       `🏖️ ${currentTurnPlayer.display_name} หยุดพักผ่อน 1 ตาตามกฎจุดพัก (ข้ามตาเดิน) ➔ ในรอบถัดไปจะสามารถเดินได้ตามปกติ`,
-      '#38bdf8',
-      gameLogs
+      '#38bdf8'
     );
 
     showToast('คุณได้หยุดพักผ่อน 1 ตาแล้ว ในรอบถัดไปสามารถทอยเต๋าได้ตามปกติ', 'info');
@@ -641,8 +663,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     const remainingMoney = currentMoney - cost;
     const newLogs = addLog(
       `🏡 ${currentTurnPlayer.display_name} ตกลง [ซื้อที่ดิน] [${activePropertyModal.name}] (${formatMoneyM(cost)}) ➔ เงินคงเหลือ ${formatMoneyM(remainingMoney)}`,
-      '#10b981',
-      gameLogs
+      '#10b981'
     );
 
     setActivePropertyModal(null);
@@ -702,8 +723,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     const remainingMoney = currentMoney - cost;
     const newLogs = addLog(
       `🏨 ${currentTurnPlayer.display_name} สร้าง${upgradeLabel} บน [${activePropertyModal.name}] (${formatMoneyM(cost)}) ➔ เงินคงเหลือ ${formatMoneyM(remainingMoney)}`,
-      '#06b6d4',
-      gameLogs
+      '#06b6d4'
     );
 
     setActivePropertyModal(null);
@@ -721,8 +741,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       const pCash = cash[currentTurnPlayer.id] ?? 0;
       const skipLog = addLog(
         `⏭️ ${currentTurnPlayer.display_name} เลือก [ไม่ซื้อ / ข้ามที่ดิน] [${activePropertyModal.name}] (เงินคงเหลือ ${formatMoneyM(pCash)})`,
-        '#9ca3af',
-        gameLogs
+        '#9ca3af'
       );
       await onUpdateGameState({ gameLogs: skipLog });
     }
@@ -772,11 +791,24 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
         sfx.playDrinkPenalty();
         const rentLogs = addLog(
           `💸 ${currentTurnPlayer.display_name} วาร์ปมาตกที่ดินของ ${owner?.display_name || 'เจ้าของ'} จ่ายค่าผ่านทาง ${formatMoneyM(actualRent)} (เงินเหลือ ${formatMoneyM(remaining)})`,
-          '#ef4444',
-          gameLogs
+          '#ef4444'
         );
 
-        await onUpdateGameState({ cash: rentCash, gameLogs: rentLogs });
+        await onUpdateGameState({
+          cash: rentCash,
+          gameLogs: rentLogs,
+          rentReceipt: owner
+            ? {
+                ownerId: owner.id,
+                payerName: currentTurnPlayer.display_name,
+                tileName: destTile.name,
+                tileIcon: destTile.icon || '🏨',
+                amount: actualRent,
+                ownerCashAfter: rentCash[owner.id],
+                at: Date.now(),
+              }
+            : null,
+        });
 
         setActivePenaltyModal({
           type: 'rent',
@@ -860,7 +892,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       try {
         let rollsThisTurn = 0;
         let shouldRollAgain = true;
-        let botTurnLogs = gameLogs;
+        let botTurnLogs = gameLogsRef.current;
         let botCash: number = cash[turnPlayerId] ?? INITIAL_CASH_M;
         let botJailTurns: number = inJailTurns[turnPlayerId] ?? 0;
         let botRestTurns: number = restTurns[turnPlayerId] ?? 0;
@@ -869,6 +901,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
         let botChestDeck: string[] | undefined = rawState.chestDeck;
         let botChanceDeck: string[] | undefined = rawState.chanceDeck;
         let botDrawnCard: { cardId: string; playerId: string; at: number } | null = null;
+        let botRentReceipt: RentReceipt | null = null;
         let botJailState = { ...inJailTurns };
         let botRestState = { ...restTurns };
 
@@ -1057,6 +1090,17 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                 '#ef4444',
                 botTurnLogs
               );
+              if (owner) {
+                botRentReceipt = {
+                  ownerId: owner.id,
+                  payerName: currentTurnPlayer.display_name,
+                  tileName: targetTile.name,
+                  tileIcon: targetTile.icon || '🏨',
+                  amount: actualRent,
+                  ownerCashAfter: updatedCash[owner.id],
+                  at: Date.now(),
+                };
+              }
             }
           } else if (targetTile.type === 'chest') {
             const drawnChest = drawFromDeck(botChestDeck, CHEST_CARDS);
@@ -1133,6 +1177,17 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                     '#ef4444',
                     botTurnLogs
                   );
+                  if (destOwner) {
+                    botRentReceipt = {
+                      ownerId: destOwner.id,
+                      payerName: currentTurnPlayer.display_name,
+                      tileName: destTile.name,
+                      tileIcon: destTile.icon || '🏨',
+                      amount: paid,
+                      ownerCashAfter: updatedCash[destOwner.id],
+                      at: Date.now(),
+                    };
+                  }
                 }
               }
             }
@@ -1186,6 +1241,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             chestDeck: botChestDeck,
             chanceDeck: botChanceDeck,
             drawnCard: botDrawnCard,
+            rentReceipt: botRentReceipt,
             activeStepTileIndex: null,
             isMoving: false,
             isRolling: false,
@@ -1251,6 +1307,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   return {
     dice,
     drawnCard: (rawState.drawnCard as { cardId: string; playerId: string; at: number } | null) || null,
+    rentReceipt,
     isProxying,
     canActThisTurn,
     startProxyTurn,
