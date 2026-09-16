@@ -417,14 +417,23 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
   // Update Game State
   const updateGameState = useCallback(
     async (partialState: Record<string, any>) => {
-      if (!room) return;
-      const merged = { ...(room.game_state || {}), ...partialState };
+      if (!roomRef.current) return;
 
       if (!isSupabaseConfigured()) {
-        // Show it immediately. Waiting for the round trip first meant every
+        // Merge onto whatever the board is right now, not onto the snapshot this
+        // callback happened to close over. A walk's step timer holds one callback
+        // for the whole walk, so merging against its snapshot put the board back
+        // the way it looked when the dice were thrown - reviving the previous
+        // roll and the previous positions - and the poll kept correcting it. The
+        // two versions traded places several times a second: the dice flickered
+        // between two totals and the tokens warped back and forth.
+        //
+        // Show it immediately, too. Waiting for the round trip first meant every
         // step of a walk was paced by network latency, so the token moved in
         // uneven jerks rather than at a steady 320ms.
-        setRoom((prev) => (prev ? { ...prev, game_state: merged } : null));
+        setRoom((prev) =>
+          prev ? { ...prev, game_state: { ...(prev.game_state || {}), ...partialState } } : null
+        );
 
         inFlightWritesRef.current += 1;
         try {
@@ -448,10 +457,10 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
 
       await supabase
         .from('rooms')
-        .update({ game_state: merged })
+        .update({ game_state: { ...(roomRef.current.game_state || {}), ...partialState } })
         .eq('code', roomCode);
     },
-    [room, roomCode]
+    [roomCode]
   );
 
   // Increment Drink Count
