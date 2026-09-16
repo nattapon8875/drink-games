@@ -279,12 +279,11 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                     <div>
                       <span className="text-xs font-black text-orange-300 block">ช่อง 10: ห้องขัง (Jail)</span>
                       <span className="text-[11px] text-amber-100 font-medium block leading-relaxed">
-                        เมื่อถูกส่งเข้าคุก คุณจะไม่สามารถทอยเต๋าได้ โดยสามารถเลือกจัดการได้ 3 วิธี:
+                        เมื่อถูกส่งเข้าคุก ตาถัดไปของคุณจะเลือกได้ 2 ทาง:
                       </span>
                       <ul className="list-disc list-inside text-[11px] text-amber-200/90 font-medium mt-1 space-y-0.5">
-                        <li><strong>หยุดรับโทษ:</strong> ยอมหยุดเล่น 1 ตา เพื่อปลดปล่อยในรอบถัดไป</li>
-                        <li><strong>จ่ายค่าปรับ:</strong> เสียเงิน 0.5M เพื่อปล่อยตัวและทอยเต๋าได้ทันที</li>
-                        <li><strong>ดื่ม 1 ช็อต:</strong> (โหมดปาร์ตี้) ดื่มเครื่องดื่มเพื่อปลดปล่อยทันทีโดยไม่เสียเงิน!</li>
+                        <li><strong>จ่ายค่าปรับ:</strong> เสียเงิน 0.5M ออกจากคุกและทอยเต๋าต่อได้ในตานั้นเลย</li>
+                        <li><strong>รับโทษ:</strong> ยอมหยุดเล่น 1 ตา แล้วรอบถัดไปจึงเดินได้ตามปกติ</li>
                       </ul>
                     </div>
                   </div>
@@ -295,7 +294,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                     <div>
                       <span className="text-xs font-black text-sky-300 block">ช่อง 20: จุดพักผ่อน (Rest Area)</span>
                       <span className="text-[11px] text-amber-100 font-medium">
-                        เมื่อเดินมาตกช่องนี้ ปลอดภัยจากค่าผ่านทาง ไม่เสียอะไร และไม่ถูกข้ามตา
+                        เมื่อเดินมาตกช่องนี้ ปลอดภัยจากค่าผ่านทาง แต่ต้องพัก 1 ตาในรอบถัดไป (ถึงทอยได้แต้มคู่ก็ไม่ได้ทอยต่อ)
                       </span>
                     </div>
                   </div>

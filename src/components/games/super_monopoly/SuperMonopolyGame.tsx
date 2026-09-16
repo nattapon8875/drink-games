@@ -62,6 +62,8 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     handleAcknowledgePenalty,
     jailNotice,
     handleAcknowledgeJail,
+    restNotice,
+    handleAcknowledgeRest,
     gameLogs,
     isCurrentPlayerInJail,
     isCurrentPlayerResting,
@@ -69,6 +71,8 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     restTurns,
     rollDice,
     handleServeJailTurn,
+    handlePayJailBail,
+    jailBailCost,
     handleServeRestTurn,
     handleBuyLand,
     handleBuildHouse,
@@ -561,8 +565,16 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                       // A double normally buys another roll, but not one that
                       // landed you in jail - saying "double!" there reads like a
                       // reroll is coming when the turn is actually over.
-                      <span className={isCurrentPlayerInJail ? 'text-rose-300' : 'text-yellow-300'}>
-                        {isCurrentPlayerInJail ? ' · แต้มคู่ (ติดคุก ไม่ได้ทอยต่อ)' : ' · แต้มคู่!'}
+                      <span
+                        className={
+                          isCurrentPlayerInJail || isCurrentPlayerResting ? 'text-rose-300' : 'text-yellow-300'
+                        }
+                      >
+                        {isCurrentPlayerInJail
+                          ? ' · แต้มคู่ (ติดคุก ไม่ได้ทอยต่อ)'
+                          : isCurrentPlayerResting
+                          ? ' · แต้มคู่ (ต้องพัก ไม่ได้ทอยต่อ)'
+                          : ' · แต้มคู่!'}
                       </span>
                     )}
                   </span>
@@ -600,7 +612,8 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           !activePropertyModal &&
           !activeCard &&
           !activePenaltyModal &&
-          !jailNotice && (
+          !jailNotice &&
+          !restNotice && (
             <div
               // On the board itself, at the bottom edge - reachable without
               // scrolling past the whole board, and centred on the game rather
@@ -620,14 +633,26 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               </span>
 
               {isCurrentPlayerInJail ? (
-                <button
-                  type="button"
-                  disabled={isRolling || isMoving}
-                  onClick={handleServeJailTurn}
-                  className={`pointer-events-auto px-7 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 ${isProxying ? 'bg-purple-800 hover:bg-purple-700 border-2 border-purple-300 text-purple-50' : 'wood-btn-gold border-2 border-yellow-300/70'}`}
-                >
-                  ⛓️ รับทราบ (ส่งตา)
-                </button>
+                // Two ways out: buy your way out and take the turn, or sit it out.
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={isRolling || isMoving || myCash < jailBailCost}
+                    onClick={handlePayJailBail}
+                    title={myCash < jailBailCost ? `เงินไม่พอจ่ายค่าปรับ ${formatMoneyM(jailBailCost)}` : undefined}
+                    className="pointer-events-auto px-5 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 wood-btn-gold border-2 border-yellow-300/70"
+                  >
+                    💸 จ่าย {formatMoneyM(jailBailCost)} ออกมาทอย
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isRolling || isMoving}
+                    onClick={handleServeJailTurn}
+                    className={`pointer-events-auto px-5 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 ${isProxying ? 'bg-purple-800 hover:bg-purple-700 border-2 border-purple-300 text-purple-50' : 'bg-[#3d1806] border-2 border-[#7d320b] text-amber-200'}`}
+                  >
+                    ⛓️ รับโทษ (ส่งตา)
+                  </button>
+                </div>
               ) : isCurrentPlayerResting ? (
                 <button
                   type="button"
@@ -814,11 +839,41 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
             </p>
           )}
           <p className="text-[11px] font-bold text-amber-200/80">
-            ตาถัดไปของคุณจะเป็นการรับโทษ 1 ตา แล้วจึงออกมาเดินต่อได้ตามปกติ
+            ตาถัดไปของคุณจะเลือกได้ว่าจะจ่ายค่าปรับ {formatMoneyM(jailBailCost)} เพื่อออกมาทอยทันที
+            หรือรับโทษ 1 ตาแล้วค่อยออกมาเดินต่อ
           </p>
           <button
             type="button"
             onClick={handleAcknowledgeJail}
+            className="wood-btn-gold w-full py-3 rounded-2xl text-sm font-black shadow-lg active:scale-95"
+          >
+            รับทราบ (ส่งตาให้คนถัดไป)
+          </button>
+        </div>
+      </Modal>
+
+      {/* The rest stop costs a turn as well, so it says so */}
+      <Modal
+        isOpen={Boolean(restNotice)}
+        onClose={handleAcknowledgeRest}
+        title="🏖️ แวะพักที่จุดพักผ่อน"
+      >
+        <div className="flex flex-col gap-3 text-center">
+          <span className="text-5xl">🏖️</span>
+          <p className="text-sm font-black text-sky-200">
+            คุณเดินมาถึง [{restNotice?.tileName}] ➜ ปลอดภัยจากค่าผ่านทาง แต่ต้องพัก 1 ตา
+          </p>
+          {restNotice?.wasDouble && (
+            <p className="text-xs font-bold text-sky-300/90 px-3 py-2 rounded-xl bg-sky-500/10 border border-sky-500/40">
+              แม้จะทอยได้แต้มคู่ ก็ไม่ได้ทอยต่อ เพราะต้องพักที่จุดนี้ จบตานี้ทันที
+            </p>
+          )}
+          <p className="text-[11px] font-bold text-amber-200/80">
+            ตาถัดไปของคุณจะเป็นการพัก 1 ตา แล้วจึงออกมาเดินต่อได้ตามปกติ
+          </p>
+          <button
+            type="button"
+            onClick={handleAcknowledgeRest}
             className="wood-btn-gold w-full py-3 rounded-2xl text-sm font-black shadow-lg active:scale-95"
           >
             รับทราบ (ส่งตาให้คนถัดไป)
