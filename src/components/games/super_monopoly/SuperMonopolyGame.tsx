@@ -72,7 +72,6 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     rollDice,
     handleServeJailTurn,
     handlePayJailBail,
-    handleTryJailEscape,
     jailBailCost,
     handleServeRestTurn,
     handleBuyLand,
@@ -634,16 +633,8 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               </span>
 
               {isCurrentPlayerInJail ? (
-                // Three ways out: buy certainty, gamble on a double, or sit it out.
+                // Two ways out: buy your way out and take the turn, or sit it out.
                 <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    disabled={isRolling || isMoving}
-                    onClick={handleTryJailEscape}
-                    className="pointer-events-auto px-5 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 bg-[#123a2a] border-2 border-emerald-400 text-emerald-100"
-                  >
-                    🎲 ทอยเสี่ยงออก (ต้องได้คู่)
-                  </button>
                   <button
                     type="button"
                     disabled={isRolling || isMoving || myCash < jailBailCost}
@@ -848,8 +839,8 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
             </p>
           )}
           <p className="text-[11px] font-bold text-amber-200/80">
-            ตาถัดไปของคุณจะเลือกได้ 3 ทาง: จ่ายค่าปรับ {formatMoneyM(jailBailCost)} ออกมาทอยทันที,
-            ทอยเสี่ยงออก (ได้แต้มคู่จึงจะออกได้) หรือรับโทษ 1 ตาแล้วค่อยออกมาเดินต่อ
+            ตาถัดไปของคุณจะเลือกได้ว่าจะจ่ายค่าปรับ {formatMoneyM(jailBailCost)} เพื่อออกมาทอยทันที
+            หรือรับโทษ 1 ตาแล้วค่อยออกมาเดินต่อ
           </p>
           <button
             type="button"
