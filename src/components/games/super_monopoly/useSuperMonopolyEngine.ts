@@ -301,7 +301,14 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             moveLog += ` (ผ่านจุดเริ่มต้น รับ +${formatMoneyM(SALARY_M)})`;
           }
           if (isDoubleRoll) {
-            moveLog += ' 🎉 แต้มคู่ (Double)!';
+            // Jail and the rest stop cancel the extra roll, so the line should
+            // not celebrate one the player is not getting.
+            moveLog +=
+              targetTile.type === 'go_to_jail'
+                ? ' (แต้มคู่ แต่ติดคุก ไม่ได้ทอยต่อ)'
+                : targetTile.type === 'parking'
+                ? ' (แต้มคู่ แต่ต้องพัก ไม่ได้ทอยต่อ)'
+                : ' 🎉 แต้มคู่ (Double)!';
           }
 
           let newLogs = addLog(moveLog, '#f59e0b');
@@ -1129,7 +1136,12 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             logText += ` (ผ่านจุดเริ่มต้น รับ +${formatMoneyM(SALARY_M)})`;
           }
           if (isDoubleRoll) {
-            logText += ' 🎉 แต้มคู่!';
+            logText +=
+              targetTile.type === 'go_to_jail'
+                ? ' (แต้มคู่ แต่ติดคุก ไม่ได้ทอยต่อ)'
+                : targetTile.type === 'parking'
+                ? ' (แต้มคู่ แต่ต้องพัก ไม่ได้ทอยต่อ)'
+                : ' 🎉 แต้มคู่!';
           }
 
           botTurnLogs = addLog(logText, '#93c5fd', botTurnLogs);
