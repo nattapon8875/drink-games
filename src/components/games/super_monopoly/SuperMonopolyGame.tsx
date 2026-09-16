@@ -157,9 +157,14 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
   useEffect(() => {
     if (!drawnCard) return;
     setDismissedDrawAt(null);
+    // A card someone is holding closes for the whole table when they close it,
+    // so it does not need a timer counting down behind their back. Only a bot's
+    // card, which nobody can dismiss, still clears itself - and its own turn
+    // ending clears it too, whichever comes first.
+    if (!drawnCard.playerId.startsWith('bot-')) return;
     const timer = setTimeout(() => setDismissedDrawAt(drawnCard.at), 7000);
     return () => clearTimeout(timer);
-  }, [drawnCard?.at]);
+  }, [drawnCard?.at, drawnCard?.playerId]);
 
   const spectatorCard =
     drawnCard && !activeCard && dismissedDrawAt !== drawnCard.at

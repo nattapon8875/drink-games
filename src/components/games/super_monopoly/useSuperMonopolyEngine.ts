@@ -733,6 +733,14 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     setActiveCard(null);
     setActivePenaltyModal(null);
 
+    // Everyone at the table is watching a copy of this card. Clearing the
+    // broadcast closes their copy at the same moment the drawer closes theirs,
+    // so nobody is left reading a card the table has moved on from - and no
+    // timer decides for them.
+    if (wasCard) {
+      await onUpdateGameState({ drawnCard: null });
+    }
+
     // A teleport card just moved us: resolve the tile we landed on before the
     // turn is allowed to end, so warping onto free land still offers the buy.
     if (wasCard && pendingTeleportTile !== null && canActThisTurn && currentTurnPlayer) {
@@ -1205,6 +1213,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
           isRolling: false,
           isMoving: false,
           activeStepTileIndex: null,
+          // Nobody can press close on a bot's card, so its turn ending is what
+          // takes it off everyone's screen.
+          drawnCard: null,
         });
         await onNextTurn(nextPlayer.id);
       } catch (err) {
