@@ -195,28 +195,6 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
   // Seats around the 3D board. The ring stays balanced whatever the table size:
   // two face off, three make a triangle, four take the corners, and anything
   // larger fills the edge midpoints between them.
-  const SEAT_RINGS: Record<number, string[]> = {
-    1: ['bottom-2 left-1/2 -translate-x-1/2'],
-    2: ['bottom-2 left-1/2 -translate-x-1/2', 'top-2 left-1/2 -translate-x-1/2'],
-    3: ['bottom-2 left-2', 'bottom-2 right-2', 'top-2 left-1/2 -translate-x-1/2'],
-    4: ['bottom-2 left-2', 'bottom-2 right-2', 'top-2 right-2', 'top-2 left-2'],
-    5: ['bottom-2 left-2', 'bottom-2 right-2', 'top-2 right-2', 'top-2 left-2', 'top-2 left-1/2 -translate-x-1/2'],
-    6: [
-      'bottom-2 left-2', 'bottom-2 right-2', 'top-2 right-2', 'top-2 left-2',
-      'top-2 left-1/2 -translate-x-1/2', 'bottom-2 left-1/2 -translate-x-1/2',
-    ],
-    7: [
-      'bottom-2 left-2', 'bottom-2 right-2', 'top-2 right-2', 'top-2 left-2',
-      'top-2 left-1/2 -translate-x-1/2', 'bottom-2 left-1/2 -translate-x-1/2',
-      'left-2 top-1/2 -translate-y-1/2',
-    ],
-    8: [
-      'bottom-2 left-2', 'bottom-2 right-2', 'top-2 right-2', 'top-2 left-2',
-      'top-2 left-1/2 -translate-x-1/2', 'bottom-2 left-1/2 -translate-x-1/2',
-      'left-2 top-1/2 -translate-y-1/2', 'right-2 top-1/2 -translate-y-1/2',
-    ],
-  };
-  const seatRing = SEAT_RINGS[Math.min(Math.max(orderedPlayers.length, 1), 8)] || SEAT_RINGS[8];
 
   // The dice panel used to be tied to isRolling/isMoving, and the turn passes
   // through a moment where both are false - between revealing the dice and the
@@ -502,10 +480,12 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
 
           {/* Active Board Display */}
           <div className="relative w-full">
-          {/* Seats ring the 3D board itself, so the table reads like the
-              classic game instead of needing a list off to the side. */}
-          {is3DMode &&
-            orderedPlayers.slice(0, 8).map((seatPlayer, seatIdx) => {
+          {/* One column in the top left, in turn order, rather than seats
+              scattered around the board - the running order is the thing people
+              actually want to read off it. */}
+          {is3DMode && (
+            <div className="absolute top-2 left-2 z-20 flex flex-col items-stretch gap-1 pointer-events-none max-w-[40%]">
+          {orderedPlayers.slice(0, 8).map((seatPlayer, seatIdx) => {
               const colour = PLAYER_3D_COLORS[players.indexOf(seatPlayer) % PLAYER_3D_COLORS.length];
               const isSeatTurn = seatPlayer.id === currentTurnPlayer?.id;
               const seatCash = cash[seatPlayer.id] ?? 15;
@@ -514,7 +494,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               return (
                 <div
                   key={seatPlayer.id}
-                  className={`absolute ${seatRing[seatIdx]} z-20 pointer-events-none rounded-xl border-2 bg-[#140501] px-2 py-1 shadow-xl max-w-[38%] ${
+                  className={`rounded-xl border-2 bg-[#140501]/95 px-2 py-1 shadow-xl ${
                     isSeatTurn ? 'border-yellow-300' : 'border-white/15'
                   }`}
                 >
@@ -547,7 +527,9 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                   )}
                 </div>
               );
-            })}
+          })}
+            </div>
+          )}
 
           {/* Dice roll in the middle of the board, the way they would on a table.
               Non-interactive so tiles underneath stay clickable. */}
