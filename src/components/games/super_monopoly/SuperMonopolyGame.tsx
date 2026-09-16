@@ -220,7 +220,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
   }, [isRolling, isMoving, hasRolledThisTurn]);
 
   return (
-    <div className={`w-full h-full min-h-[90vh] flex flex-col justify-between p-2 sm:p-4 select-none mx-auto ${is3DMode ? 'max-w-none' : 'max-w-7xl'}`}>
+    <div className="w-full h-full min-h-[90vh] flex flex-col justify-between p-2 sm:p-4 select-none mx-auto max-w-none">
       {/* Top Status Header */}
       <div className="w-full flex items-center justify-between bg-[#2a1104]/90 border-2 border-[#54240a] rounded-2xl px-4 py-2 mb-2 shadow-xl">
         <div className="flex items-center gap-2">
@@ -323,7 +323,9 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
       </div>
 
       {/* Main 3-Column Landscape Grid (Discord Widescreen Layout) */}
-      <div className={`flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 items-start my-auto w-full ${is3DMode ? 'max-w-none' : 'max-w-7xl'}`}>
+      {/* Both board modes get the whole screen; 2D was boxed into max-w-7xl,
+          which squeezed its square board below the height it is allowed. */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 items-start my-auto w-full max-w-none">
         {/* Left Column: Player Leaderboard & Net Worth (3 cols) */}
         <div className={`lg:col-span-3 flex-col gap-2 order-2 lg:order-1 ${is3DMode ? 'hidden' : 'flex'}`}>
           <div className="bg-[#240e03] border-2 border-[#54240a] rounded-2xl p-3 shadow-xl">
@@ -332,7 +334,9 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               <span>ผู้เล่นในกระดาน ({players.length} คน)</span>
             </h3>
 
-            <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto scrollbar-none pr-0.5">
+            {/* Side padding: the scroller clips horizontally as well, and the
+                current player's ring sits outside the border. */}
+            <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto scrollbar-none px-1">
               {orderedPlayers.map((p: PlayerRecord) => {
                 const playerCash = cash[p.id] ?? 15.0;
                 const propCount = getPlayerPropertiesCount(p.id);
@@ -588,7 +592,68 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               onTileClick={handleTileClick}
             />
           )}
+
           </div>
+        {(isMyTurn || isProxying) &&
+          rollOrderDone &&
+          !activePropertyModal &&
+          !activeCard &&
+          !activePenaltyModal && (
+            <div // Sticky, not fixed: it stays within reach at the bottom of the screen
+              // without having to scroll, but it is centred on the board column
+              // rather than on the browser window.
+              className="sticky bottom-4 z-40 mt-2 flex flex-col items-center gap-1 pointer-events-none">
+              <span
+                className={`pointer-events-none px-2 py-0.5 rounded-full border text-[10px] font-black shadow ${
+                  isProxying
+                    ? 'bg-purple-950 border-purple-400 text-purple-100'
+                    : 'bg-black/70 border-amber-600/50 text-amber-200'
+                }`}
+              >
+                {isProxying && currentTurnPlayer
+                  ? `เล่นแทน ${currentTurnPlayer.display_name}`
+                  : 'ตาของคุณ'}
+              </span>
+
+              {isCurrentPlayerInJail ? (
+                <button
+                  type="button"
+                  disabled={isRolling || isMoving}
+                  onClick={handleServeJailTurn}
+                  className={`pointer-events-auto px-7 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 ${isProxying ? 'bg-purple-800 hover:bg-purple-700 border-2 border-purple-300 text-purple-50' : 'wood-btn-gold border-2 border-yellow-300/70'}`}
+                >
+                  ⛓️ รับทราบ (ส่งตา)
+                </button>
+              ) : isCurrentPlayerResting ? (
+                <button
+                  type="button"
+                  disabled={isRolling || isMoving}
+                  onClick={handleServeRestTurn}
+                  className={`pointer-events-auto px-7 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 ${isProxying ? 'bg-purple-800 hover:bg-purple-700 border-2 border-purple-300 text-purple-50' : 'wood-btn-gold border-2 border-yellow-300/70'}`}
+                >
+                  🏖️ หยุดพัก (ส่งตา)
+                </button>
+              ) : !hasRolledThisTurn ? (
+                <button
+                  type="button"
+                  disabled={isRolling || isMoving}
+                  onClick={rollDice}
+                  className={`pointer-events-auto px-8 py-4 rounded-full font-black text-base shadow-2xl active:scale-95 disabled:opacity-50 ${isProxying ? 'bg-purple-800 hover:bg-purple-700 border-2 border-purple-300 text-purple-50' : 'wood-btn-gold border-2 border-yellow-300/70'}`}
+                >
+                  {isRolling ? 'กำลังทอย...' : isMoving ? 'กำลังเดิน...' : '🎲 ทอยลูกเต๋า'}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled={isRolling || isMoving}
+                  onClick={handleEndTurn}
+                  className={`pointer-events-auto px-7 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 ${isProxying ? 'bg-purple-800 hover:bg-purple-700 border-2 border-purple-300 text-purple-50' : 'bg-[#3d1806] border-2 border-[#7d320b] text-amber-200'}`}
+                >
+                  ส่งตาเดิน ➜
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Right Column: 2 Dice Roll Controls & Live Game Logs (3 cols) */}
@@ -686,64 +751,6 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           Keeps the one action the turn needs within thumb reach at every width.
           The right-hand column drops below the board once the layout stacks, so
           on a phone rolling meant scrolling past the whole board first. */}
-      {(isMyTurn || isProxying) &&
-        rollOrderDone &&
-        !activePropertyModal &&
-        !activeCard &&
-        !activePenaltyModal && (
-          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-1 pointer-events-none">
-            <span
-              className={`pointer-events-none px-2 py-0.5 rounded-full border text-[10px] font-black shadow ${
-                isProxying
-                  ? 'bg-purple-950 border-purple-400 text-purple-100'
-                  : 'bg-black/70 border-amber-600/50 text-amber-200'
-              }`}
-            >
-              {isProxying && currentTurnPlayer
-                ? `เล่นแทน ${currentTurnPlayer.display_name}`
-                : 'ตาของคุณ'}
-            </span>
-
-            {isCurrentPlayerInJail ? (
-              <button
-                type="button"
-                disabled={isRolling || isMoving}
-                onClick={handleServeJailTurn}
-                className={`pointer-events-auto px-7 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 ${isProxying ? 'bg-purple-800 hover:bg-purple-700 border-2 border-purple-300 text-purple-50' : 'wood-btn-gold border-2 border-yellow-300/70'}`}
-              >
-                ⛓️ รับทราบ (ส่งตา)
-              </button>
-            ) : isCurrentPlayerResting ? (
-              <button
-                type="button"
-                disabled={isRolling || isMoving}
-                onClick={handleServeRestTurn}
-                className={`pointer-events-auto px-7 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 ${isProxying ? 'bg-purple-800 hover:bg-purple-700 border-2 border-purple-300 text-purple-50' : 'wood-btn-gold border-2 border-yellow-300/70'}`}
-              >
-                🏖️ หยุดพัก (ส่งตา)
-              </button>
-            ) : !hasRolledThisTurn ? (
-              <button
-                type="button"
-                disabled={isRolling || isMoving}
-                onClick={rollDice}
-                className={`pointer-events-auto px-8 py-4 rounded-full font-black text-base shadow-2xl active:scale-95 disabled:opacity-50 ${isProxying ? 'bg-purple-800 hover:bg-purple-700 border-2 border-purple-300 text-purple-50' : 'wood-btn-gold border-2 border-yellow-300/70'}`}
-              >
-                {isRolling ? 'กำลังทอย...' : isMoving ? 'กำลังเดิน...' : '🎲 ทอยลูกเต๋า'}
-              </button>
-            ) : (
-              <button
-                type="button"
-                disabled={isRolling || isMoving}
-                onClick={handleEndTurn}
-                className={`pointer-events-auto px-7 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 ${isProxying ? 'bg-purple-800 hover:bg-purple-700 border-2 border-purple-300 text-purple-50' : 'bg-[#3d1806] border-2 border-[#7d320b] text-amber-200'}`}
-              >
-                ส่งตาเดิน ➜
-              </button>
-            )}
-          </div>
-        )}
-
       {/* Property Buy/Upgrade Modal */}
       <PropertyCardModal
         isOpen={Boolean(activePropertyModal || inspectTile)}

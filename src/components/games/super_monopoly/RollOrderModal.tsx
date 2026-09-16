@@ -321,7 +321,10 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
         </div>
 
         {/* Players Roll Status List */}
-        <div className="relative z-10 flex flex-col gap-2 max-h-[48vh] overflow-y-auto pr-1 py-1">
+        {/* Side padding, not just pr: scrolling clips horizontally too, and the
+            winner's ring sits outside its border - without room it was shaved
+            off at both edges. */}
+        <div className="relative z-10 flex flex-col gap-2 max-h-[48vh] overflow-y-auto px-1.5 py-1.5">
           {players.map((p) => {
             const roll = rolls[p.id];
             const isMe = p.id === currentPlayer?.id;
@@ -334,7 +337,7 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
                 key={p.id}
                 className={`p-3 rounded-2xl border-2 flex items-center justify-between transition-all ${
                   isTopRoller
-                    ? 'bg-gradient-to-r from-[#4a2205] to-[#2e1305] border-yellow-400 ring-2 ring-yellow-400/50 shadow-lg scale-[1.01]'
+                    ? 'bg-gradient-to-r from-[#4a2205] to-[#2e1305] border-yellow-400 ring-2 ring-yellow-400/50 shadow-lg'
                     : roll
                     ? 'bg-[#1c0a02] border-[#542106]'
                     : 'bg-[#140601] border-[#361303]'

@@ -957,7 +957,10 @@ const SuperBoard3DBase: React.FC<SuperBoard3DProps> = ({
 }) => {
   return (
     <div
-      className="w-full min-h-[460px] sm:min-h-[560px] lg:min-h-[640px] max-w-[calc(100vh-15rem)] mx-auto aspect-square rounded-2xl overflow-hidden shadow-2xl relative bg-[#0f0703] border-2 border-[#54280a]"
+      // Full width of the column with the height pinned, rather than a square
+      // capped to the viewport height. The camera keeps the board centred, so
+      // the extra width is just more table around it.
+      className="w-full h-[460px] sm:h-[560px] lg:h-[640px] rounded-2xl overflow-hidden shadow-2xl relative bg-[#0f0703] border-2 border-[#54280a]"
       onContextMenu={(e) => e.preventDefault()}
     >
       <Canvas shadows dpr={CANVAS_DPR} camera={CANVAS_CAMERA} gl={CANVAS_GL}>
