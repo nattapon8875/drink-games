@@ -165,6 +165,12 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   // with nothing to decide - and two of them firing meant the feed showed the
   // handover twice and the turn skipped a player.
   const endedTurnRef = useRef<string>('');
+  // True from the moment a turn is handed over until the new turn actually
+  // arrives. Without it the action flashed "roll the dice" on the way out:
+  // handing over clears hasRolledThisTurn immediately, but the turn id takes a
+  // round trip to change, so for a beat it still looked like your turn and you
+  // had not rolled yet.
+  const [isEndingTurn, setIsEndingTurn] = useState(false);
 
   // Reset local turn modal state when current turn player changes
   useEffect(() => {
@@ -179,6 +185,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     setActivePenaltyModal(null);
     setJailNotice(null);
     setRestNotice(null);
+    setIsEndingTurn(false);
     endedTurnRef.current = '';
   }, [room.current_turn_player_id]);
 
@@ -233,6 +240,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       endedTurnRef.current = endingTurnId;
     }
 
+    setIsEndingTurn(true);
     setActivePropertyModal(null);
     setActiveCard(null);
     setActivePenaltyModal(null);
@@ -1496,6 +1504,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     handleBuyLand,
     handleBuildHouse,
     handleEndTurn,
+    isEndingTurn,
     handleCloseActiveModal,
     orderedPlayers,
     rollOrderDone: Boolean(rawState.roll_order_done),

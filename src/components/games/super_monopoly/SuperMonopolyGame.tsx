@@ -77,6 +77,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     handleBuyLand,
     handleBuildHouse,
     handleEndTurn,
+    isEndingTurn,
     handleCloseActiveModal,
     orderedPlayers,
     rollOrderDone,
@@ -613,7 +614,8 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           !activeCard &&
           !activePenaltyModal &&
           !jailNotice &&
-          !restNotice && (
+          !restNotice &&
+          !isEndingTurn && (
             <div
               // On the board itself, at the bottom edge - reachable without
               // scrolling past the whole board, and centred on the game rather
