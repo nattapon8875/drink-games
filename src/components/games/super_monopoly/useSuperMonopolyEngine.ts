@@ -29,6 +29,71 @@ const SALARY_M = 2.0; // 2M for passing GO
 
 
 // Rent for landing on someone else's tile, including the utility and hotel-chain rules.
+// Half of everything sunk into a square - the land plus whatever was built on
+// it - which is what the bank pays to take it back.
+function mortgageValueOf(
+  tile: SuperPropertyTile | undefined,
+  ownership: PropertyOwnership | undefined
+): number {
+  if (!tile || !ownership || tile.type !== 'property') return 0;
+  const built =
+    Math.min(ownership.houses, 3) * (tile.houseCost ?? 0.8) +
+    (ownership.houses === 4 ? tile.hotelCost ?? 2.0 : 0);
+  return ((tile.cost ?? 0) + built) / 2;
+}
+
+// Everything this player could raise by handing the lot back.
+function raisableFor(
+  playerId: string,
+  props: Record<number, PropertyOwnership>
+): number {
+  return Object.entries(props).reduce((sum, [idxStr, own]) => {
+    if (own.ownerId !== playerId) return sum;
+    return sum + mortgageValueOf(SUPER_MONOPOLY_TILES[Number(idxStr)], own);
+  }, 0);
+}
+
+// Sell back the cheapest squares first, only as many as the debt needs.
+function mortgageUntil(
+  playerId: string,
+  props: Record<number, PropertyOwnership>,
+  needed: number
+): { props: Record<number, PropertyOwnership>; raised: number; soldNames: string[] } {
+  const mine = Object.entries(props)
+    .filter(([, own]) => own.ownerId === playerId)
+    .map(([idxStr, own]) => ({
+      index: Number(idxStr),
+      value: mortgageValueOf(SUPER_MONOPOLY_TILES[Number(idxStr)], own),
+    }))
+    .sort((a, b) => a.value - b.value);
+
+  const next = { ...props };
+  let raised = 0;
+  const soldNames: string[] = [];
+  for (const item of mine) {
+    if (raised >= needed) break;
+    delete next[item.index];
+    raised += item.value;
+    soldNames.push(SUPER_MONOPOLY_TILES[item.index]?.name || String(item.index));
+  }
+  return { props: next, raised, soldNames };
+}
+
+// Whose turn comes after this one, skipping anyone who is out of the game.
+function nextActiveAfter(
+  list: PlayerRecord[],
+  fromId: string | null | undefined,
+  bankrupt: Record<string, boolean>
+): PlayerRecord | null {
+  if (list.length === 0) return null;
+  const start = Math.max(0, list.findIndex((p) => p.id === fromId));
+  for (let step = 1; step <= list.length; step++) {
+    const candidate = list[(start + step) % list.length];
+    if (!bankrupt[candidate.id]) return candidate;
+  }
+  return null;
+}
+
 function computeRent(
   tile: SuperPropertyTile,
   ownership: PropertyOwnership,
@@ -62,6 +127,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   // Who is holding a boarding pass: landing on the airport without a double
   // books the flight for their next turn instead of taking it right away.
   const pendingFlights: Record<string, boolean> = rawState.pendingFlights || {};
+  // Out of the game: no token, no turn, and their land is back on the market.
+  const bankrupt: Record<string, boolean> = rawState.bankrupt || {};
+  const winnerId: string | null = (rawState.winnerId as string | null) || null;
   const gameLogs: Array<{ text: string; time: string; color?: string }> = rawState.gameLogs || [];
   const rentReceipt: RentReceipt | null = (rawState.rentReceipt as RentReceipt | null) || null;
 
@@ -95,6 +163,18 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   const [restNotice, setRestNotice] = useState<{ tileName: string; wasDouble: boolean } | null>(null);
   // Open while the traveller is choosing where to land.
   const [showFlightPicker, setShowFlightPicker] = useState(false);
+  // A bill the player cannot cover in cash: sell up, or go out.
+  const [debtDecision, setDebtDecision] = useState<{
+    amount: number;
+    creditorId: string | null;
+    creditorName: string | null;
+    tileName: string;
+    tileIcon: string;
+    reason: string;
+    cashNow: number;
+    raisable: number;
+    canCover: boolean;
+  } | null>(null);
   const [hasRolledThisTurn, setHasRolledThisTurn] = useState<boolean>(false);
   const [isDouble, setIsDouble] = useState<boolean>(false);
 
@@ -200,6 +280,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     setJailNotice(null);
     setRestNotice(null);
     setShowFlightPicker(false);
+    setDebtDecision(null);
     setIsEndingTurn(false);
     endedTurnRef.current = '';
   }, [room.current_turn_player_id]);
@@ -264,9 +345,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
     if (orderedPlayers.length === 0) return;
 
-    const currentIndex = orderedPlayers.findIndex((p) => p.id === currentTurnPlayer?.id);
-    const nextIndex = (currentIndex + 1) % orderedPlayers.length;
-    const nextPlayer = orderedPlayers[nextIndex];
+    // Skip anyone who is out of the game.
+    const nextPlayer = nextActiveAfter(orderedPlayers, currentTurnPlayer?.id, bankrupt);
+    if (!nextPlayer) return;
 
     const newLogs = addLog(`🎲 ส่งตาให้ [${nextPlayer.display_name}]`, '#93c5fd');
 
@@ -407,8 +488,30 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                   if (ownership.houses === 4) rentAmount = targetTile.rentHotel || 5.0;
                 }
 
-                const actualRent = Math.min(playerCash, rentAmount);
-                const remainingCash = Math.max(0, playerCash - rentAmount);
+                if (playerCash < rentAmount) {
+                  // Cannot cover it in cash: offer the sale, or the exit.
+                  const raisable = raisableFor(currentTurnPlayer.id, properties);
+                  setDebtDecision({
+                    amount: rentAmount,
+                    creditorId: owner?.id ?? null,
+                    creditorName: owner?.display_name ?? null,
+                    tileName: targetTile.name,
+                    tileIcon: targetTile.icon || '🏨',
+                    reason: `ค่าผ่านทางที่ดินของ [${owner?.display_name || 'เจ้าของที่ดิน'}]`,
+                    cashNow: playerCash,
+                    raisable,
+                    canCover: playerCash + raisable >= rentAmount,
+                  });
+                  requiresUserModalAction = true;
+                  newLogs = addLog(
+                    `⚠️ ${currentTurnPlayer.display_name} เงินสดไม่พอจ่ายค่าผ่านทาง ${formatMoneyM(rentAmount)}`,
+                    '#f97316',
+                    newLogs
+                  );
+                } else {
+
+                const actualRent = rentAmount;
+                const remainingCash = playerCash - rentAmount;
                 updatedCash[currentTurnPlayer.id] = remainingCash;
                 if (owner) {
                   updatedCash[owner.id] = (updatedCash[owner.id] ?? INITIAL_CASH_M) + actualRent;
@@ -447,6 +550,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                   isUtility: targetTile.isUtility,
                 });
                 requiresUserModalAction = true;
+                }
               }
             } else if (targetTile.type === 'chest') {
               const drawn = drawFromDeck(rawState.chestDeck, CHEST_CARDS);
@@ -518,7 +622,27 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               newLogs = addLog(chanceDesc, '#eab308', newLogs);
             } else if (targetTile.type === 'tax') {
               const taxAmount = 1.0;
-              const remainingCash = Math.max(0, playerCash - taxAmount);
+              if (playerCash < taxAmount) {
+                const raisable = raisableFor(currentTurnPlayer.id, properties);
+                setDebtDecision({
+                  amount: taxAmount,
+                  creditorId: null,
+                  creditorName: null,
+                  tileName: targetTile.name,
+                  tileIcon: '💰',
+                  reason: 'ภาษีบำรุงเมือง',
+                  cashNow: playerCash,
+                  raisable,
+                  canCover: playerCash + raisable >= taxAmount,
+                });
+                requiresUserModalAction = true;
+                newLogs = addLog(
+                  `⚠️ ${currentTurnPlayer.display_name} เงินสดไม่พอจ่ายภาษี ${formatMoneyM(taxAmount)}`,
+                  '#f97316',
+                  newLogs
+                );
+              } else {
+              const remainingCash = playerCash - taxAmount;
               updatedCash[currentTurnPlayer.id] = remainingCash;
               sfx.playDrinkPenalty();
               newLogs = addLog(`💰 ${currentTurnPlayer.display_name} จ่ายภาษี ${formatMoneyM(taxAmount)} (เงินเหลือ ${formatMoneyM(remainingCash)})`, '#f97316', newLogs);
@@ -534,6 +658,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                 remainingCash: remainingCash,
               });
               requiresUserModalAction = true;
+              }
             } else if (targetTile.type === 'airport') {
               // Arriving on a double means the plane is already waiting;
               // otherwise the seat is booked for the next turn.
@@ -906,6 +1031,98 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     return safe.length > 0 ? safe[Math.floor(Math.random() * safe.length)].index : 0;
   };
 
+  // Raise the money by handing squares back to the bank at half of what went
+  // into them - cheapest first, only as many as the bill needs.
+  const handleMortgageAndPay = async () => {
+    if (!debtDecision || !currentTurnPlayer || !canActThisTurn) return;
+    const me = currentTurnPlayer.id;
+    const cashNow = cash[me] ?? INITIAL_CASH_M;
+    const shortfall = Math.max(0, debtDecision.amount - cashNow);
+    const { props: nextProps, raised, soldNames } = mortgageUntil(me, properties, shortfall);
+    const remaining = Math.max(0, cashNow + raised - debtDecision.amount);
+
+    const nextCash = { ...cash, [me]: remaining };
+    if (debtDecision.creditorId) {
+      nextCash[debtDecision.creditorId] =
+        (nextCash[debtDecision.creditorId] ?? INITIAL_CASH_M) + debtDecision.amount;
+    }
+
+    sfx.playDrinkPenalty();
+    const logs = addLog(
+      `🏦 ${currentTurnPlayer.display_name} จำนอง [${soldNames.join(', ')}] ได้ ${formatMoneyM(raised)} ➜ จ่าย ${formatMoneyM(debtDecision.amount)} (เงินเหลือ ${formatMoneyM(remaining)})`,
+      '#f59e0b'
+    );
+
+    await onUpdateGameState({
+      cash: nextCash,
+      properties: nextProps,
+      gameLogs: logs,
+      rentReceipt: debtDecision.creditorId
+        ? {
+            ownerId: debtDecision.creditorId,
+            payerName: currentTurnPlayer.display_name,
+            tileName: debtDecision.tileName,
+            tileIcon: debtDecision.tileIcon,
+            amount: debtDecision.amount,
+            ownerCashAfter: nextCash[debtDecision.creditorId],
+            at: Date.now(),
+          }
+        : null,
+    });
+
+    setDebtDecision(null);
+    setTimeout(() => {
+      handleEndTurn();
+    }, 1200);
+  };
+
+  // Give up: whatever cash is left goes to the creditor, the land goes back on
+  // the market, and the player is out for good.
+  const handleDeclareBankrupt = async () => {
+    if (!debtDecision || !currentTurnPlayer || !canActThisTurn) return;
+    const me = currentTurnPlayer.id;
+    const cashNow = cash[me] ?? 0;
+
+    const nextCash = { ...cash, [me]: 0 };
+    if (debtDecision.creditorId) {
+      nextCash[debtDecision.creditorId] =
+        (nextCash[debtDecision.creditorId] ?? INITIAL_CASH_M) + cashNow;
+    }
+
+    const nextProps: Record<number, PropertyOwnership> = {};
+    Object.entries(properties).forEach(([idx, own]) => {
+      if (own.ownerId !== me) nextProps[Number(idx)] = own;
+    });
+
+    const nextBankrupt = { ...bankrupt, [me]: true };
+    const left = orderedPlayers.filter((p) => !nextBankrupt[p.id]);
+    const winner = left.length === 1 ? left[0] : null;
+
+    sfx.playDrinkPenalty();
+    let logs = addLog(
+      `💀 ${currentTurnPlayer.display_name} ล้มละลาย! ออกจากเกม ที่ดินทั้งหมดกลับมาเป็นที่ว่าง`,
+      '#ef4444'
+    );
+    if (winner) {
+      logs = addLog(`🏆 ${winner.display_name} เป็นผู้ชนะ!`, '#facc15', logs);
+    }
+
+    await onUpdateGameState({
+      cash: nextCash,
+      properties: nextProps,
+      bankrupt: nextBankrupt,
+      winnerId: winner ? winner.id : null,
+      gameLogs: logs,
+    });
+
+    setDebtDecision(null);
+    if (!winner) {
+      setTimeout(() => {
+        handleEndTurn();
+      }, 1200);
+    }
+  };
+
   // Landing somewhere without walking there - a teleport card, a flight - still
   // has to settle the square: free land offers the buy, someone else's charges
   // rent. Returns true when it put a modal up and the turn must wait.
@@ -923,8 +1140,31 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     const owner = players.find((p) => p.id === destOwnership.ownerId);
     const myCashNow = cash[currentTurnPlayer.id] ?? INITIAL_CASH_M;
     const rent = computeRent(destTile, destOwnership, properties);
-    const actualRent = Math.min(myCashNow, rent);
-    const remaining = Math.max(0, myCashNow - rent);
+
+    if (myCashNow < rent) {
+      const raisable = raisableFor(currentTurnPlayer.id, properties);
+      setDebtDecision({
+        amount: rent,
+        creditorId: owner?.id ?? null,
+        creditorName: owner?.display_name ?? null,
+        tileName: destTile.name,
+        tileIcon: destTile.icon || '🏨',
+        reason: `ค่าผ่านทางที่ดินของ [${owner?.display_name || 'เจ้าของที่ดิน'}]`,
+        cashNow: myCashNow,
+        raisable,
+        canCover: myCashNow + raisable >= rent,
+      });
+      await onUpdateGameState({
+        gameLogs: addLog(
+          `⚠️ ${currentTurnPlayer.display_name} เงินสดไม่พอจ่ายค่าผ่านทาง ${formatMoneyM(rent)}`,
+          '#f97316'
+        ),
+      });
+      return true;
+    }
+
+    const actualRent = rent;
+    const remaining = myCashNow - rent;
 
     const rentCash = { ...cash, [currentTurnPlayer.id]: remaining };
     if (owner) {
@@ -1110,9 +1350,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     botWatchdogTimerRef.current = setTimeout(async () => {
       console.warn('[Bot Watchdog] Bot took too long! Auto-passing turn...');
       if (!isMounted) return;
-      const currentIndex = orderedPlayersRef.current.findIndex((p) => p.id === turnPlayerId);
-      const nextIndex = (currentIndex + 1) % orderedPlayersRef.current.length;
-      const nextPlayer = orderedPlayersRef.current[nextIndex];
+      const nextPlayer = nextActiveAfter(orderedPlayersRef.current, turnPlayerId, bankrupt);
       if (nextPlayer) {
         await onNextTurn(nextPlayer.id);
       }
@@ -1135,6 +1373,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
         let botJailState = { ...inJailTurns };
         let botRestState = { ...restTurns };
         let botFlightState = { ...pendingFlights };
+        let botBankrupted = false;
 
         while (shouldRollAgain && rollsThisTurn < 2 && isMounted) {
           rollsThisTurn++;
@@ -1362,8 +1601,26 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                 if (ownership.houses === 4) rent = targetTile.rentHotel || 5.0;
               }
 
-              const actualRent = Math.min(botCash, rent);
-              botCash = Math.max(0, botCash - rent);
+              if (botCash < rent) {
+                // Same choice a player gets, taken without asking: sell what it
+                // takes, and if that is still not enough, the bot is out.
+                const shortfall = rent - botCash;
+                const sale = mortgageUntil(turnPlayerId, botProperties, shortfall);
+                if (botCash + sale.raised >= rent) {
+                  botProperties = sale.props;
+                  botCash = botCash + sale.raised;
+                  botTurnLogs = addLog(
+                    `🏦 🤖 ${currentTurnPlayer.display_name} จำนอง [${sale.soldNames.join(', ')}] ได้ ${formatMoneyM(sale.raised)} มาจ่ายค่าผ่านทาง`,
+                    '#f59e0b',
+                    botTurnLogs
+                  );
+                } else {
+                  botBankrupted = true;
+                }
+              }
+
+              const actualRent = botBankrupted ? botCash : rent;
+              botCash = Math.max(0, botCash - actualRent);
               updatedCash[turnPlayerId] = botCash;
               if (owner) {
                 updatedCash[owner.id] = (updatedCash[owner.id] ?? INITIAL_CASH_M) + actualRent;
@@ -1547,6 +1804,33 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             inJailTurns: botJailState,
             restTurns: botRestState,
             pendingFlights: botFlightState,
+            ...(botBankrupted
+              ? (() => {
+                  const nextBankrupt = { ...bankrupt, [turnPlayerId]: true };
+                  const freed: Record<number, PropertyOwnership> = {};
+                  Object.entries(botProperties).forEach(([idx, own]) => {
+                    if (own.ownerId !== turnPlayerId) freed[Number(idx)] = own;
+                  });
+                  const left = orderedPlayersRef.current.filter((pl) => !nextBankrupt[pl.id]);
+                  botTurnLogs = addLog(
+                    `💀 🤖 ${currentTurnPlayer.display_name} ล้มละลาย! ออกจากเกม`,
+                    '#ef4444',
+                    botTurnLogs
+                  );
+                  if (left.length === 1) {
+                    botTurnLogs = addLog(
+                      `🏆 ${left[0].display_name} เป็นผู้ชนะ!`,
+                      '#facc15',
+                      botTurnLogs
+                    );
+                  }
+                  return {
+                    bankrupt: nextBankrupt,
+                    properties: freed,
+                    winnerId: left.length === 1 ? left[0].id : null,
+                  };
+                })()
+              : {}),
             gameLogs: botTurnLogs,
             chestDeck: botChestDeck,
             chanceDeck: botChanceDeck,
@@ -1575,9 +1859,8 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
         await new Promise((resolve) => setTimeout(resolve, 1800));
         if (!isMounted) return;
 
-        const currentIndex = orderedPlayersRef.current.findIndex((p) => p.id === turnPlayerId);
-        const nextIndex = (currentIndex + 1) % orderedPlayersRef.current.length;
-        const nextPlayer = orderedPlayersRef.current[nextIndex];
+        const nextPlayer = nextActiveAfter(orderedPlayersRef.current, turnPlayerId, bankrupt);
+        if (!nextPlayer) return;
 
         botTurnLogs = addLog(`🎲 ส่งตาให้ [${nextPlayer.display_name}]`, '#93c5fd', botTurnLogs);
         await onUpdateGameState({
@@ -1593,9 +1876,8 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       } catch (err) {
         console.error('Bot turn error:', err);
         // Guaranteed recovery on error
-        const currentIndex = orderedPlayersRef.current.findIndex((p) => p.id === turnPlayerId);
-        const nextIndex = (currentIndex + 1) % orderedPlayersRef.current.length;
-        const nextPlayer = orderedPlayersRef.current[nextIndex];
+        const nextPlayer = nextActiveAfter(orderedPlayersRef.current, turnPlayerId, bankrupt);
+        if (!nextPlayer) return;
         if (nextPlayer) {
           await onNextTurn(nextPlayer.id);
         }
@@ -1640,6 +1922,11 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     inJailTurns,
     restTurns,
     handleServeJailTurn,
+    bankrupt,
+    winnerId,
+    debtDecision,
+    handleMortgageAndPay,
+    handleDeclareBankrupt,
     isCurrentPlayerBoarding,
     showFlightPicker,
     handleOpenFlightPicker,

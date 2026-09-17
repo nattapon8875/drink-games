@@ -14,6 +14,9 @@ interface SuperBoard3DProps {
   players: PlayerRecord[];
   currentTurnPlayerId: string | null;
   activeStepTileIndex?: number | null;
+  // Players who are out of the game keep their colour and their row, but their
+  // token comes off the board.
+  bankrupt?: Record<string, boolean>;
   onTileClick: (tile: SuperPropertyTile) => void;
 }
 
@@ -957,6 +960,7 @@ const SuperBoard3DBase: React.FC<SuperBoard3DProps> = ({
   players,
   currentTurnPlayerId,
   activeStepTileIndex,
+  bankrupt,
   onTileClick,
 }) => {
   return (
@@ -1023,6 +1027,7 @@ const SuperBoard3DBase: React.FC<SuperBoard3DProps> = ({
 
           {/* 3D Animated Player Pawns with Turn Pointer */}
           {players.map((p, idx) => {
+            if (bankrupt?.[p.id]) return null;
             const isTurn = p.id === currentTurnPlayerId;
             const targetIndex =
               isTurn && activeStepTileIndex !== null && activeStepTileIndex !== undefined

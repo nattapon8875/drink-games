@@ -10,6 +10,7 @@ interface SuperBoardProps {
   players: PlayerRecord[];
   currentTurnPlayerId: string | null;
   activeStepTileIndex?: number | null;
+  bankrupt?: Record<string, boolean>;
   onTileClick: (tile: SuperPropertyTile) => void;
 }
 
@@ -19,6 +20,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
   players,
   currentTurnPlayerId,
   activeStepTileIndex,
+  bankrupt,
   onTileClick,
 }) => {
   // 40 Tiles Perimeter Mapping on 11x11 Grid
@@ -89,6 +91,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
 
           // Players currently standing on this tile
           const playersHere = players.filter((p) => {
+            if (bankrupt?.[p.id]) return false;
             const isTurn = p.id === currentTurnPlayerId;
             const pPos =
               isTurn && activeStepTileIndex !== null && activeStepTileIndex !== undefined

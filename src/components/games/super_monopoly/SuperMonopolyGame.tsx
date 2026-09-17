@@ -10,6 +10,7 @@ import { ChanceChestModal } from './ChanceChestModal';
 import { PenaltyModal } from './PenaltyModal';
 import { RentReceiptModal } from './RentReceiptModal';
 import { FlightPickerModal } from './FlightPickerModal';
+import { DebtModal } from './DebtModal';
 import { RulesModal } from './RulesModal';
 import { RollOrderModal } from './RollOrderModal';
 import { showConfirm } from '@/lib/alerts';
@@ -72,6 +73,11 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     restTurns,
     rollDice,
     handleServeJailTurn,
+    bankrupt,
+    winnerId,
+    debtDecision,
+    handleMortgageAndPay,
+    handleDeclareBankrupt,
     isCurrentPlayerBoarding,
     showFlightPicker,
     handleOpenFlightPicker,
@@ -346,7 +352,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                 const propCount = getPlayerPropertiesCount(p.id);
                 const isCurrent = p.id === currentTurnPlayer?.id;
                 const isMe = p.id === currentPlayer?.id;
-                const isBankrupt = playerCash <= 0;
+                const isBankrupt = Boolean(bankrupt[p.id]);
                 const isBot = p.line_user_id === 'bot' || p.id.startsWith('bot-');
                 const scoreInfo = room.game_state?.roll_order_scores?.[p.id];
 
@@ -531,7 +537,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                         seatCash <= 0 ? 'text-red-400' : 'text-emerald-300'
                       }`}
                     >
-                      {seatCash <= 0 ? 'ล้ม' : formatMoneyM(seatCash)}
+                      {bankrupt[seatPlayer.id] ? 'ออกแล้ว' : formatMoneyM(seatCash)}
                     </span>
                   </div>
 
@@ -601,6 +607,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               players={players}
               currentTurnPlayerId={currentTurnPlayer?.id || null}
               activeStepTileIndex={activeStepTileIndex}
+              bankrupt={bankrupt}
               onTileClick={handleTileClick}
             />
           ) : (
@@ -610,6 +617,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               players={players}
               currentTurnPlayerId={currentTurnPlayer?.id || null}
               activeStepTileIndex={activeStepTileIndex}
+              bankrupt={bankrupt}
               onTileClick={handleTileClick}
             />
           )}
@@ -622,6 +630,8 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           !jailNotice &&
           !restNotice &&
           !showFlightPicker &&
+          !debtDecision &&
+          !winnerId &&
           !isEndingTurn && (
             <div
               // On the board itself, at the bottom edge - reachable without
@@ -896,6 +906,47 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           >
             รับทราบ (ส่งตาให้คนถัดไป)
           </button>
+        </div>
+      </Modal>
+
+      {/* Cannot cover the bill: sell up, or go out */}
+      <DebtModal
+        isOpen={Boolean(debtDecision)}
+        debt={debtDecision}
+        onMortgage={handleMortgageAndPay}
+        onBankrupt={handleDeclareBankrupt}
+      />
+
+      {/* Last one standing */}
+      <Modal isOpen={Boolean(winnerId)} onClose={() => {}} title="🏆 จบเกม">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <span className="text-6xl">🏆</span>
+          <span className="text-lg font-black text-yellow-300">
+            {players.find((p) => p.id === winnerId)?.display_name || 'ผู้ชนะ'}
+          </span>
+          <span className="text-xs font-bold text-amber-200/80">
+            เป็นคนสุดท้ายที่ยังไม่ล้มละลาย · ชนะการแข่งขันนี้!
+          </span>
+          <div className="w-full flex flex-col gap-1.5 mt-1">
+            {orderedPlayers.map((p) => (
+              <div
+                key={p.id}
+                className={`flex items-center justify-between px-3 py-2 rounded-xl border text-xs font-black ${
+                  p.id === winnerId
+                    ? 'bg-[#3d2a05] border-yellow-400 text-yellow-100'
+                    : 'bg-[#1a0801] border-[#3d1503] text-amber-300/60'
+                }`}
+              >
+                <span className="truncate">
+                  {p.id === winnerId ? '🏆 ' : bankrupt[p.id] ? '💀 ' : ''}
+                  {p.display_name}
+                </span>
+                <span className="font-mono shrink-0">
+                  {bankrupt[p.id] ? 'ล้มละลาย' : formatMoneyM(cash[p.id] ?? 0)}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </Modal>
 
