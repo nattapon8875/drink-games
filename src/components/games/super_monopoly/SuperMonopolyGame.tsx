@@ -9,6 +9,7 @@ import { PropertyCardModal } from './PropertyCardModal';
 import { ChanceChestModal } from './ChanceChestModal';
 import { PenaltyModal } from './PenaltyModal';
 import { RentReceiptModal } from './RentReceiptModal';
+import { FlightPickerModal } from './FlightPickerModal';
 import { RulesModal } from './RulesModal';
 import { RollOrderModal } from './RollOrderModal';
 import { showConfirm } from '@/lib/alerts';
@@ -71,6 +72,11 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     restTurns,
     rollDice,
     handleServeJailTurn,
+    isCurrentPlayerBoarding,
+    showFlightPicker,
+    handleOpenFlightPicker,
+    handleChooseFlight,
+    closeFlightPicker,
     handlePayJailBail,
     jailBailCost,
     handleServeRestTurn,
@@ -615,6 +621,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           !activePenaltyModal &&
           !jailNotice &&
           !restNotice &&
+          !showFlightPicker &&
           !isEndingTurn && (
             <div
               // On the board itself, at the bottom edge - reachable without
@@ -634,7 +641,16 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                   : 'ตาของคุณ'}
               </span>
 
-              {isCurrentPlayerInJail ? (
+              {isCurrentPlayerBoarding ? (
+                <button
+                  type="button"
+                  disabled={isRolling || isMoving}
+                  onClick={handleOpenFlightPicker}
+                  className="pointer-events-auto px-7 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 bg-[#0b2b3d] border-2 border-sky-400 text-sky-100"
+                >
+                  ✈️ เลือกจุดหมายบิน
+                </button>
+              ) : isCurrentPlayerInJail ? (
                 // Two ways out: buy your way out and take the turn, or sit it out.
                 <div className="flex items-center gap-2">
                   <button
@@ -882,6 +898,17 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           </button>
         </div>
       </Modal>
+
+      {/* Where to? */}
+      <FlightPickerModal
+        isOpen={showFlightPicker}
+        fromIndex={currentPlayer ? positions[currentPlayer.id] ?? 0 : 0}
+        properties={properties}
+        players={players}
+        myId={currentPlayer?.id || null}
+        onChoose={handleChooseFlight}
+        onClose={closeFlightPicker}
+      />
 
       {/* What the other side of a rent payment looks like */}
       <RentReceiptModal

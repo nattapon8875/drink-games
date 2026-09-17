@@ -54,6 +54,7 @@ export type SuperTileType =
   | 'jail'
   | 'parking'
   | 'go_to_jail'
+  | 'airport'
   | 'tax';
 
 export interface SuperPropertyTile {

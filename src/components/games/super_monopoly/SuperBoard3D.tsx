@@ -335,11 +335,11 @@ function createSuperTileTexture(tile: SuperPropertyTile): THREE.CanvasTexture {
       ctx.font = 'bold 34px sans-serif';
       ctx.fillText('หยุดพัก 1 ตา', 256, 444);
     } else if (tile.index === 30) {
-      // GO TO JAIL (ไปห้องขัง / เที่ยวรอบโลก)
-      ctx.fillStyle = '#fef2f2';
+      // AIRPORT (สนามบิน)
+      ctx.fillStyle = '#eff6ff';
       ctx.fillRect(16, 16, 480, 480);
 
-      ctx.fillStyle = '#dc2626';
+      ctx.fillStyle = '#0284c7';
       ctx.beginPath();
       ctx.roundRect(40, 40, 432, 90, 24);
       ctx.fill();
@@ -347,22 +347,22 @@ function createSuperTileTexture(tile: SuperPropertyTile): THREE.CanvasTexture {
       ctx.fillStyle = '#ffffff';
       ctx.font = '900 44px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('ไปห้องขัง!', 256, 102);
+      ctx.fillText('สนามบิน', 256, 102);
 
       ctx.font = '110px sans-serif';
-      ctx.fillText('🚨', 256, 250);
+      ctx.fillText('✈️', 256, 250);
 
       ctx.fillStyle = '#0f172a';
       ctx.font = 'bold 36px sans-serif';
-      ctx.fillText('GO TO JAIL', 256, 340);
+      ctx.fillText('AIRPORT', 256, 340);
 
-      ctx.fillStyle = '#991b1b';
+      ctx.fillStyle = '#075985';
       ctx.beginPath();
       ctx.roundRect(60, 390, 392, 80, 20);
       ctx.fill();
       ctx.fillStyle = '#fef08a';
       ctx.font = 'bold 34px sans-serif';
-      ctx.fillText('ส่งตัวเข้าคุกทันที', 256, 444);
+      ctx.fillText('บินไปช่องไหนก็ได้', 256, 444);
     } else if (tile.type === 'chest') {
       // CHEST (หีบสมบัติ)
       ctx.fillStyle = '#fdf2f8';

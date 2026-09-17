@@ -61,7 +61,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
       case 'ประจวบคีรีขันธ์': return 'ประจวบฯ';
       case 'สุราษฎร์ธานี': return 'สุราษฎร์ฯ';
       case 'นครราชสีมา': return 'โคราช';
-      case 'ไปเข้าคุก!': return 'ไปเข้าคุก';
+      case 'สนามบิน': return 'สนามบิน';
       case 'เสียภาษีรายได้': return 'เสียภาษี';
       case 'จุดพักผ่อน': return 'จุดพักผ่อน';
       case 'ห้องขัง': return 'ห้องขัง';
@@ -170,18 +170,18 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
                   </div>
                 )}
 
-                {/* Tile 30: ไปเข้าคุก (GO TO JAIL) */}
+                {/* Tile 30: สนามบิน (AIRPORT) */}
                 {tile.index === 30 && (
                   <div className="flex flex-col items-center justify-between h-full text-center py-0.5">
-                    <span className="text-[7px] sm:text-[8.5px] font-black text-rose-700 uppercase">
-                      จับกุม
+                    <span className="text-[7px] sm:text-[8.5px] font-black text-sky-700 uppercase">
+                      ออกเดินทาง
                     </span>
-                    <span className="text-sm sm:text-2xl drop-shadow animate-pulse">👮</span>
-                    <span className="text-[8px] sm:text-[10px] font-black text-rose-950 leading-tight">
-                      ไปเข้าคุก
+                    <span className="text-sm sm:text-2xl drop-shadow">✈️</span>
+                    <span className="text-[8px] sm:text-[10px] font-black text-sky-950 leading-tight">
+                      สนามบิน
                     </span>
-                    <span className="text-[6.5px] sm:text-[8px] font-mono font-black text-white bg-rose-600 px-1 py-0.2 rounded-full shadow-sm">
-                      เข้าช่อง 10
+                    <span className="text-[6.5px] sm:text-[8px] font-mono font-black text-white bg-sky-600 px-1 py-0.2 rounded-full shadow-sm">
+                      บินได้ทุกช่อง
                     </span>
                   </div>
                 )}

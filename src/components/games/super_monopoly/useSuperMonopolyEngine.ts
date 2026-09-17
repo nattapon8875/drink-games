@@ -59,6 +59,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   const cash: Record<string, number> = rawState.cash || {};
   const inJailTurns: Record<string, number> = rawState.inJailTurns || {};
   const restTurns: Record<string, number> = rawState.restTurns || {};
+  // Who is holding a boarding pass: landing on the airport without a double
+  // books the flight for their next turn instead of taking it right away.
+  const pendingFlights: Record<string, boolean> = rawState.pendingFlights || {};
   const gameLogs: Array<{ text: string; time: string; color?: string }> = rawState.gameLogs || [];
   const rentReceipt: RentReceipt | null = (rawState.rentReceipt as RentReceipt | null) || null;
 
@@ -90,6 +93,8 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   // still said "double!", which reads like another roll is coming. Say it.
   const [jailNotice, setJailNotice] = useState<{ tileName: string; wasDouble: boolean } | null>(null);
   const [restNotice, setRestNotice] = useState<{ tileName: string; wasDouble: boolean } | null>(null);
+  // Open while the traveller is choosing where to land.
+  const [showFlightPicker, setShowFlightPicker] = useState(false);
   const [hasRolledThisTurn, setHasRolledThisTurn] = useState<boolean>(false);
   const [isDouble, setIsDouble] = useState<boolean>(false);
 
@@ -140,6 +145,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
   const isCurrentPlayerInJail = Boolean(turnPlayerId && (inJailTurns[turnPlayerId] ?? 0) > 0);
   const isCurrentPlayerResting = Boolean(turnPlayerId && (restTurns[turnPlayerId] ?? 0) > 0);
+  const isCurrentPlayerBoarding = Boolean(turnPlayerId && pendingFlights[turnPlayerId]);
 
   // Host standing in for a player who is away. Everything the turn owner could
   // do is unlocked for the host while this is on, and it clears itself as soon
@@ -193,6 +199,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     setActivePenaltyModal(null);
     setJailNotice(null);
     setRestNotice(null);
+    setShowFlightPicker(false);
     setIsEndingTurn(false);
     endedTurnRef.current = '';
   }, [room.current_turn_player_id]);
@@ -320,7 +327,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             // Jail and the rest stop cancel the extra roll, so the line should
             // not celebrate one the player is not getting.
             moveLog +=
-              targetTile.type === 'go_to_jail' || targetTile.type === 'jail'
+              targetTile.type === 'airport'
+                ? ' (แต้มคู่ ➜ บินได้ทันที)'
+                : targetTile.type === 'jail'
                 ? ' (แต้มคู่ แต่ติดคุก ไม่ได้ทอยต่อ)'
                 : targetTile.type === 'parking'
                 ? ' (แต้มคู่ แต่ต้องพัก ไม่ได้ทอยต่อ)'
@@ -332,6 +341,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
           const updatedCash = { ...cash, [currentTurnPlayer.id]: playerCash };
           const updatedJail = { ...inJailTurns, [currentTurnPlayer.id]: 0 };
           const updatedRest = { ...restTurns, [currentTurnPlayer.id]: 0 };
+          const updatedFlights = { ...pendingFlights, [currentTurnPlayer.id]: false };
           let updatedChestDeck: string[] | undefined;
           let updatedChanceDeck: string[] | undefined;
           // Everyone should see what was drawn, not just the person who drew it
@@ -524,14 +534,27 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                 remainingCash: remainingCash,
               });
               requiresUserModalAction = true;
-            } else if (targetTile.type === 'go_to_jail') {
-              updatedPositions[currentTurnPlayer.id] = 10;
-              updatedJail[currentTurnPlayer.id] = 1;
-              sfx.playDrinkPenalty();
-              newLogs = addLog(`⛓️ ${currentTurnPlayer.display_name} โดนจับส่งเข้าห้องขัง!`, '#dc2626', newLogs);
-              if (canActThisTurn) {
-                setJailNotice({ tileName: targetTile.name, wasDouble: isDoubleRoll });
-                requiresUserModalAction = true;
+            } else if (targetTile.type === 'airport') {
+              // Arriving on a double means the plane is already waiting;
+              // otherwise the seat is booked for the next turn.
+              sfx.playSuccess();
+              if (isDoubleRoll) {
+                newLogs = addLog(
+                  `✈️ ${currentTurnPlayer.display_name} ถึงสนามบินพอดีตอนทอยได้แต้มคู่ ➜ บินต่อได้ทันที!`,
+                  '#0ea5e9',
+                  newLogs
+                );
+                if (canActThisTurn) {
+                  setShowFlightPicker(true);
+                  requiresUserModalAction = true;
+                }
+              } else {
+                updatedFlights[currentTurnPlayer.id] = true;
+                newLogs = addLog(
+                  `✈️ ${currentTurnPlayer.display_name} ถึงสนามบิน ➜ ตาหน้าเลือกบินไปช่องไหนก็ได้`,
+                  '#0ea5e9',
+                  newLogs
+                );
               }
             } else if (targetTile.type === 'jail') {
               // No such thing as just visiting here: standing on the cell means
@@ -572,6 +595,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               cash: updatedCash,
               inJailTurns: updatedJail,
               restTurns: updatedRest,
+              pendingFlights: updatedFlights,
               gameLogs: newLogs,
               ...(updatedChestDeck ? { chestDeck: updatedChestDeck } : {}),
               ...(updatedChanceDeck ? { chanceDeck: updatedChanceDeck } : {}),
@@ -583,7 +607,6 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             if (!requiresUserModalAction) {
               if (
                 isDoubleRoll &&
-                targetTile.type !== 'go_to_jail' &&
                 !updatedJail[currentTurnPlayer.id] &&
                 !updatedRest[currentTurnPlayer.id]
               ) {
@@ -606,6 +629,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   const rollDice = useCallback(async () => {
     if (!canActThisTurn || isRolling || isMoving || hasRolledThisTurn || !currentTurnPlayer || !rawState.roll_order_done) return;
     if (isCurrentPlayerInJail || isCurrentPlayerResting) return; // Must resolve jail or rest first
+    if (isCurrentPlayerBoarding) return; // A booked flight is taken instead of a roll
 
     const d1 = Math.floor(Math.random() * 6) + 1;
     const d2 = Math.floor(Math.random() * 6) + 1;
@@ -856,6 +880,139 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     }
   };
 
+  // A bot's flight plan: the cheapest land it can afford that nobody owns, and
+  // failing that, any square that is not someone else's property.
+  const chooseBotDestination = (
+    fromIndex: number,
+    ownProps: Record<number, { ownerId: string; houses: number }>,
+    botId: string,
+    budget: number
+  ): number => {
+    const affordable = SUPER_MONOPOLY_TILES.filter(
+      (t) =>
+        t.index !== fromIndex &&
+        t.type === 'property' &&
+        !ownProps[t.index] &&
+        (t.cost ?? 99) <= budget
+    ).sort((a, b) => (a.cost ?? 0) - (b.cost ?? 0));
+    if (affordable.length > 0) return affordable[0].index;
+
+    const safe = SUPER_MONOPOLY_TILES.filter(
+      (t) =>
+        t.index !== fromIndex &&
+        t.type !== 'jail' &&
+        (t.type !== 'property' || !ownProps[t.index] || ownProps[t.index].ownerId === botId)
+    );
+    return safe.length > 0 ? safe[Math.floor(Math.random() * safe.length)].index : 0;
+  };
+
+  // Landing somewhere without walking there - a teleport card, a flight - still
+  // has to settle the square: free land offers the buy, someone else's charges
+  // rent. Returns true when it put a modal up and the turn must wait.
+  const resolveArrivalAt = async (destIndex: number, how: string): Promise<boolean> => {
+    if (!currentTurnPlayer) return false;
+    const destTile = SUPER_MONOPOLY_TILES[destIndex];
+    const destOwnership = properties[destIndex];
+    if (!destTile || destTile.type !== 'property') return false;
+
+    if (!destOwnership || destOwnership.ownerId === currentTurnPlayer.id) {
+      setActivePropertyModal(destTile);
+      return true;
+    }
+
+    const owner = players.find((p) => p.id === destOwnership.ownerId);
+    const myCashNow = cash[currentTurnPlayer.id] ?? INITIAL_CASH_M;
+    const rent = computeRent(destTile, destOwnership, properties);
+    const actualRent = Math.min(myCashNow, rent);
+    const remaining = Math.max(0, myCashNow - rent);
+
+    const rentCash = { ...cash, [currentTurnPlayer.id]: remaining };
+    if (owner) {
+      rentCash[owner.id] = (rentCash[owner.id] ?? INITIAL_CASH_M) + actualRent;
+    }
+
+    sfx.playDrinkPenalty();
+    const rentLogs = addLog(
+      `💸 ${currentTurnPlayer.display_name} ${how}มาตกที่ดินของ ${owner?.display_name || 'เจ้าของ'} จ่ายค่าผ่านทาง ${formatMoneyM(actualRent)} (เงินเหลือ ${formatMoneyM(remaining)})`,
+      '#ef4444'
+    );
+
+    await onUpdateGameState({
+      cash: rentCash,
+      gameLogs: rentLogs,
+      rentReceipt: owner
+        ? {
+            ownerId: owner.id,
+            payerName: currentTurnPlayer.display_name,
+            tileName: destTile.name,
+            tileIcon: destTile.icon || '🏨',
+            amount: actualRent,
+            ownerCashAfter: rentCash[owner.id],
+            at: Date.now(),
+          }
+        : null,
+    });
+
+    setActivePenaltyModal({
+      type: 'rent',
+      tileName: destTile.name,
+      tileIcon: destTile.icon || '🏨',
+      reason: `คุณ${how}มาตกที่ดินของ [${owner?.display_name || 'เจ้าของที่ดิน'}]`,
+      amount: actualRent,
+      recipientName: owner?.display_name || 'เจ้าของที่ดิน',
+      previousCash: myCashNow,
+      remainingCash: remaining,
+      houses: destOwnership.houses,
+      isUtility: destTile.isUtility,
+    });
+    return true;
+  };
+
+  // Take the flight: land anywhere on the board, collecting the salary if the
+  // route passes the start the way walking there would.
+  const handleChooseFlight = async (destIndex: number) => {
+    if (!currentTurnPlayer || !canActThisTurn) return;
+    const fromIndex = positions[currentTurnPlayer.id] ?? 0;
+    if (destIndex === fromIndex) return;
+
+    setShowFlightPicker(false);
+
+    const destTile = SUPER_MONOPOLY_TILES[destIndex];
+    const passedStart = destIndex <= fromIndex;
+    const myCashNow = cash[currentTurnPlayer.id] ?? INITIAL_CASH_M;
+    const newCash = passedStart ? myCashNow + SALARY_M : myCashNow;
+
+    sfx.playSuccess();
+    let flightLogs = addLog(
+      `✈️ ${currentTurnPlayer.display_name} บินจาก [${SUPER_MONOPOLY_TILES[fromIndex]?.name || fromIndex}] ไป [${destTile?.name || destIndex}]${
+        passedStart ? ` (ผ่านจุดเริ่มต้น รับ +${formatMoneyM(SALARY_M)})` : ''
+      }`,
+      '#0ea5e9'
+    );
+
+    await onUpdateGameState({
+      positions: { ...positions, [currentTurnPlayer.id]: destIndex },
+      cash: { ...cash, [currentTurnPlayer.id]: newCash },
+      pendingFlights: { ...pendingFlights, [currentTurnPlayer.id]: false },
+      gameLogs: flightLogs,
+      activeStepTileIndex: null,
+      isMoving: false,
+      isRolling: false,
+    });
+
+    if (await resolveArrivalAt(destIndex, 'บิน')) return;
+
+    // Nothing to decide where we landed - the flight was the whole turn.
+    setTimeout(() => {
+      handleEndTurn();
+    }, 1200);
+  };
+
+  const handleOpenFlightPicker = () => {
+    if (!canActThisTurn || isRolling || isMoving) return;
+    setShowFlightPicker(true);
+  };
+
   // Close Active Modal and Auto Advance Turn
   const handleCloseActiveModal = async () => {
     if (activePropertyModal && canActThisTurn) {
@@ -886,65 +1043,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     if (wasCard && pendingTeleportTile !== null && canActThisTurn && currentTurnPlayer) {
       const destIndex = pendingTeleportTile;
       setPendingTeleportTile(null);
-
-      const destTile = SUPER_MONOPOLY_TILES[destIndex];
-      const destOwnership = properties[destIndex];
-
-      if (destTile && destTile.type === 'property') {
-        if (!destOwnership || destOwnership.ownerId === currentTurnPlayer.id) {
-          // Free land, or our own: open the buy / build card
-          setActivePropertyModal(destTile);
-          return;
-        }
-
-        // Someone else's land: charge rent and make them acknowledge it
-        const owner = players.find((p) => p.id === destOwnership.ownerId);
-        const myCashNow = cash[currentTurnPlayer.id] ?? INITIAL_CASH_M;
-        const rent = computeRent(destTile, destOwnership, properties);
-        const actualRent = Math.min(myCashNow, rent);
-        const remaining = Math.max(0, myCashNow - rent);
-
-        const rentCash = { ...cash, [currentTurnPlayer.id]: remaining };
-        if (owner) {
-          rentCash[owner.id] = (rentCash[owner.id] ?? INITIAL_CASH_M) + actualRent;
-        }
-
-        sfx.playDrinkPenalty();
-        const rentLogs = addLog(
-          `💸 ${currentTurnPlayer.display_name} วาร์ปมาตกที่ดินของ ${owner?.display_name || 'เจ้าของ'} จ่ายค่าผ่านทาง ${formatMoneyM(actualRent)} (เงินเหลือ ${formatMoneyM(remaining)})`,
-          '#ef4444'
-        );
-
-        await onUpdateGameState({
-          cash: rentCash,
-          gameLogs: rentLogs,
-          rentReceipt: owner
-            ? {
-                ownerId: owner.id,
-                payerName: currentTurnPlayer.display_name,
-                tileName: destTile.name,
-                tileIcon: destTile.icon || '🏨',
-                amount: actualRent,
-                ownerCashAfter: rentCash[owner.id],
-                at: Date.now(),
-              }
-            : null,
-        });
-
-        setActivePenaltyModal({
-          type: 'rent',
-          tileName: destTile.name,
-          tileIcon: destTile.icon || '🏨',
-          reason: `คุณวาร์ปมาตกที่ดินของ [${owner?.display_name || 'เจ้าของที่ดิน'}]`,
-          amount: actualRent,
-          recipientName: owner?.display_name || 'เจ้าของที่ดิน',
-          previousCash: myCashNow,
-          remainingCash: remaining,
-          houses: destOwnership.houses,
-          isUtility: destTile.isUtility,
-        });
-        return;
-      }
+      if (await resolveArrivalAt(destIndex, 'วาร์ป')) return;
     }
 
     if (canActThisTurn && hasRolledThisTurn) {
@@ -1035,6 +1134,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
         let botRentReceipt: RentReceipt | null = null;
         let botJailState = { ...inJailTurns };
         let botRestState = { ...restTurns };
+        let botFlightState = { ...pendingFlights };
 
         while (shouldRollAgain && rollsThisTurn < 2 && isMounted) {
           rollsThisTurn++;
@@ -1043,6 +1143,33 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
           // 1. Pause briefly
           await new Promise((resolve) => setTimeout(resolve, 1000));
           if (!isMounted) return;
+
+          // A seat booked last turn is used now, in place of the roll.
+          if (botFlightState[turnPlayerId]) {
+            botFlightState[turnPlayerId] = false;
+            const dest = chooseBotDestination(currentPos, botProperties, turnPlayerId, botCash);
+            const passedStart = dest <= currentPos;
+            if (passedStart) botCash += SALARY_M;
+            currentPos = dest;
+            botTurnLogs = addLog(
+              `✈️ 🤖 ${currentTurnPlayer.display_name} ขึ้นเครื่องบินไป [${SUPER_MONOPOLY_TILES[dest]?.name}]${
+                passedStart ? ` (ผ่านจุดเริ่มต้น รับ +${formatMoneyM(SALARY_M)})` : ''
+              }`,
+              '#0ea5e9',
+              botTurnLogs
+            );
+            await onUpdateGameState({
+              positions: { ...positions, [turnPlayerId]: dest },
+              cash: { ...cash, [turnPlayerId]: botCash },
+              pendingFlights: botFlightState,
+              gameLogs: botTurnLogs,
+              activeStepTileIndex: null,
+              isMoving: false,
+              isRolling: false,
+            });
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+            break; // the flight was the turn
+          }
 
           // Check if bot is resting at parking spot (หยุดทอย 1 ตา):
           if (botRestTurns > 0) {
@@ -1164,7 +1291,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
           }
           if (isDoubleRoll) {
             logText +=
-              targetTile.type === 'go_to_jail' || targetTile.type === 'jail'
+              targetTile.type === 'airport'
+                ? ' (แต้มคู่ ➜ บินได้ทันที)'
+                : targetTile.type === 'jail'
                 ? ' (แต้มคู่ แต่ติดคุก ไม่ได้ทอยต่อ)'
                 : targetTile.type === 'parking'
                 ? ' (แต้มคู่ แต่ต้องพัก ไม่ได้ทอยต่อ)'
@@ -1366,11 +1495,31 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             botCash = Math.max(0, botCash - 1.0);
             updatedCash[turnPlayerId] = botCash;
             botTurnLogs = addLog(`💰 🤖 ${currentTurnPlayer.display_name} จ่ายภาษี 1.0M (เงินเหลือ ${formatMoneyM(botCash)})`, '#f97316', botTurnLogs);
-          } else if (targetTile.type === 'go_to_jail') {
-            updatedPositions[turnPlayerId] = 10;
-            botJailState[turnPlayerId] = 1;
-            currentPos = 10;
-            botTurnLogs = addLog(`⛓️ 🤖 ${currentTurnPlayer.display_name} โดนจับส่งเข้าห้องขัง!`, '#dc2626', botTurnLogs);
+          } else if (targetTile.type === 'airport') {
+            if (isDoubleRoll) {
+              const dest = chooseBotDestination(finalPos, botProperties, turnPlayerId, botCash);
+              const passedStart = dest <= finalPos;
+              if (passedStart) {
+                botCash += SALARY_M;
+                updatedCash[turnPlayerId] = botCash;
+              }
+              updatedPositions[turnPlayerId] = dest;
+              currentPos = dest;
+              botTurnLogs = addLog(
+                `✈️ 🤖 ${currentTurnPlayer.display_name} ถึงสนามบินตอนได้แต้มคู่ ➜ บินไป [${SUPER_MONOPOLY_TILES[dest]?.name}]${
+                  passedStart ? ` (ผ่านจุดเริ่มต้น รับ +${formatMoneyM(SALARY_M)})` : ''
+                }`,
+                '#0ea5e9',
+                botTurnLogs
+              );
+            } else {
+              botFlightState[turnPlayerId] = true;
+              botTurnLogs = addLog(
+                `✈️ 🤖 ${currentTurnPlayer.display_name} ถึงสนามบิน ➜ ตาหน้าจะบินต่อ`,
+                '#0ea5e9',
+                botTurnLogs
+              );
+            }
           } else if (targetTile.type === 'jail') {
             botJailState[turnPlayerId] = 1;
             botTurnLogs = addLog(
@@ -1397,6 +1546,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             properties: botProperties,
             inJailTurns: botJailState,
             restTurns: botRestState,
+            pendingFlights: botFlightState,
             gameLogs: botTurnLogs,
             chestDeck: botChestDeck,
             chanceDeck: botChanceDeck,
@@ -1407,10 +1557,11 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             isRolling: false,
           });
 
-          // If rolled Double and NOT sent to jail, bot rolls again!
+          // A double rolls again - unless the square took the turn: jail, the
+          // rest stop, or a flight, which is itself the extra move.
           if (
             isDoubleRoll &&
-            targetTile.type !== 'go_to_jail' &&
+            targetTile.type !== 'airport' &&
             !botJailState[turnPlayerId] &&
             !botRestState[turnPlayerId]
           ) {
@@ -1489,6 +1640,11 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     inJailTurns,
     restTurns,
     handleServeJailTurn,
+    isCurrentPlayerBoarding,
+    showFlightPicker,
+    handleOpenFlightPicker,
+    handleChooseFlight,
+    closeFlightPicker: () => setShowFlightPicker(false),
     handlePayJailBail,
     jailBailCost: JAIL_BAIL_M,
     handleServeRestTurn,

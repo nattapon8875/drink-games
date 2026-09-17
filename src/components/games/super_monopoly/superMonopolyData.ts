@@ -378,10 +378,10 @@ export const SUPER_MONOPOLY_TILES: SuperPropertyTile[] = [
   },
   {
     index: 30,
-    name: 'ไปเข้าคุก!',
-    type: 'go_to_jail',
-    description: 'ติดคุกทันที! โดนตำรวจจับส่งไปห้องขังที่ช่อง 10',
-    icon: '👮',
+    name: 'สนามบิน',
+    type: 'airport',
+    description: 'บินไปลงช่องไหนก็ได้ที่เลือกเอง ถ้าบินผ่านจุดเริ่มต้นก็รับเงินเดือนตามปกติ',
+    icon: '✈️',
   },
 
   // แถวขวา (Right: 30 -> 39, จากบนลงล่าง)

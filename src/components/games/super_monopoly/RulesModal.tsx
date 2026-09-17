@@ -303,9 +303,9 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                   <div className="p-2.5 rounded-xl bg-[#360909] border-2 border-red-700/60 flex items-start gap-2.5">
                     <span className="text-xl">🚨</span>
                     <div>
-                      <span className="text-xs font-black text-red-300 block">ช่อง 30: ไปห้องขัง (Go to Jail)</span>
+                      <span className="text-xs font-black text-sky-300 block">ช่อง 30: สนามบิน (Airport)</span>
                       <span className="text-[11px] text-amber-100 font-medium">
-                        เมื่อเดินมาตกช่องนี้ จะถูกส่งตัวเข้าห้องขัง (ช่อง 10) โดยตรงทันที และไม่ได้รับเงินเดือนผ่านจุดเริ่มต้น!
+                        เลือกบินไปลงช่องไหนก็ได้บนกระดาน ถ้ามาตกตอนทอยได้แต้มคู่จะบินได้ทันที ถ้าทอยปกติจะได้บินในตาถัดไป (ตานั้นไม่ต้องทอยเต๋า) และถ้าเส้นทางผ่านจุดเริ่มต้นก็รับเงินเดือน 2.0M ตามปกติ
                       </span>
                     </div>
                   </div>
