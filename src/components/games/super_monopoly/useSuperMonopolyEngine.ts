@@ -120,18 +120,26 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   const orderedPlayersRef = useRef<PlayerRecord[]>(orderedPlayers);
   orderedPlayersRef.current = orderedPlayers;
 
-  const currentTurnPlayer = orderedPlayers.find((p) => p.id === room.current_turn_player_id) || orderedPlayers[0];
-  const isMyTurn = Boolean(currentPlayer && currentPlayer.id === currentTurnPlayer?.id);
+  // Whose turn it is comes from the room, never from the roster. The room
+  // update and the players update arrive on different polls, so there are
+  // renders where the roster does not contain the player whose turn it is - and
+  // the fallback below is then simply whoever sorts first. Reading the turn off
+  // that fallback told the first player it was their turn in the middle of
+  // someone else's walk, with the action reading "walking..." because the board
+  // really was moving. It showed up on phones first, where the slower polling
+  // leaves the two updates further apart.
+  const turnPlayerId = room.current_turn_player_id || null;
+  const turnPlayerRow = orderedPlayers.find((p) => p.id === turnPlayerId) || null;
+  // Only for display, so a name is shown rather than a blank while the roster catches up.
+  const currentTurnPlayer = turnPlayerRow || orderedPlayers[0];
+
+  const isMyTurn = Boolean(currentPlayer && turnPlayerId && currentPlayer.id === turnPlayerId);
   const isBotTurn = Boolean(
-    currentTurnPlayer?.id?.startsWith('bot-') || currentTurnPlayer?.line_user_id === 'bot'
+    turnPlayerId && (turnPlayerId.startsWith('bot-') || turnPlayerRow?.line_user_id === 'bot')
   );
 
-  const isCurrentPlayerInJail = Boolean(
-    currentTurnPlayer && (inJailTurns[currentTurnPlayer.id] ?? 0) > 0
-  );
-  const isCurrentPlayerResting = Boolean(
-    currentTurnPlayer && (restTurns[currentTurnPlayer.id] ?? 0) > 0
-  );
+  const isCurrentPlayerInJail = Boolean(turnPlayerId && (inJailTurns[turnPlayerId] ?? 0) > 0);
+  const isCurrentPlayerResting = Boolean(turnPlayerId && (restTurns[turnPlayerId] ?? 0) > 0);
 
   // Host standing in for a player who is away. Everything the turn owner could
   // do is unlocked for the host while this is on, and it clears itself as soon
