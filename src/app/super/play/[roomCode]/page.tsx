@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { useParams, useRouter } from 'next/navigation';
 import { usePlatform } from '@/hooks/usePlatform';
 import { useRoomRealtime } from '@/hooks/useRoomRealtime';
@@ -200,7 +201,7 @@ export default function SuperPlayPage() {
           {isHost ? (
             <button
               onClick={handleReturnToLobby}
-              className="flex items-center gap-1.5 text-xs font-bold text-amber-200 hover:text-white bg-[#331505] hover:bg-[#4a1e06] border border-[#692c0a] px-3 py-1.5 rounded-xl shadow-sm transition"
+              className="flex items-center gap-1.5 text-xs font-bold text-amber-200 hover:text-white bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] px-3 py-1.5 rounded-xl shadow-sm transition"
               title="กลับไปหน้าห้องรอ"
             >
               <ArrowLeft className="w-4 h-4 text-amber-400" />
@@ -209,7 +210,7 @@ export default function SuperPlayPage() {
           ) : (
             <button
               onClick={handleExitGame}
-              className="flex items-center gap-1.5 text-xs font-bold text-amber-300/70 hover:text-rose-300 bg-[#2b1204] border border-[#4d1f06] px-3 py-1.5 rounded-xl transition"
+              className="flex items-center gap-1.5 text-xs font-bold text-amber-300/70 hover:text-rose-300 bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-2))] px-3 py-1.5 rounded-xl transition"
               title="ออกจากเกม"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -220,7 +221,7 @@ export default function SuperPlayPage() {
           {isHost && (
             <button
               onClick={handleCloseRoom}
-              className="text-xs font-bold text-rose-300 hover:text-white bg-[#400e07] hover:bg-[#5c1309] border border-[#801c0c] px-3 py-1.5 rounded-xl shadow-sm transition"
+              className="text-xs font-bold text-rose-300 hover:text-white bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] px-3 py-1.5 rounded-xl shadow-sm transition"
               title="ยุบห้องและจบเกมสำหรับทุกคน"
             >
               ยุบห้อง
@@ -229,11 +230,13 @@ export default function SuperPlayPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <ThemeToggle />
+
           {/* Players Roster */}
           <button
             type="button"
             onClick={() => setShowPlayersModal(true)}
-            className="flex items-center gap-1.5 text-xs font-bold text-amber-200 hover:text-white bg-[#2f1304] hover:bg-[#421b06] border border-[#59260a] px-3 py-1.5 rounded-xl shadow-sm transition active:scale-95"
+            className="flex items-center gap-1.5 text-xs font-bold text-amber-200 hover:text-white bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] px-3 py-1.5 rounded-xl shadow-sm transition active:scale-95"
             title="ดูรายชื่อผู้เล่นในห้อง"
           >
             <Users className="w-3.5 h-3.5 text-amber-400" />
@@ -244,7 +247,7 @@ export default function SuperPlayPage() {
           <button
             type="button"
             onClick={() => setShowDiscordModal(true)}
-            className="px-3 py-1 rounded-xl bg-[#270e02] hover:bg-[#381604] border border-[#522005] hover:border-yellow-400/50 shadow-inner text-xs text-amber-300 font-mono font-black cursor-pointer active:scale-95 transition flex items-center gap-1.5"
+            className="px-3 py-1 rounded-xl bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-2))] hover:border-yellow-400/50 shadow-inner text-xs text-amber-300 font-mono font-black cursor-pointer active:scale-95 transition flex items-center gap-1.5"
             title="คลิกเพื่อคัดลอกรหัส ลิงก์ และดูขั้นตอนการเข้า Discord"
           >
             <BuffaloLogo className="w-4 h-4" />
@@ -276,8 +279,8 @@ export default function SuperPlayPage() {
                 key={p.id}
                 className={`p-2.5 rounded-xl border flex items-center justify-between transition-all ${
                   isMe
-                    ? 'bg-[#3b1704] border-yellow-400/80 shadow-md'
-                    : 'bg-[#1a0802] border-[#421704]'
+                    ? 'bg-[rgb(var(--c-surface-2))] border-yellow-400/80 shadow-md'
+                    : 'bg-[rgb(var(--c-bg-deep))] border-[rgb(var(--c-surface-2))]'
                 }`}
               >
                 <div className="flex items-center gap-2 min-w-0">

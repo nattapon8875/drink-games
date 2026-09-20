@@ -36,14 +36,14 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
     >
       <div className="flex flex-col gap-3 py-1">
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none border-b border-[#4d1f06]">
+        <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none border-b border-[rgb(var(--c-surface-2))]">
           <button
             type="button"
             onClick={() => setActiveTab('overview')}
             className={`px-3 py-1.5 rounded-xl text-xs font-black shrink-0 transition flex items-center gap-1.5 ${
               activeTab === 'overview'
                 ? 'bg-gradient-to-r from-amber-600 to-yellow-500 text-amber-950 shadow'
-                : 'text-amber-300/70 hover:text-white bg-[#1a0801]'
+                : 'text-amber-300/70 hover:text-white bg-[rgb(var(--c-bg-deep))]'
             }`}
           >
             <Coins className="w-3.5 h-3.5" />
@@ -56,7 +56,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
             className={`px-3 py-1.5 rounded-xl text-xs font-black shrink-0 transition flex items-center gap-1.5 ${
               activeTab === 'dice'
                 ? 'bg-gradient-to-r from-amber-600 to-yellow-500 text-amber-950 shadow'
-                : 'text-amber-300/70 hover:text-white bg-[#1a0801]'
+                : 'text-amber-300/70 hover:text-white bg-[rgb(var(--c-bg-deep))]'
             }`}
           >
             <Dices className="w-3.5 h-3.5" />
@@ -69,7 +69,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
             className={`px-3 py-1.5 rounded-xl text-xs font-black shrink-0 transition flex items-center gap-1.5 ${
               activeTab === 'properties'
                 ? 'bg-gradient-to-r from-amber-600 to-yellow-500 text-amber-950 shadow'
-                : 'text-amber-300/70 hover:text-white bg-[#1a0801]'
+                : 'text-amber-300/70 hover:text-white bg-[rgb(var(--c-bg-deep))]'
             }`}
           >
             <Home className="w-3.5 h-3.5" />
@@ -82,7 +82,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
             className={`px-3 py-1.5 rounded-xl text-xs font-black shrink-0 transition flex items-center gap-1.5 ${
               activeTab === 'corners'
                 ? 'bg-gradient-to-r from-amber-600 to-yellow-500 text-amber-950 shadow'
-                : 'text-amber-300/70 hover:text-white bg-[#1a0801]'
+                : 'text-amber-300/70 hover:text-white bg-[rgb(var(--c-bg-deep))]'
             }`}
           >
             <ShieldAlert className="w-3.5 h-3.5" />
@@ -95,7 +95,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
             className={`px-3 py-1.5 rounded-xl text-xs font-black shrink-0 transition flex items-center gap-1.5 ${
               activeTab === 'cards'
                 ? 'bg-gradient-to-r from-amber-600 to-yellow-500 text-amber-950 shadow'
-                : 'text-amber-300/70 hover:text-white bg-[#1a0801]'
+                : 'text-amber-300/70 hover:text-white bg-[rgb(var(--c-bg-deep))]'
             }`}
           >
             <Gift className="w-3.5 h-3.5" />
@@ -108,7 +108,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
             className={`px-3 py-1.5 rounded-xl text-xs font-black shrink-0 transition flex items-center gap-1.5 ${
               activeTab === 'discord'
                 ? 'bg-gradient-to-r from-indigo-600 to-blue-500 text-white shadow'
-                : 'text-amber-300/70 hover:text-white bg-[#1a0801]'
+                : 'text-amber-300/70 hover:text-white bg-[rgb(var(--c-bg-deep))]'
             }`}
           >
             <span>🎮 เล่นบน Discord</span>
@@ -120,7 +120,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
           {/* TAB 1: ภาพรวม */}
           {activeTab === 'overview' && (
             <div className="space-y-3">
-              <div className="p-3 rounded-2xl bg-[#1d0801] border border-[#4a1c06] shadow-sm">
+              <div className="p-3 rounded-2xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))] shadow-sm">
                 <h4 className="text-sm font-black text-amber-300 flex items-center gap-2 mb-1.5">
                   <Sparkles className="w-4 h-4 text-yellow-400" />
                   <span>เป้าหมายของเกม (Objective)</span>
@@ -131,7 +131,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div className="p-3 rounded-xl bg-[#260e03] border border-[#522007]">
+                <div className="p-3 rounded-xl bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-3))]">
                   <div className="text-xs font-black text-amber-300 flex items-center gap-1.5 mb-1">
                     <span>💵 ทุนเริ่มต้น</span>
                   </div>
@@ -140,7 +140,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                   </p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-[#260e03] border border-[#522007]">
+                <div className="p-3 rounded-xl bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-3))]">
                   <div className="text-xs font-black text-amber-300 flex items-center gap-1.5 mb-1">
                     <span>🏁 เงินเดือนรอบละ</span>
                   </div>
@@ -149,7 +149,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                   </p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-[#260e03] border border-[#522007]">
+                <div className="p-3 rounded-xl bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-3))]">
                   <div className="text-xs font-black text-amber-300 flex items-center gap-1.5 mb-1">
                     <span>💀 การล้มละลาย</span>
                   </div>
@@ -158,7 +158,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                   </p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-[#260e03] border border-[#522007]">
+                <div className="p-3 rounded-xl bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-3))]">
                   <div className="text-xs font-black text-amber-300 flex items-center gap-1.5 mb-1">
                     <span>🏆 การชนะเกม</span>
                   </div>
@@ -173,7 +173,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
           {/* TAB 2: การทอยเต๋า */}
           {activeTab === 'dice' && (
             <div className="space-y-3">
-              <div className="p-3 rounded-2xl bg-[#1d0801] border border-[#4a1c06]">
+              <div className="p-3 rounded-2xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))]">
                 <h4 className="text-sm font-black text-amber-300 flex items-center gap-2 mb-1.5">
                   <Dices className="w-4 h-4 text-yellow-400" />
                   <span>ระบบลูกเต๋าคู่ (Double Dice)</span>
@@ -183,7 +183,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                 </p>
               </div>
 
-              <div className="p-3 rounded-xl bg-gradient-to-r from-[#311102] to-[#421703] border-2 border-yellow-500/40">
+              <div className="p-3 rounded-xl bg-gradient-to-r from-[rgb(var(--c-surface))] to-[rgb(var(--c-surface-2))] border-2 border-yellow-500/40">
                 <div className="flex items-center gap-2 text-yellow-300 text-xs font-black mb-1">
                   <Sparkles className="w-4 h-4 text-yellow-400" />
                   <span>สิทธิพิเศษ: ทอยได้แต้มคู่ (Double)!</span>
@@ -193,7 +193,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                 </p>
               </div>
 
-              <div className="p-3 rounded-xl bg-[#260e03] border border-[#522007]">
+              <div className="p-3 rounded-xl bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-3))]">
                 <div className="text-xs font-black text-amber-300 flex items-center gap-1.5 mb-1">
                   <span>🚶 การเดินผ่านจุดเริ่มต้น (GO)</span>
                 </div>
@@ -207,7 +207,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
           {/* TAB 3: ที่ดิน & ค่าเช่า */}
           {activeTab === 'properties' && (
             <div className="space-y-3">
-              <div className="p-3 rounded-2xl bg-[#1d0801] border border-[#4a1c06]">
+              <div className="p-3 rounded-2xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))]">
                 <h4 className="text-sm font-black text-amber-300 flex items-center gap-2 mb-1.5">
                   <Home className="w-4 h-4 text-yellow-400" />
                   <span>การซื้อที่ดินและสร้างสิ่งปลูกสร้าง</span>
@@ -229,7 +229,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
               </div>
 
               {/* Utilities */}
-              <div className="p-3 rounded-2xl bg-[#2b1002] border-2 border-cyan-700/60 shadow-sm">
+              <div className="p-3 rounded-2xl bg-[rgb(var(--c-surface))] border-2 border-cyan-700/60 shadow-sm">
                 <h4 className="text-sm font-black text-cyan-300 flex items-center gap-2 mb-1.5">
                   <Zap className="w-4 h-4 text-cyan-400" />
                   <span>กิจการสาธารณูปโภค (Utilities)</span>
@@ -238,11 +238,11 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                   ประกอบด้วย <strong className="text-cyan-300">การประปานครหลวง (ช่อง 5)</strong> และ <strong className="text-yellow-300">โรงไฟฟ้านครหลวง (ช่อง 12)</strong>:
                 </p>
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="bg-[#190901] p-2 rounded-xl border border-cyan-800 text-center">
+                  <div className="bg-[rgb(var(--c-bg-deep))] p-2 rounded-xl border border-cyan-800 text-center">
                     <span className="text-amber-400 block font-bold">ถือครอง 1 แห่ง</span>
                     <span className="text-sm font-black text-yellow-300">ค่าเช่า 0.5M</span>
                   </div>
-                  <div className="bg-[#190901] p-2 rounded-xl border border-cyan-800 text-center">
+                  <div className="bg-[rgb(var(--c-bg-deep))] p-2 rounded-xl border border-cyan-800 text-center">
                     <span className="text-cyan-300 block font-bold">ถือครองครบ 2 แห่ง</span>
                     <span className="text-sm font-black text-emerald-400">ค่าเช่า 1.2M ทันที!</span>
                   </div>
@@ -254,7 +254,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
           {/* TAB 4: 4 มุม & คุก */}
           {activeTab === 'corners' && (
             <div className="space-y-3">
-              <div className="p-3 rounded-2xl bg-[#1d0801] border border-[#4a1c06]">
+              <div className="p-3 rounded-2xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))]">
                 <h4 className="text-sm font-black text-amber-300 flex items-center gap-2 mb-1.5">
                   <ShieldAlert className="w-4 h-4 text-yellow-400" />
                   <span>จุดพิเศษทั้ง 4 มุมกระดาน</span>
@@ -265,7 +265,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
 
                 <div className="space-y-2">
                   {/* Start 0 */}
-                  <div className="p-2.5 rounded-xl bg-[#260d02] border border-[#572005] flex items-start gap-2.5">
+                  <div className="p-2.5 rounded-xl bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-3))] flex items-start gap-2.5">
                     <span className="text-xl">🏁</span>
                     <div>
                       <span className="text-xs font-black text-yellow-300 block">ช่อง 0: จุดเริ่มต้น (GO)</span>
@@ -274,7 +274,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                   </div>
 
                   {/* Jail 10 */}
-                  <div className="p-2.5 rounded-xl bg-[#2e0e07] border-2 border-orange-700/60 flex items-start gap-2.5">
+                  <div className="p-2.5 rounded-xl bg-[rgb(var(--c-surface))] border-2 border-orange-700/60 flex items-start gap-2.5">
                     <span className="text-xl">⛓️</span>
                     <div>
                       <span className="text-xs font-black text-orange-300 block">ช่อง 10: ห้องขัง (Jail) - ตกเองก็ติด</span>
@@ -300,7 +300,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                   </div>
 
                   {/* Go To Jail 30 */}
-                  <div className="p-2.5 rounded-xl bg-[#360909] border-2 border-red-700/60 flex items-start gap-2.5">
+                  <div className="p-2.5 rounded-xl bg-[rgb(var(--c-surface))] border-2 border-red-700/60 flex items-start gap-2.5">
                     <span className="text-xl">🚨</span>
                     <div>
                       <span className="text-xs font-black text-sky-300 block">ช่อง 30: สนามบิน (Airport)</span>
@@ -328,7 +328,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                   </p>
                 </div>
 
-                <div className="p-3 rounded-2xl bg-gradient-to-b from-[#331c03] to-[#1c0e01] border-2 border-yellow-600/60">
+                <div className="p-3 rounded-2xl bg-gradient-to-b from-[rgb(var(--c-surface-2))] to-[rgb(var(--c-surface))] border-2 border-yellow-600/60">
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className="text-2xl">⛩️</span>
                     <h4 className="text-xs font-black text-yellow-300">ประตูดวง (Chance)</h4>
@@ -339,7 +339,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-[#260e03] border border-[#522007]">
+              <div className="p-3 rounded-xl bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-3))]">
                 <div className="text-xs font-black text-amber-300 flex items-center gap-1.5 mb-1">
                   <span>💡 คำแนะนำสำหรับมหาเศรษฐี</span>
                 </div>
@@ -382,7 +382,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-[#260e03] border border-[#522007] space-y-1 text-xs">
+              <div className="p-3 rounded-xl bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-3))] space-y-1 text-xs">
                 <div className="font-black text-amber-300 flex items-center gap-1.5">
                   <span>🌐 เล่นผ่านเว็บบราวเซอร์ / มือถือ</span>
                 </div>
@@ -395,7 +395,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Footer Close Button */}
-        <div className="pt-2 border-t border-[#4d1f06] flex items-center justify-end">
+        <div className="pt-2 border-t border-[rgb(var(--c-surface-2))] flex items-center justify-end">
           <button
             type="button"
             onClick={onClose}

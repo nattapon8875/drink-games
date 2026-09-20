@@ -194,7 +194,7 @@ export const WheelGame: React.FC<BaseGameProps> = ({
   return (
     <div className="w-full max-w-md mx-auto px-2 py-2 flex flex-col items-center select-none">
       {/* Top Banner Control Bar */}
-      <div className="w-full mb-3 bg-[#260e03]/90 border border-amber-900/50 rounded-2xl px-4 py-2.5 shadow-lg flex items-center justify-between gap-2">
+      <div className="w-full mb-3 bg-[rgb(var(--c-surface))]/90 border border-amber-900/50 rounded-2xl px-4 py-2.5 shadow-lg flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-lg">
             🎡
@@ -217,7 +217,7 @@ export const WheelGame: React.FC<BaseGameProps> = ({
         {/* Custom Wheel Button */}
         <button
           onClick={() => setShowCustomModal(true)}
-          className="flex items-center gap-1.5 text-xs font-black text-yellow-300 bg-[#3b1805] hover:bg-[#522207] px-3 py-1.5 rounded-xl border border-yellow-500/50 shadow transition active:scale-95 flex-shrink-0"
+          className="flex items-center gap-1.5 text-xs font-black text-yellow-300 bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-3))] px-3 py-1.5 rounded-xl border border-yellow-500/50 shadow transition active:scale-95 flex-shrink-0"
           title="ดู/แก้ไขข้อความในวงล้อ"
         >
           <Settings className="w-3.5 h-3.5" />
@@ -237,7 +237,7 @@ export const WheelGame: React.FC<BaseGameProps> = ({
       </div>
 
       {/* Players Mini Status Roster */}
-      <div className="w-full max-w-lg mt-3 p-3 rounded-2xl bg-[#1c0a02] border border-[#481c05] shadow-lg">
+      <div className="w-full max-w-lg mt-3 p-3 rounded-2xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))] shadow-lg">
         <div className="flex items-center justify-between text-[11px] font-black text-amber-300 mb-2">
           <span>สหายร่วมวง ({players.length})</span>
           <span className="text-[10px] text-gray-400">คำสั่งในวงล้อ: {activeItems.length} ช่อง</span>
@@ -251,8 +251,8 @@ export const WheelGame: React.FC<BaseGameProps> = ({
                 key={p.id}
                 className={`flex flex-col items-center p-2 rounded-xl transition border text-center ${
                   isTurn
-                    ? 'bg-[#3b1805] border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.5)]'
-                    : 'bg-[#150601] border-amber-950/60'
+                    ? 'bg-[rgb(var(--c-surface-2))] border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.5)]'
+                    : 'bg-[rgb(var(--c-bg-deep))] border-amber-950/60'
                 }`}
               >
                 <div className="w-9 h-9 relative">

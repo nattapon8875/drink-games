@@ -18,7 +18,7 @@ export default function SuperLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="w-full min-h-screen bg-[#0d0704] bg-tavern text-amber-100 flex flex-col">
+    <div className="w-full min-h-screen bg-bg bg-tavern text-ink flex flex-col">
       {children}
     </div>
   );

@@ -52,7 +52,7 @@ export const CrocodileBiteModal: React.FC<CrocodileBiteModalProps> = ({
           <div className="text-2xl font-black text-amber-300 flex items-center justify-center gap-1.5 mt-0.5">
             <span>{bittenPlayer?.display_name || 'สหายร่วมวง'}</span>
           </div>
-          <p className="text-xs text-rose-300/90 font-bold mt-1 px-3 py-1 rounded-xl bg-[#2e0b09] border border-rose-800/60">
+          <p className="text-xs text-rose-300/90 font-bold mt-1 px-3 py-1 rounded-xl bg-[rgb(var(--c-surface))] border border-rose-800/60">
             กดโดนฟันซี่ที่ {toothIndex + 1} ซึ่งเป็นฟันกับดัก!
           </p>
         </div>
@@ -63,7 +63,7 @@ export const CrocodileBiteModal: React.FC<CrocodileBiteModalProps> = ({
         </p>
 
         {/* Penalty Display Box */}
-        <div className="w-full bg-gradient-to-b from-[#2b0f04] to-[#1a0701] p-3.5 rounded-2xl border border-amber-500/50 shadow-inner flex items-center justify-between">
+        <div className="w-full bg-gradient-to-b from-[rgb(var(--c-surface))] to-[rgb(var(--c-bg-deep))] p-3.5 rounded-2xl border border-amber-500/50 shadow-inner flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-xl">
               🍺

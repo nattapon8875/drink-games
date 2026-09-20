@@ -297,7 +297,7 @@ export const DoraemonCardGame: React.FC<DoraemonCardGameProps> = ({
 
         <button
           onClick={() => setShowRulesModal(true)}
-          className="flex items-center gap-1.5 text-xs font-black text-yellow-300 bg-[#3b1805] hover:bg-[#522207] px-3 py-1.5 rounded-xl border border-yellow-500/50 shadow transition active:scale-95 flex-shrink-0"
+          className="flex items-center gap-1.5 text-xs font-black text-yellow-300 bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-3))] px-3 py-1.5 rounded-xl border border-yellow-500/50 shadow transition active:scale-95 flex-shrink-0"
           title="ดู/แก้ไขกฎไพ่ A-K"
         >
           <Settings className="w-3.5 h-3.5" />
@@ -306,7 +306,7 @@ export const DoraemonCardGame: React.FC<DoraemonCardGameProps> = ({
       </div>
 
       {/* Turn Status & Roster Bar */}
-      <div className="w-full flex items-center justify-between mb-3 bg-[#260e03]/90 border border-amber-900/50 rounded-2xl px-4 py-2 shadow-lg">
+      <div className="w-full flex items-center justify-between mb-3 bg-[rgb(var(--c-surface))]/90 border border-amber-900/50 rounded-2xl px-4 py-2 shadow-lg">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-lg">
             🃏
@@ -328,12 +328,12 @@ export const DoraemonCardGame: React.FC<DoraemonCardGameProps> = ({
 
         {/* King Counter Badge (K 1-4) */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-[#180802] px-3 py-1 rounded-xl border border-amber-500/40 text-xs font-black text-amber-300">
+          <div className="flex items-center gap-1 bg-[rgb(var(--c-bg-deep))] px-3 py-1 rounded-xl border border-amber-500/40 text-xs font-black text-amber-300">
             <span>👑 King:</span>
             <span className="text-amber-100">{kingCount} / 4</span>
           </div>
 
-          <div className="text-xs text-gray-300 bg-[#180802] px-2.5 py-1 rounded-xl border border-amber-900/40">
+          <div className="text-xs text-gray-300 bg-[rgb(var(--c-bg-deep))] px-2.5 py-1 rounded-xl border border-amber-900/40">
             ไพ่เหลือ: <b className="text-amber-300">{deck.length}</b> ใบ
           </div>
         </div>
@@ -390,7 +390,7 @@ export const DoraemonCardGame: React.FC<DoraemonCardGameProps> = ({
       </div>
 
       {/* Players Mini Status Roster */}
-      <div className="w-full max-w-lg mt-3 p-3 rounded-2xl bg-[#1c0a02] border border-[#481c05] shadow-lg">
+      <div className="w-full max-w-lg mt-3 p-3 rounded-2xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))] shadow-lg">
         <div className="flex items-center justify-between text-[11px] font-black text-amber-300 mb-2">
           <span>สหายร่วมวง ({players.length})</span>
           <span className="text-[10px] text-gray-400">กฎกลาง: ห้ามชี้นิ้ว ☝️</span>
@@ -407,10 +407,10 @@ export const DoraemonCardGame: React.FC<DoraemonCardGameProps> = ({
                 key={p.id}
                 className={`relative flex flex-col items-center p-2 rounded-xl transition border text-center ${
                   isTurn
-                    ? 'bg-[#3b1805] border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.5)]'
+                    ? 'bg-[rgb(var(--c-surface-2))] border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.5)]'
                     : isGhost
                     ? 'bg-purple-950/60 border-purple-500/50'
-                    : 'bg-[#150601] border-amber-950/60'
+                    : 'bg-[rgb(var(--c-bg-deep))] border-amber-950/60'
                 }`}
               >
                 {/* Active Badges */}

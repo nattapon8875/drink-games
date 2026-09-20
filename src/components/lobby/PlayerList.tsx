@@ -100,7 +100,7 @@ export const PlayerList: React.FC<PlayerListProps> = ({
       <div className="wood-rivet absolute bottom-2 left-2" />
       <div className="wood-rivet absolute bottom-2 right-2" />
 
-      <div className="flex items-center justify-between mb-3 border-b border-[#54240a] pb-2">
+      <div className="flex items-center justify-between mb-3 border-b border-[rgb(var(--c-surface-3))] pb-2">
         <div className="flex items-center gap-2 text-amber-300 font-black">
           <Users className="w-5 h-5 text-amber-400" />
           <span className="drop-shadow">สหายในโรงเตี๊ยม ({players.length} คน)</span>
@@ -128,8 +128,8 @@ export const PlayerList: React.FC<PlayerListProps> = ({
               key={p.id}
               className={`flex items-center justify-between p-2.5 rounded-2xl border-2 transition-all ${
                 isMe
-                  ? 'bg-[#401804] border-yellow-400/80 shadow-[0_0_12px_rgba(252,211,77,0.3)]'
-                  : 'bg-[#220c02]/80 border-[#471903]'
+                  ? 'bg-[rgb(var(--c-surface-2))] border-yellow-400/80 shadow-[0_0_12px_rgba(252,211,77,0.3)]'
+                  : 'bg-[rgb(var(--c-surface))]/80 border-[rgb(var(--c-surface-2))]'
               }`}
             >
               <div className="flex items-center gap-2.5 min-w-0 flex-1 mr-2">
@@ -143,7 +143,7 @@ export const PlayerList: React.FC<PlayerListProps> = ({
                       className={`w-6 h-5 flex items-center justify-center rounded text-[11px] font-black border ${
                         idx === 0
                           ? 'opacity-20 text-gray-500 border-transparent cursor-not-allowed'
-                          : 'bg-[#381604] border-[#6b2e0a] text-yellow-300 hover:bg-[#522207] active:scale-95'
+                          : 'bg-[rgb(var(--c-surface-2))] border-[rgb(var(--c-surface-3))] text-yellow-300 hover:bg-[rgb(var(--c-surface-3))] active:scale-95'
                       }`}
                       title="เลื่อนขึ้น"
                     >
@@ -156,7 +156,7 @@ export const PlayerList: React.FC<PlayerListProps> = ({
                       className={`w-6 h-5 flex items-center justify-center rounded text-[11px] font-black border ${
                         idx === players.length - 1
                           ? 'opacity-20 text-gray-500 border-transparent cursor-not-allowed'
-                          : 'bg-[#381604] border-[#6b2e0a] text-yellow-300 hover:bg-[#522207] active:scale-95'
+                          : 'bg-[rgb(var(--c-surface-2))] border-[rgb(var(--c-surface-3))] text-yellow-300 hover:bg-[rgb(var(--c-surface-3))] active:scale-95'
                       }`}
                       title="เลื่อนลง"
                     >
@@ -174,7 +174,7 @@ export const PlayerList: React.FC<PlayerListProps> = ({
                   />
                   {costumes && (
                     <span
-                      className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-[#2b0f02] shadow"
+                      className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-[rgb(var(--c-surface))] shadow"
                       style={{
                         backgroundColor: [
                           '#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6',
@@ -192,14 +192,14 @@ export const PlayerList: React.FC<PlayerListProps> = ({
                     <span className="truncate max-w-[130px] sm:max-w-[170px] drop-shadow">{p.display_name}</span>
                     {isMe && (
                       <div className="flex items-center gap-1 shrink-0">
-                        <span className="text-[9px] bg-amber-500 text-[#301103] font-black px-1.5 py-0.2 rounded-md">
+                        <span className="text-[9px] bg-amber-500 text-[rgb(var(--c-surface))] font-black px-1.5 py-0.2 rounded-md">
                           คุณ
                         </span>
                         {onUpdateMyName && (
                           <button
                             type="button"
                             onClick={() => openEditModal(p.display_name, p.avatar_url || undefined)}
-                            className="p-1 rounded-md bg-[#381604] hover:bg-[#592306] border border-[#6b2e0a] text-yellow-300 hover:text-white transition active:scale-90"
+                            className="p-1 rounded-md bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-3))] border border-[rgb(var(--c-surface-3))] text-yellow-300 hover:text-white transition active:scale-90"
                             title="เปลี่ยนชื่อของคุณ"
                           >
                             <Edit2 className="w-3 h-3" />
@@ -256,7 +256,7 @@ export const PlayerList: React.FC<PlayerListProps> = ({
 
       {/* Host Action: Add Bot / Local Player for Pass & Play */}
       {isHostUser && onAddBotPlayer && (
-        <div className="mt-3 pt-3 border-t border-[#54240a]/80">
+        <div className="mt-3 pt-3 border-t border-[rgb(var(--c-surface-3))]/80">
           {!showAddForm ? (
             <button
               type="button"
@@ -264,13 +264,13 @@ export const PlayerList: React.FC<PlayerListProps> = ({
                 setShowAddForm(true);
                 handleRandomName();
               }}
-              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-2xl bg-[#361604] hover:bg-[#4d1f05] border-2 border-dashed border-[#6b2e0a] hover:border-yellow-400/60 text-amber-200 hover:text-yellow-300 text-xs font-black transition active:scale-95 shadow-inner"
+              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-2xl bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-2))] border-2 border-dashed border-[rgb(var(--c-surface-3))] hover:border-yellow-400/60 text-amber-200 hover:text-yellow-300 text-xs font-black transition active:scale-95 shadow-inner"
             >
               <UserPlus className="w-4 h-4 text-amber-400" />
               <span>+ เพิ่มบอท / สหายในเครื่อง (เล่นเวียน)</span>
             </button>
           ) : (
-            <form onSubmit={handleAddSubmit} className="flex flex-col gap-2 bg-[#250d02] border border-[#5a2408] p-3 rounded-2xl shadow-inner animate-fadeIn">
+            <form onSubmit={handleAddSubmit} className="flex flex-col gap-2 bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-3))] p-3 rounded-2xl shadow-inner animate-fadeIn">
               <div className="flex items-center justify-between text-xs font-black text-amber-300">
                 <span className="flex items-center gap-1.5">
                   <Bot className="w-3.5 h-3.5 text-purple-400" />
@@ -293,12 +293,12 @@ export const PlayerList: React.FC<PlayerListProps> = ({
                   placeholder="เช่น พี่เบิ้ม, น้องแนน..."
                   maxLength={15}
                   autoFocus
-                  className="flex-1 bg-[#180701] border border-[#522005] focus:border-yellow-400 text-amber-100 text-xs px-3 py-2 rounded-xl outline-none font-bold placeholder:text-amber-400/30"
+                  className="flex-1 bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))] focus:border-yellow-400 text-amber-100 text-xs px-3 py-2 rounded-xl outline-none font-bold placeholder:text-amber-400/30"
                 />
                 <button
                   type="button"
                   onClick={handleRandomName}
-                  className="p-2 rounded-xl bg-[#381604] hover:bg-[#522207] border border-[#6b2e0a] text-yellow-400 text-xs font-bold transition active:scale-95"
+                  className="p-2 rounded-xl bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-3))] border border-[rgb(var(--c-surface-3))] text-yellow-400 text-xs font-bold transition active:scale-95"
                   title="สุ่มชื่อน่ารักๆ ในวงเหล้า"
                 >
                   <Dice5 className="w-4 h-4" />
@@ -347,7 +347,7 @@ export const PlayerList: React.FC<PlayerListProps> = ({
                 maxLength={20}
                 placeholder="กรอกชื่อของคุณ"
                 autoFocus
-                className="flex-1 bg-[#200c02] border-2 border-[#54240a] rounded-2xl p-3 text-amber-100 font-bold focus:outline-none focus:border-amber-400 shadow-inner text-sm"
+                className="flex-1 bg-[rgb(var(--c-surface))] border-2 border-[rgb(var(--c-surface-3))] rounded-2xl p-3 text-amber-100 font-bold focus:outline-none focus:border-amber-400 shadow-inner text-sm"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
@@ -361,7 +361,7 @@ export const PlayerList: React.FC<PlayerListProps> = ({
                   const randomName = RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)];
                   setEditNameInput(randomName);
                 }}
-                className="p-3 rounded-2xl bg-[#381604] hover:bg-[#522207] border-2 border-[#6b2e0a] text-yellow-400 text-sm font-bold transition active:scale-95 shrink-0 shadow"
+                className="p-3 rounded-2xl bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-3))] border-2 border-[rgb(var(--c-surface-3))] text-yellow-400 text-sm font-bold transition active:scale-95 shrink-0 shadow"
                 title="สุ่มชื่อใหม่"
               >
                 <Dice5 className="w-5 h-5" />

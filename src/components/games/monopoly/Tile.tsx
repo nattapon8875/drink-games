@@ -24,16 +24,16 @@ export const Tile: React.FC<TileProps> = ({
     drink: {
       icon: <Wine className="w-3 h-3 text-red-300 drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]" />,
       // Reddish mahogany wood
-      bg: 'from-[#8c2d19] via-[#631c0d] to-[#3a0d05]',
+      bg: 'from-[rgb(var(--c-line))] via-[rgb(var(--c-surface-3))] to-[rgb(var(--c-surface))]',
       borderTop: 'border-t-[#e2735b]',
-      ribbon: 'bg-[#5c1307] text-rose-200 border-[#852313]',
+      ribbon: 'bg-[rgb(var(--c-surface-2))] text-rose-200 border-[rgb(var(--c-surface-3))]',
     },
     order_others: {
       icon: <Award className="w-3 h-3 text-amber-300 drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]" />,
       // Golden teak wood
-      bg: 'from-[#a15e19] via-[#78400b] to-[#472203]',
+      bg: 'from-[rgb(var(--c-line-strong))] via-[rgb(var(--c-line))] to-[rgb(var(--c-surface-2))]',
       borderTop: 'border-t-[#fcd34d]',
-      ribbon: 'bg-[#6b3504] text-amber-200 border-[#944d08]',
+      ribbon: 'bg-[rgb(var(--c-surface-3))] text-amber-200 border-[rgb(var(--c-line-strong))]',
     },
     challenge: {
       icon: <HelpCircle className="w-3 h-3 text-purple-300 drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]" />,
@@ -58,7 +58,7 @@ export const Tile: React.FC<TileProps> = ({
       className={clsx(
         'relative flex flex-col items-center justify-between p-0.5 sm:p-1 w-full h-full rounded-lg sm:rounded-xl select-none transition-all duration-200 overflow-hidden',
         // 3D Wooden block construction with thick bottom bevel & inner light
-        'bg-gradient-to-b border-x-2 border-b-[3px] sm:border-b-[4px] border-[#200b02] shadow-[0_3px_6px_rgba(0,0,0,0.65),inset_0_2px_1px_rgba(255,255,255,0.4),inset_0_-2px_3px_rgba(0,0,0,0.5)]',
+        'bg-gradient-to-b border-x-2 border-b-[3px] sm:border-b-[4px] border-[rgb(var(--c-surface))] shadow-[0_3px_6px_rgba(0,0,0,0.65),inset_0_2px_1px_rgba(255,255,255,0.4),inset_0_-2px_3px_rgba(0,0,0,0.5)]',
         config.bg,
         config.borderTop,
         isHighlighted
@@ -68,7 +68,7 @@ export const Tile: React.FC<TileProps> = ({
     >
       {/* Top Bar: Corner index badge + mini category icon */}
       <div className="w-full flex items-center justify-between z-10 px-0.5">
-        <span className="text-[9px] sm:text-[10px] font-black px-1 rounded bg-[#250d03] text-amber-300 border border-[#54240a] shadow-inner">
+        <span className="text-[9px] sm:text-[10px] font-black px-1 rounded bg-[rgb(var(--c-surface))] text-amber-300 border border-[rgb(var(--c-surface-3))] shadow-inner">
           #{index}
         </span>
         <span className="text-xs sm:text-sm drop-shadow" title={tile.title}>
@@ -92,7 +92,7 @@ export const Tile: React.FC<TileProps> = ({
               <div
                 key={p.id}
                 className={clsx(
-                  'w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 overflow-hidden bg-[#2d1104] flex-shrink-0 transition-transform',
+                  'w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 overflow-hidden bg-[rgb(var(--c-surface))] flex-shrink-0 transition-transform',
                   isTurn
                     ? 'border-yellow-400 ring-2 ring-yellow-300 ring-offset-1 ring-offset-black animate-bounce z-20 scale-125'
                     : 'border-amber-300 shadow-[0_2px_4px_rgba(0,0,0,0.8)]'

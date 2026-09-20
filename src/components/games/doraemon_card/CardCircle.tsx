@@ -30,7 +30,7 @@ export const CardCircle: React.FC<CardCircleProps> = ({
   return (
     <div className="relative w-full max-w-[460px] aspect-square mx-auto flex items-center justify-center select-none py-2">
       {/* Outer Wooden Tavern Mat */}
-      <div className="absolute inset-2 rounded-full bg-gradient-to-b from-[#3d1e08] via-[#241004] to-[#140802] border-4 border-[#b47a32] shadow-[0_0_50px_rgba(217,119,6,0.35)] flex items-center justify-center overflow-hidden">
+      <div className="absolute inset-2 rounded-full bg-gradient-to-b from-[rgb(var(--c-surface-2))] via-[rgb(var(--c-surface))] to-[#140802] border-4 border-[rgb(var(--c-butter-deep))] shadow-[0_0_50px_rgba(217,119,6,0.35)] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-6 rounded-full border border-amber-600/30 opacity-70 pointer-events-none" />
         <div className="absolute inset-14 rounded-full border border-amber-500/20 opacity-50 pointer-events-none" />
         <div className="absolute inset-24 rounded-full border border-amber-400/10 opacity-30 pointer-events-none" />
@@ -54,7 +54,7 @@ export const CardCircle: React.FC<CardCircleProps> = ({
               top: `${y}%`,
               transform: `translate(-50%, -50%) rotate(${angleDeg + 90}deg)`,
             }}
-            className="w-12 h-18 sm:w-14 sm:h-22 rounded-xl bg-gradient-to-br from-[#7f1d1d] via-[#991b1b] to-[#450a0a] border-2 border-amber-400/80 shadow-[0_4px_10px_rgba(0,0,0,0.8)] flex items-center justify-center pointer-events-none overflow-hidden"
+            className="w-12 h-18 sm:w-14 sm:h-22 rounded-xl bg-gradient-to-br from-[rgb(var(--c-surface-3))] via-[rgb(var(--c-surface-3))] to-[rgb(var(--c-surface))] border-2 border-amber-400/80 shadow-[0_4px_10px_rgba(0,0,0,0.8)] flex items-center justify-center pointer-events-none overflow-hidden"
           >
             {/* Ornate Card Back Pattern */}
             <div className="w-full h-full p-1 flex items-center justify-center">
@@ -81,8 +81,8 @@ export const CardCircle: React.FC<CardCircleProps> = ({
             }`}
           >
             {/* Stack Thickness Shadow Layers */}
-            <div className="absolute inset-0 translate-x-1.5 translate-y-2 rounded-2xl bg-[#3f0f0f] border-2 border-amber-900/60 -z-10" />
-            <div className="absolute inset-0 translate-x-3 translate-y-4 rounded-2xl bg-[#260a0a] border-2 border-amber-950/80 -z-20 shadow-2xl" />
+            <div className="absolute inset-0 translate-x-1.5 translate-y-2 rounded-2xl bg-[rgb(var(--c-surface))] border-2 border-amber-900/60 -z-10" />
+            <div className="absolute inset-0 translate-x-3 translate-y-4 rounded-2xl bg-[rgb(var(--c-surface))] border-2 border-amber-950/80 -z-20 shadow-2xl" />
 
             {/* Top Deck Card */}
             <div className="w-full h-full rounded-2xl bg-gradient-to-br from-[#881337] via-[#9f1239] to-[#4c0519] border-2 border-amber-300 p-2 flex flex-col items-center justify-between shadow-xl relative overflow-hidden">

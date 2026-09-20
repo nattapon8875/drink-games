@@ -54,7 +54,7 @@ export const Modal: React.FC<ModalProps> = ({
 
         <div className="relative z-10">
           {/* Header Plaque / Scroll Banner */}
-          <div className="flex items-center justify-between mb-4 pb-2 border-b border-[#5e2802]">
+          <div className="flex items-center justify-between mb-4 pb-2 border-b border-[rgb(var(--c-surface-3))]">
             {title && (
               <div className="rpg-scroll-banner px-4 py-1.5 rounded-xl shadow-md flex items-center gap-1.5">
                 <span className="text-sm sm:text-base font-black tracking-wide uppercase">

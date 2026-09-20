@@ -62,7 +62,7 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
 
     return (
       <div
-        className={`w-9 h-9 rounded-xl bg-gradient-to-b from-[#ffffff] via-[#f7f5e8] to-[#e8dec0] border border-b-2 border-[#826131] shadow-md flex items-center justify-center transition-all ${
+        className={`w-9 h-9 rounded-xl bg-gradient-to-b from-[#ffffff] via-[#f7f5e8] to-[rgb(var(--c-butter))] border border-b-2 border-[rgb(var(--c-line-strong))] shadow-md flex items-center justify-center transition-all ${
           isRollingAnim ? 'animate-spin' : ''
         }`}
       >
@@ -71,7 +71,7 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
             <span
               key={idx}
               className={`w-1.5 h-1.5 rounded-full ${
-                val === 1 ? 'bg-red-600' : 'bg-[#1c0802]'
+                val === 1 ? 'bg-red-600' : 'bg-[rgb(var(--c-bg-deep))]'
               } justify-self-center self-center ${cls}`}
             />
           ))}
@@ -299,7 +299,7 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/92 animate-fadeIn">
-      <div className="w-full max-w-xl bg-gradient-to-b from-[#2e1305] via-[#200c02] to-[#140601] border-3 border-[#78370e] rounded-3xl p-5 sm:p-6 shadow-[0_25px_60px_rgba(0,0,0,0.9)] relative overflow-hidden flex flex-col gap-4 text-center">
+      <div className="w-full max-w-xl bg-gradient-to-b from-[rgb(var(--c-surface))] via-[rgb(var(--c-surface))] to-[rgb(var(--c-bg-deep))] border-3 border-[rgb(var(--c-line))] rounded-3xl p-5 sm:p-6 shadow-[0_25px_60px_rgba(0,0,0,0.9)] relative overflow-hidden flex flex-col gap-4 text-center">
         {/* Glow ambient decoration */}
         <div className="absolute -top-16 -left-16 w-36 h-36 bg-amber-500/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-16 -right-16 w-36 h-36 bg-yellow-500/20 rounded-full blur-3xl pointer-events-none" />
@@ -337,10 +337,10 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
                 key={p.id}
                 className={`p-3 rounded-2xl border-2 flex items-center justify-between transition-all ${
                   isTopRoller
-                    ? 'bg-gradient-to-r from-[#4a2205] to-[#2e1305] border-yellow-400 ring-2 ring-yellow-400/50 shadow-lg'
+                    ? 'bg-gradient-to-r from-[rgb(var(--c-surface-2))] to-[rgb(var(--c-surface))] border-yellow-400 ring-2 ring-yellow-400/50 shadow-lg'
                     : roll
-                    ? 'bg-[#1c0a02] border-[#542106]'
-                    : 'bg-[#140601] border-[#361303]'
+                    ? 'bg-[rgb(var(--c-bg-deep))] border-[rgb(var(--c-surface-3))]'
+                    : 'bg-[rgb(var(--c-bg-deep))] border-[rgb(var(--c-surface))]'
                 }`}
               >
                 {/* Left: Avatar, Name, Rank */}
@@ -399,7 +399,7 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
                         {renderMiniDice(roll.d1)}
                         {renderMiniDice(roll.d2)}
                       </div>
-                      <div className="bg-[#2a1003] border border-yellow-500/40 px-2.5 py-1 rounded-xl text-center shadow-inner">
+                      <div className="bg-[rgb(var(--c-surface))] border border-yellow-500/40 px-2.5 py-1 rounded-xl text-center shadow-inner">
                         <span className="text-xs font-black font-mono text-yellow-300">
                           {roll.total}
                         </span>
@@ -417,7 +417,7 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
                       <span>{isLocalRolling ? 'กำลังทอย...' : 'ทอยเต๋าของฉัน!'}</span>
                     </button>
                   ) : (
-                    <div className="text-[11px] text-amber-400/50 font-bold px-2 py-1 rounded-lg bg-[#140601] border border-[#3b1704]">
+                    <div className="text-[11px] text-amber-400/50 font-bold px-2 py-1 rounded-lg bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))]">
                       {isBot ? '🤖 กำลังทอย...' : '⏳ รอทอย'}
                     </div>
                   )}
@@ -428,7 +428,7 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
         </div>
 
         {/* Footer Actions / Results */}
-        <div className="relative z-10 pt-2 border-t border-[#4a1c04] flex flex-col gap-2">
+        <div className="relative z-10 pt-2 border-t border-[rgb(var(--c-surface-2))] flex flex-col gap-2">
           {allRolled ? (
             <div className="flex flex-col items-center gap-2">
               <div className="p-3 w-full rounded-2xl bg-amber-500/15 border border-yellow-500/40 text-center">
@@ -475,7 +475,7 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
                 <button
                   type="button"
                   onClick={handleRollForAll}
-                  className="px-3 py-1.5 rounded-xl bg-[#361404] hover:bg-[#4d1d07] border border-[#69290a] text-[11px] font-black text-amber-200 hover:text-white shadow transition flex items-center gap-1 shrink-0"
+                  className="px-3 py-1.5 rounded-xl bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] text-[11px] font-black text-amber-200 hover:text-white shadow transition flex items-center gap-1 shrink-0"
                   title="ทอยให้ทุกคนอัตโนมัติทันที"
                 >
                   <Zap className="w-3.5 h-3.5 text-yellow-400" />

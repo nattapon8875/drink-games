@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { usePlatform } from '@/hooks/usePlatform';
@@ -410,7 +411,7 @@ export default function SuperHomePage() {
   if (isDiscordAutoConnecting) {
     return (
       <div className="w-full min-h-screen flex flex-col items-center justify-center p-4 select-none">
-        <div className="w-full max-w-sm bg-[#240e03]/95 border-2 border-yellow-500/40 rounded-3xl p-6 shadow-2xl flex flex-col items-center text-center">
+        <div className="w-full max-w-sm bg-[rgb(var(--c-surface))]/95 border-2 border-yellow-500/40 rounded-3xl p-6 shadow-2xl flex flex-col items-center text-center">
           <div className="relative mb-4">
             <BuffaloLogo className="w-16 h-16 drop-shadow-lg animate-bounce" />
             <span className="absolute -bottom-1 -right-1 text-2xl">🎮</span>
@@ -423,14 +424,14 @@ export default function SuperHomePage() {
             ระบบซิงก์ห้องเกมอัตโนมัติสำหรับ Voice Channel
           </p>
 
-          <div className="w-full bg-[#140501] border border-[#522107] rounded-2xl py-3 px-4 mb-4 flex items-center justify-center gap-3 shadow-inner">
+          <div className="w-full bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-3))] rounded-2xl py-3 px-4 mb-4 flex items-center justify-center gap-3 shadow-inner">
             <span className="text-xs text-amber-400/80 font-bold">รหัสห้อง:</span>
             <span className="font-mono text-2xl font-black text-yellow-300 tracking-widest">
               {discordRoomCode}
             </span>
           </div>
 
-          <div className="flex items-center gap-2.5 mb-5 bg-[#170601] px-4 py-2 rounded-xl border border-[#4a1c05]">
+          <div className="flex items-center gap-2.5 mb-5 bg-[rgb(var(--c-bg-deep))] px-4 py-2 rounded-xl border border-[rgb(var(--c-surface-2))]">
             <Loader2 className="w-4 h-4 text-yellow-400 animate-spin shrink-0" />
             <span className="text-xs font-bold text-amber-200">
               {discordConnectStatus || 'กำลังเชื่อมต่อห้อง...'}
@@ -459,11 +460,13 @@ export default function SuperHomePage() {
       {/* Container with widescreen max width */}
       <div className="w-full max-w-6xl mx-auto flex flex-col gap-6">
         {/* Top Navbar */}
-        <header className="w-full flex items-center justify-between bg-[#240e03]/90 border-2 border-[#54240a] rounded-2xl px-4 py-3 shadow-2xl backdrop-blur-md">
+        <header className="w-full flex items-center justify-between bg-[rgb(var(--c-surface))]/90 border-2 border-[rgb(var(--c-surface-3))] rounded-2xl px-4 py-3 shadow-2xl backdrop-blur-md">
           <div className="flex items-center gap-3">
             <BuffaloLogo className="w-10 h-10 drop-shadow-md" />
             <div>
               <div className="flex items-center gap-2">
+          <ThemeToggle />
+
                 <h1 className="text-base sm:text-lg font-black rpg-text-gold tracking-wide">
                   ซุปเปอร์เศรษฐี คลาสสิก
                 </h1>
@@ -481,7 +484,7 @@ export default function SuperHomePage() {
             {/* User Profile Card */}
             <div
               onClick={() => setShowEditModal(true)}
-              className="flex items-center gap-2 bg-[#170601] border border-[#4d1d05] hover:border-yellow-400/60 px-3 py-1.5 rounded-xl cursor-pointer transition shadow-inner group"
+              className="flex items-center gap-2 bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))] hover:border-yellow-400/60 px-3 py-1.5 rounded-xl cursor-pointer transition shadow-inner group"
               title="คลิกเพื่อเปลี่ยนชื่อ"
             >
               <Avatar src={user.avatarUrl} name={user.displayName} size="sm" />
@@ -498,7 +501,7 @@ export default function SuperHomePage() {
             {/* Link back to Drinking Games */}
             <Link
               href="/"
-              className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-amber-300/80 hover:text-white bg-[#301204] hover:bg-[#471b07] border border-[#5a2408] px-3 py-2 rounded-xl transition"
+              className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-amber-300/80 hover:text-white bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] px-3 py-2 rounded-xl transition"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>โหมดเกมวงเหล้า</span>
@@ -507,7 +510,7 @@ export default function SuperHomePage() {
         </header>
 
         {/* Hero Banner */}
-        <div className="w-full relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#3a1505] via-[#240e04] to-[#1a0802] border-2 border-[#662a0c] p-6 sm:p-8 shadow-2xl">
+        <div className="w-full relative overflow-hidden rounded-3xl bg-gradient-to-r from-[rgb(var(--c-surface-2))] via-[rgb(var(--c-surface))] to-[rgb(var(--c-bg-deep))] border-2 border-[rgb(var(--c-surface-3))] p-6 sm:p-8 shadow-2xl">
           <div className="absolute -right-6 -bottom-8 opacity-20 pointer-events-none">
             <span className="text-[180px]">🏠</span>
           </div>
@@ -581,7 +584,7 @@ export default function SuperHomePage() {
                 type="button"
                 disabled={isCreating}
                 onClick={handleSoloVsBots}
-                className="wood-btn-brown px-5 py-3.5 rounded-xl font-black text-sm text-amber-200 border border-[#6b2b0a] flex items-center gap-2 shadow-lg hover:text-white active:scale-95 transition"
+                className="wood-btn-brown px-5 py-3.5 rounded-xl font-black text-sm text-amber-200 border border-[rgb(var(--c-surface-3))] flex items-center gap-2 shadow-lg hover:text-white active:scale-95 transition"
               >
                 <Bot className="w-5 h-5 text-yellow-400" />
                 <span>เล่นคนเดียวกับบอท (Solo vs 3 Bots)</span>
@@ -593,7 +596,7 @@ export default function SuperHomePage() {
         {/* 2-Column Action & Info Grid */}
         <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-6">
           {/* Join Room Form (5 cols) */}
-          <div className="md:col-span-5 bg-[#240e03]/90 border-2 border-[#54240a] rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+          <div className="md:col-span-5 bg-[rgb(var(--c-surface))]/90 border-2 border-[rgb(var(--c-surface-3))] rounded-2xl p-6 shadow-xl flex flex-col justify-between">
             <div>
               <h3 className="text-base font-black text-amber-200 flex items-center gap-2 mb-2">
                 <Users className="w-5 h-5 text-yellow-400" />
@@ -614,7 +617,7 @@ export default function SuperHomePage() {
                     onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
                     maxLength={6}
                     placeholder="เช่น A8K2"
-                    className="w-full text-center text-2xl font-black font-mono tracking-widest uppercase py-3 rounded-xl bg-[#140501] border-2 border-[#4d1c05] text-yellow-400 placeholder:text-amber-700/40 focus:outline-none focus:border-yellow-400"
+                    className="w-full text-center text-2xl font-black font-mono tracking-widest uppercase py-3 rounded-xl bg-[rgb(var(--c-bg-deep))] border-2 border-[rgb(var(--c-surface-2))] text-yellow-400 placeholder:text-amber-700/40 focus:outline-none focus:border-yellow-400"
                   />
                 </div>
 
@@ -629,7 +632,7 @@ export default function SuperHomePage() {
               </form>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-[#401804] text-[11px] text-amber-300/60 font-semibold flex items-center justify-between">
+            <div className="mt-6 pt-4 border-t border-[rgb(var(--c-surface-2))] text-[11px] text-amber-300/60 font-semibold flex items-center justify-between">
               <span>สามารถเล่นได้พร้อมกัน 2-8 คน</span>
               <span className="text-yellow-400/80">มีระบบบอท AI อัตโนมัติ</span>
             </div>
@@ -637,7 +640,7 @@ export default function SuperHomePage() {
 
           {/* Super Monopoly Feature Highlights (7 cols) */}
           <div className="md:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="bg-[#1f0b02]/90 border border-[#4a1c06] rounded-2xl p-4 shadow-lg flex items-start gap-3">
+            <div className="bg-[rgb(var(--c-surface))]/90 border border-[rgb(var(--c-surface-2))] rounded-2xl p-4 shadow-lg flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl bg-amber-950/80 border border-yellow-500/40 flex items-center justify-center shrink-0">
                 <Coins className="w-5 h-5 text-yellow-400" />
               </div>
@@ -649,7 +652,7 @@ export default function SuperHomePage() {
               </div>
             </div>
 
-            <div className="bg-[#1f0b02]/90 border border-[#4a1c06] rounded-2xl p-4 shadow-lg flex items-start gap-3">
+            <div className="bg-[rgb(var(--c-surface))]/90 border border-[rgb(var(--c-surface-2))] rounded-2xl p-4 shadow-lg flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl bg-amber-950/80 border border-yellow-500/40 flex items-center justify-center shrink-0">
                 <Building2 className="w-5 h-5 text-yellow-400" />
               </div>
@@ -661,7 +664,7 @@ export default function SuperHomePage() {
               </div>
             </div>
 
-            <div className="bg-[#1f0b02]/90 border border-[#4a1c06] rounded-2xl p-4 shadow-lg flex items-start gap-3">
+            <div className="bg-[rgb(var(--c-surface))]/90 border border-[rgb(var(--c-surface-2))] rounded-2xl p-4 shadow-lg flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl bg-amber-950/80 border border-yellow-500/40 flex items-center justify-center shrink-0">
                 <Sparkles className="w-5 h-5 text-yellow-400" />
               </div>
@@ -673,7 +676,7 @@ export default function SuperHomePage() {
               </div>
             </div>
 
-            <div className="bg-[#1f0b02]/90 border border-[#4a1c06] rounded-2xl p-4 shadow-lg flex items-start gap-3">
+            <div className="bg-[rgb(var(--c-surface))]/90 border border-[rgb(var(--c-surface-2))] rounded-2xl p-4 shadow-lg flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl bg-amber-950/80 border border-yellow-500/40 flex items-center justify-center shrink-0">
                 <Dices className="w-5 h-5 text-yellow-400" />
               </div>
@@ -707,7 +710,7 @@ export default function SuperHomePage() {
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
               maxLength={20}
-              className="w-full px-3 py-2 rounded-xl bg-[#140501] border border-[#4d1c05] text-amber-100 focus:outline-none focus:border-yellow-400 font-bold text-sm"
+              className="w-full px-3 py-2 rounded-xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))] text-amber-100 focus:outline-none focus:border-yellow-400 font-bold text-sm"
               placeholder="กรอกชื่อที่ต้องการ..."
             />
           </div>
@@ -722,7 +725,7 @@ export default function SuperHomePage() {
                   key={name}
                   type="button"
                   onClick={() => setEditName(name)}
-                  className="text-[11px] px-2.5 py-1 rounded-lg bg-[#270e03] hover:bg-[#3d1605] border border-[#4d1d05] text-amber-200 font-bold transition active:scale-95"
+                  className="text-[11px] px-2.5 py-1 rounded-lg bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-2))] text-amber-200 font-bold transition active:scale-95"
                 >
                   {name}
                 </button>

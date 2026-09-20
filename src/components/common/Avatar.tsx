@@ -50,7 +50,7 @@ export const Avatar: React.FC<AvatarProps> = ({
     >
       {/* RPG Golden Ribbon Crown if it's player's turn */}
       {isTurn && (
-        <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-20 px-1 py-0.2 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-[8px] font-black text-[#3a1503] shadow-md border border-amber-200 animate-bounce">
+        <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-20 px-1 py-0.2 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-[8px] font-black text-[rgb(var(--c-surface-2))] shadow-md border border-amber-200 animate-bounce">
           👑ตาคุณ
         </span>
       )}
@@ -60,8 +60,8 @@ export const Avatar: React.FC<AvatarProps> = ({
           'rounded-full overflow-hidden flex items-center justify-center font-bold transition-all duration-300 w-full h-full',
           sizeMap[size],
           isTurn
-            ? 'bg-[#3d1806] border-2 border-yellow-300 ring-4 ring-yellow-400/40 shadow-[0_0_15px_rgba(252,211,77,0.7)] scale-105'
-            : 'bg-[#291104] border-2 border-[#57270b]'
+            ? 'bg-[rgb(var(--c-surface-2))] border-2 border-yellow-300 ring-4 ring-yellow-400/40 shadow-[0_0_15px_rgba(252,211,77,0.7)] scale-105'
+            : 'bg-[rgb(var(--c-surface))] border-2 border-[rgb(var(--c-surface-3))]'
         )}
       >
         {src ? (

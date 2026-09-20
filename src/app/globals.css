@@ -2,46 +2,179 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =========================================================
+   THEME TOKENS
+
+   Light and dark both live here as RGB triplets so Tailwind can
+   take opacity modifiers (bg-surface/60) against them.
+
+   The old look was brown wood and casino gold. This is the same
+   game in candy colours: mint, sky and butter on paper in the
+   light, on deep blueberry in the dark.
+   ========================================================= */
 :root {
-  --background: #140702;
-  --foreground: #fef3c7;
+  color-scheme: light;
+
+  --c-bg: 242 249 245;
+  --c-bg-deep: 226 240 234;
+  --c-surface: 255 255 255;
+  --c-surface-2: 238 247 242;
+  --c-surface-3: 222 238 231;
+  --c-line: 197 224 212;
+  --c-line-strong: 160 205 187;
+
+  --c-ink: 20 49 42;
+  --c-ink-soft: 61 94 85;
+  --c-ink-faint: 122 152 143;
+
+  /* mint - the primary action colour */
+  --c-mint: 45 190 155;
+  --c-mint-deep: 18 143 115;
+  --c-mint-soft: 209 243 232;
+  /* sky - secondary */
+  --c-sky: 76 190 235;
+  --c-sky-deep: 26 141 190;
+  --c-sky-soft: 210 238 250;
+  /* butter - highlights, money, winners */
+  --c-butter: 245 185 66;
+  --c-butter-deep: 199 137 16;
+  --c-butter-soft: 253 238 205;
+  /* berry - penalties */
+  --c-berry: 244 114 132;
+  --c-berry-deep: 205 63 84;
+  --c-berry-soft: 253 224 229;
+  /* grape - special */
+  --c-grape: 160 132 232;
+  --c-grape-deep: 114 84 190;
+
+  --c-on-accent: 255 255 255;
+  --shadow-soft: 0 6px 16px rgba(26, 62, 54, 0.12);
+  --shadow-lift: 0 10px 26px rgba(26, 62, 54, 0.18);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --c-bg: 16 26 43;
+  --c-bg-deep: 11 18 31;
+  --c-surface: 26 39 62;
+  --c-surface-2: 33 49 76;
+  --c-surface-3: 42 61 92;
+  --c-line: 56 79 115;
+  --c-line-strong: 78 106 148;
+
+  --c-ink: 232 241 248;
+  --c-ink-soft: 184 202 222;
+  --c-ink-faint: 133 155 182;
+
+  --c-mint: 66 214 178;
+  --c-mint-deep: 33 168 137;
+  --c-mint-soft: 27 66 62;
+  --c-sky: 104 204 244;
+  --c-sky-deep: 44 156 205;
+  --c-sky-soft: 26 58 79;
+  --c-butter: 252 205 106;
+  --c-butter-deep: 214 158 44;
+  --c-butter-soft: 68 55 26;
+  --c-berry: 250 143 158;
+  --c-berry-deep: 219 86 108;
+  --c-berry-soft: 70 33 42;
+  --c-grape: 181 158 244;
+  --c-grape-deep: 134 104 212;
+
+  --c-on-accent: 10 22 38;
+  --shadow-soft: 0 6px 16px rgba(0, 0, 0, 0.42);
+  --shadow-lift: 0 10px 26px rgba(0, 0, 0, 0.55);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    color-scheme: dark;
+
+    --c-bg: 16 26 43;
+    --c-bg-deep: 11 18 31;
+    --c-surface: 26 39 62;
+    --c-surface-2: 33 49 76;
+    --c-surface-3: 42 61 92;
+    --c-line: 56 79 115;
+    --c-line-strong: 78 106 148;
+
+    --c-ink: 232 241 248;
+    --c-ink-soft: 184 202 222;
+    --c-ink-faint: 133 155 182;
+
+    --c-mint: 66 214 178;
+    --c-mint-deep: 33 168 137;
+    --c-mint-soft: 27 66 62;
+    --c-sky: 104 204 244;
+    --c-sky-deep: 44 156 205;
+    --c-sky-soft: 26 58 79;
+    --c-butter: 252 205 106;
+    --c-butter-deep: 214 158 44;
+    --c-butter-soft: 68 55 26;
+    --c-berry: 250 143 158;
+    --c-berry-deep: 219 86 108;
+    --c-berry-soft: 70 33 42;
+    --c-grape: 181 158 244;
+    --c-grape-deep: 134 104 212;
+
+    --c-on-accent: 10 22 38;
+    --shadow-soft: 0 6px 16px rgba(0, 0, 0, 0.42);
+    --shadow-lift: 0 10px 26px rgba(0, 0, 0, 0.55);
+  }
+}
+
+/* The app leans on the amber scale for almost every surface and label.
+   Pointing that scale at the tokens re-skins all of it at once, and the
+   ramp runs the right way round in each theme: the low numbers are the
+   readable end against the background, whichever background that is. */
+:root {
+  --c-amber-50: var(--c-ink);
+  --c-amber-100: var(--c-ink);
+  --c-amber-200: var(--c-ink-soft);
+  --c-amber-300: var(--c-ink-soft);
+  --c-amber-400: var(--c-mint-deep);
+  --c-amber-500: var(--c-mint);
+  --c-amber-600: var(--c-mint-deep);
+  --c-amber-700: var(--c-mint-deep);
+  --c-amber-800: var(--c-line-strong);
+  --c-amber-900: var(--c-line);
+  --c-amber-950: var(--c-surface-3);
 }
 
 body {
-  color: var(--foreground);
-  background-color: #0b0301;
+  color: rgb(var(--c-ink));
+  background-color: rgb(var(--c-bg));
   min-height: 100vh;
   font-family: var(--font-chakra), 'Chakra Petch', system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
 }
 
 .bg-tavern {
-  background: 
-    radial-gradient(circle at 50% 15%, rgba(251, 191, 36, 0.12) 0%, transparent 60%),
-    radial-gradient(circle at 20% 80%, rgba(180, 83, 9, 0.15) 0%, transparent 50%),
-    radial-gradient(circle at 80% 85%, rgba(180, 83, 9, 0.15) 0%, transparent 50%),
-    linear-gradient(180deg, #240c03 0%, #150601 50%, #0d0300 100%);
+  background:
+    radial-gradient(circle at 50% 12%, rgb(var(--c-mint) / 0.18) 0%, transparent 58%),
+    radial-gradient(circle at 18% 82%, rgb(var(--c-sky) / 0.16) 0%, transparent 52%),
+    radial-gradient(circle at 84% 86%, rgb(var(--c-grape) / 0.14) 0%, transparent 52%),
+    linear-gradient(180deg, rgb(var(--c-bg)) 0%, rgb(var(--c-bg-deep)) 100%);
 }
 
-/* Custom Wood & Gold Scrollbar */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #190802;
-  border-left: 1px solid #3d1606;
+  background: rgb(var(--c-surface-2));
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #d97706 0%, #92400e 100%);
-  border: 1px solid #fef08a;
+  background: rgb(var(--c-mint));
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #f59e0b 0%, #b45309 100%);
+  background: rgb(var(--c-mint-deep));
 }
 
 /* Animations */
@@ -60,201 +193,139 @@ body {
   animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Glassmorphism */
 .glass-panel {
-  background: rgba(25, 25, 45, 0.65);
+  background: rgb(var(--c-surface) / 0.82);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgb(var(--c-line));
 }
 
 /* =========================================================
-   CASUAL RPG WOODEN GUI DESIGN SYSTEM (PURE CSS / NO IMAGES)
+   CANDY BOARD-GAME UI
+   Same class names the components already use, so the whole app
+   changes skin from here. Flat, rounded and printed rather than
+   carved wood with gold leaf.
    ========================================================= */
 
-/* RPG Text Shadow Styles */
 .rpg-text-gold {
-  color: #fef08a;
-  text-shadow: 0 2px 0 #270e02, 0 3px 4px rgba(0, 0, 0, 0.9);
+  color: rgb(var(--c-butter-deep));
+  text-shadow: none;
 }
 
 .rpg-text-white {
-  color: #fffef5;
-  text-shadow: 0 1px 0 #270e02, 0 2px 3px rgba(0, 0, 0, 0.85);
+  color: rgb(var(--c-ink));
+  text-shadow: none;
 }
 
 .rpg-text-stroke {
-  text-shadow: 
-    -1px -1px 0 #270e02,  
-     1px -1px 0 #270e02,
-    -1px  1px 0 #270e02,
-     1px  1px 0 #270e02,
-     0 3px 4px rgba(0, 0, 0, 0.8);
+  text-shadow: none;
 }
 
-/* 3D Wooden Plank / Panel */
 .wood-panel {
-  background: linear-gradient(180deg, #b8651b 0%, #823e0c 45%, #451a03 100%);
-  border: 4px solid #3a1503;
-  box-shadow: 
-    0 8px 18px rgba(0, 0, 0, 0.65),
-    inset 0 3px 2px rgba(255, 220, 120, 0.45),
-    inset 0 -5px 6px rgba(30, 10, 0, 0.75);
+  background: rgb(var(--c-surface));
+  border: 2px solid rgb(var(--c-line));
+  border-radius: 1rem;
+  box-shadow: var(--shadow-soft);
 }
 
-/* Deeper Carved Recessed Wooden Basin (E.g. Dice Arena / Table Floor) */
 .wood-recessed {
-  background: radial-gradient(circle at 50% 40%, #522306 0%, #2e1102 70%, #170700 100%);
-  border: 3px solid #1c0901;
-  box-shadow: 
-    inset 0 6px 14px rgba(0, 0, 0, 0.85),
-    inset 0 -2px 4px rgba(255, 200, 100, 0.15),
-    0 2px 4px rgba(255, 200, 100, 0.1);
+  background: rgb(var(--c-surface-2));
+  border: 2px solid rgb(var(--c-line));
+  border-radius: 1rem;
+  box-shadow: inset 0 2px 6px rgb(var(--c-line) / 0.5);
 }
 
-/* Header Plaque with Golden Brass Rivets in 4 corners */
 .wood-plaque {
-  background: linear-gradient(180deg, #a65814 0%, #703308 100%);
-  border: 3px solid #2f1103;
-  box-shadow: 
-    0 4px 8px rgba(0, 0, 0, 0.5),
-    inset 0 2px 1px rgba(255, 225, 130, 0.4),
-    inset 0 -3px 4px rgba(20, 6, 0, 0.6);
+  background: rgb(var(--c-mint-soft));
+  border: 2px solid rgb(var(--c-mint));
+  border-radius: 999px;
+  box-shadow: var(--shadow-soft);
   position: relative;
 }
 
-/* Simulated Brass Rivets (Corner Screws) */
 .wood-rivet {
   width: 6px;
   height: 6px;
   border-radius: 9999px;
-  background: radial-gradient(circle at 35% 35%, #fff2a3 0%, #d49520 60%, #5e3b00 100%);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+  background: rgb(var(--c-mint));
 }
 
-/* Chunky 3D Wooden & Gold Action Button */
-.wood-btn-gold {
-  background: linear-gradient(180deg, #ffc83b 0%, #e68e14 48%, #b85f09 100%);
-  border-top: 1.5px solid rgba(255, 255, 255, 0.6);
-  border-left: 2px solid #6b3004;
-  border-right: 2px solid #6b3004;
-  border-bottom: 6px solid #2f1103;
-  color: #fffef2;
-  text-shadow: 0 2px 0 #4a2103, 0 3px 2px rgba(0, 0, 0, 0.8);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.45), inset 0 2px 2px rgba(255, 255, 255, 0.5);
-  transition: all 0.08s ease-in-out;
-}
-
-.wood-btn-gold:hover:not(:disabled) {
-  background: linear-gradient(180deg, #ffd359 0%, #fa9b19 48%, #c76709 100%);
-}
-
-.wood-btn-gold:active:not(:disabled) {
-  transform: translateY(4px);
-  border-bottom-width: 2px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 2px 2px rgba(0, 0, 0, 0.2);
-}
-
-/* Chunky 3D Red / Crimson Button (For Drink Penalty) */
-.wood-btn-red {
-  background: linear-gradient(180deg, #f85032 0%, #e73827 45%, #a81c10 100%);
-  border-top: 1.5px solid rgba(255, 255, 255, 0.6);
-  border-left: 2px solid #5a0e07;
-  border-right: 2px solid #5a0e07;
-  border-bottom: 6px solid #2e0502;
-  color: #ffffff;
-  text-shadow: 0 2px 0 #440b06, 0 3px 2px rgba(0, 0, 0, 0.8);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.45), inset 0 2px 2px rgba(255, 255, 255, 0.4);
-  transition: all 0.08s ease-in-out;
-}
-
-.wood-btn-red:active:not(:disabled) {
-  transform: translateY(4px);
-  border-bottom-width: 2px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-}
-
-/* Chunky 3D Green Button (For Safe / Pass) */
-.wood-btn-green {
-  background: linear-gradient(180deg, #4ade80 0%, #22c55e 45%, #15803d 100%);
-  border-top: 1.5px solid rgba(255, 255, 255, 0.6);
-  border-left: 2px solid #0f4823;
-  border-right: 2px solid #0f4823;
-  border-bottom: 6px solid #072512;
-  color: #ffffff;
-  text-shadow: 0 2px 0 #0b371b, 0 3px 2px rgba(0, 0, 0, 0.8);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.45), inset 0 2px 2px rgba(255, 255, 255, 0.4);
-  transition: all 0.08s ease-in-out;
-}
-
-.wood-btn-green:active:not(:disabled) {
-  transform: translateY(4px);
-  border-bottom-width: 2px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-}
-
-/* Chunky 3D Brown Button (Like "CLOSE" in Reference Image) */
+/* Chunky candy buttons: a soft drop edge instead of carved wood */
+.wood-btn-gold,
+.wood-btn-red,
+.wood-btn-green,
 .wood-btn-brown {
-  background: linear-gradient(180deg, #7c3b10 0%, #582405 45%, #381402 100%);
-  border-top: 1.5px solid rgba(255, 230, 160, 0.45);
-  border-left: 2px solid #2e1002;
-  border-right: 2px solid #2e1002;
-  border-bottom: 6px solid #1a0801;
-  color: #fde68a;
-  text-shadow: 0 2px 0 #1f0b02, 0 3px 2px rgba(0, 0, 0, 0.9);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5), inset 0 2px 2px rgba(255, 255, 255, 0.2);
-  transition: all 0.08s ease-in-out;
+  border-radius: 999px;
+  border: none;
+  color: rgb(var(--c-on-accent));
+  text-shadow: none;
+  font-weight: 800;
+  transition: transform 0.08s ease-in-out, filter 0.08s ease-in-out;
 }
 
+.wood-btn-gold {
+  background: rgb(var(--c-mint));
+  box-shadow: 0 4px 0 rgb(var(--c-mint-deep)), var(--shadow-soft);
+}
+
+.wood-btn-red {
+  background: rgb(var(--c-berry));
+  box-shadow: 0 4px 0 rgb(var(--c-berry-deep)), var(--shadow-soft);
+}
+
+.wood-btn-green {
+  background: rgb(var(--c-sky));
+  box-shadow: 0 4px 0 rgb(var(--c-sky-deep)), var(--shadow-soft);
+}
+
+.wood-btn-brown {
+  background: rgb(var(--c-surface-3));
+  color: rgb(var(--c-ink));
+  box-shadow: 0 4px 0 rgb(var(--c-line-strong)), var(--shadow-soft);
+}
+
+.wood-btn-gold:hover:not(:disabled),
+.wood-btn-red:hover:not(:disabled),
+.wood-btn-green:hover:not(:disabled),
 .wood-btn-brown:hover:not(:disabled) {
-  background: linear-gradient(180deg, #8f4514 0%, #662b08 45%, #421803 100%);
+  filter: brightness(1.06);
 }
 
+.wood-btn-gold:active:not(:disabled),
+.wood-btn-red:active:not(:disabled),
+.wood-btn-green:active:not(:disabled),
 .wood-btn-brown:active:not(:disabled) {
-  transform: translateY(4px);
-  border-bottom-width: 2px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 rgb(var(--c-line-strong));
 }
 
-/* Wood & Gold Fantasy Quest Banner ("ACTIVE QUEST" in Reference Image) */
 .rpg-scroll-banner {
-  background: linear-gradient(180deg, #ffea9f 0%, #f5be47 30%, #d98818 75%, #924d04 100%);
-  border-top: 2px solid #fff5cc;
-  border-bottom: 2px solid #632d03;
-  box-shadow: 
-    0 6px 12px rgba(0, 0, 0, 0.6),
-    inset 0 2px 2px rgba(255, 255, 255, 0.8),
-    inset 0 -3px 3px rgba(110, 48, 2, 0.6);
-  color: #3f1903;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7), 0 -1px 0 rgba(0, 0, 0, 0.3);
+  background: rgb(var(--c-butter-soft));
+  border: 2px solid rgb(var(--c-butter));
+  border-radius: 999px;
+  box-shadow: var(--shadow-soft);
+  color: rgb(var(--c-butter-deep));
+  text-shadow: none;
   position: relative;
 }
 
-/* Ornate Wood & Gold Dialog Box with Dual Filigree Border */
 .rpg-dialog-box {
-  background: 
-    radial-gradient(circle at 50% 30%, #542205 0%, #351302 60%, #200a01 100%);
-  border: 4px solid #1a0802;
-  box-shadow: 
-    0 16px 36px rgba(0, 0, 0, 0.9),
-    inset 0 0 0 2px #d49520,
-    inset 0 0 0 4px #5e2802,
-    inset 0 4px 6px rgba(255, 220, 100, 0.35),
-    inset 0 -8px 12px rgba(10, 3, 0, 0.8);
+  background: rgb(var(--c-surface));
+  border: 2px solid rgb(var(--c-line));
+  border-radius: 1.5rem;
+  box-shadow: var(--shadow-lift);
   position: relative;
 }
 
-/* Ornate Corner Brackets (Corner Golden Trim) */
+/* The ornate corner brackets become quiet little mint ticks */
 .rpg-corner-gold {
   position: absolute;
-  width: 14px;
-  height: 14px;
-  border-color: #fcd34d;
+  width: 12px;
+  height: 12px;
+  border-color: rgb(var(--c-mint));
   pointer-events: none;
 }
-.rpg-corner-tl { top: 6px; left: 6px; border-top: 2px solid #fcd34d; border-left: 2px solid #fcd34d; }
-.rpg-corner-tr { top: 6px; right: 6px; border-top: 2px solid #fcd34d; border-right: 2px solid #fcd34d; }
-.rpg-corner-bl { bottom: 6px; left: 6px; border-bottom: 2px solid #fcd34d; border-left: 2px solid #fcd34d; }
-.rpg-corner-br { bottom: 6px; right: 6px; border-bottom: 2px solid #fcd34d; border-right: 2px solid #fcd34d; }
-
-
+.rpg-corner-tl { top: 8px; left: 8px; border-top: 2px solid rgb(var(--c-mint)); border-left: 2px solid rgb(var(--c-mint)); border-top-left-radius: 6px; }
+.rpg-corner-tr { top: 8px; right: 8px; border-top: 2px solid rgb(var(--c-mint)); border-right: 2px solid rgb(var(--c-mint)); border-top-right-radius: 6px; }
+.rpg-corner-bl { bottom: 8px; left: 8px; border-bottom: 2px solid rgb(var(--c-mint)); border-left: 2px solid rgb(var(--c-mint)); border-bottom-left-radius: 6px; }
+.rpg-corner-br { bottom: 8px; right: 8px; border-bottom: 2px solid rgb(var(--c-mint)); border-right: 2px solid rgb(var(--c-mint)); border-bottom-right-radius: 6px; }

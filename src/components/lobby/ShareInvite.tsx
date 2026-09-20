@@ -91,7 +91,7 @@ export const ShareInvite: React.FC<ShareInviteProps> = ({
         <button
           type="button"
           onClick={handleCopyCode}
-          className="flex-1 bg-[#200c02] hover:bg-[#2d1204] border-2 border-[#54240a] hover:border-yellow-400/60 rounded-2xl px-3 py-2.5 text-center font-mono font-black tracking-widest text-lg sm:text-xl text-yellow-300 shadow-inner flex items-center justify-center gap-2 transition active:scale-95 group cursor-pointer"
+          className="flex-1 bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface))] border-2 border-[rgb(var(--c-surface-3))] hover:border-yellow-400/60 rounded-2xl px-3 py-2.5 text-center font-mono font-black tracking-widest text-lg sm:text-xl text-yellow-300 shadow-inner flex items-center justify-center gap-2 transition active:scale-95 group cursor-pointer"
           title="คลิกเพื่อคัดลอกรหัสห้อง"
         >
           <span>{roomCode}</span>
@@ -103,7 +103,7 @@ export const ShareInvite: React.FC<ShareInviteProps> = ({
           variant="wood-brown"
           size="md"
           onClick={handleCopyCode}
-          className="flex-shrink-0 px-3 py-2.5 text-xs font-black border-2 border-[#5c280b]"
+          className="flex-shrink-0 px-3 py-2.5 text-xs font-black border-2 border-[rgb(var(--c-surface-3))]"
           title="คัดลอกรหัสห้อง 6 ตัว"
         >
           {copiedCode ? (

@@ -190,7 +190,7 @@ export const SpinBottleGame: React.FC<BaseGameProps> = ({
         <div className="flex items-center gap-1.5 flex-shrink-0">
           <button
             onClick={() => setViewMode(viewMode === '3d' ? '2d' : '3d')}
-            className="flex items-center gap-1.5 text-xs font-black text-yellow-300 bg-[#3b1805] hover:bg-[#522207] px-3 py-1.5 rounded-xl border border-yellow-500/50 shadow transition active:scale-95"
+            className="flex items-center gap-1.5 text-xs font-black text-yellow-300 bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-3))] px-3 py-1.5 rounded-xl border border-yellow-500/50 shadow transition active:scale-95"
             title="สลับมุมมอง 3D / 2D"
           >
             <Box className="w-3.5 h-3.5" />
@@ -257,7 +257,7 @@ export const SpinBottleGame: React.FC<BaseGameProps> = ({
       {/* Challenge / Truth or Dare Modal */}
       {activePrompt && targetPlayer && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
-          <div className="w-full max-w-sm rounded-3xl bg-gradient-to-b from-[#2a1306] via-[#1c0c04] to-[#120702] border-2 border-amber-500/60 p-6 shadow-[0_0_50px_rgba(245,158,11,0.4)] text-center relative overflow-hidden">
+          <div className="w-full max-w-sm rounded-3xl bg-gradient-to-b from-[rgb(var(--c-surface))] via-[rgb(var(--c-surface))] to-[#120702] border-2 border-amber-500/60 p-6 shadow-[0_0_50px_rgba(245,158,11,0.4)] text-center relative overflow-hidden">
             {/* Top Badge */}
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-black mb-3">
               <Sparkles className="w-3.5 h-3.5" />

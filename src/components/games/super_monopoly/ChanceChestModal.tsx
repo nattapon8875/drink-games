@@ -34,7 +34,7 @@ export const ChanceChestModal: React.FC<ChanceChestModalProps> = ({
     >
       <div className="flex flex-col items-center text-center gap-3 py-2">
         {spectatorName && (
-          <div className="w-full px-3 py-1.5 rounded-xl bg-[#1d0a02] border border-[#6b2c08] text-[11px] font-black text-amber-200 flex items-center justify-center gap-1.5">
+          <div className="w-full px-3 py-1.5 rounded-xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-3))] text-[11px] font-black text-amber-200 flex items-center justify-center gap-1.5">
             <span>👀</span>
             <span className="truncate max-w-[220px]">{spectatorName}</span>
             <span className="text-amber-400/80">เปิดการ์ดได้</span>
@@ -53,7 +53,7 @@ export const ChanceChestModal: React.FC<ChanceChestModalProps> = ({
         </div>
 
         <div>
-          <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-[#290d02] border border-[#522005] text-amber-300">
+          <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-2))] text-amber-300">
             {isChest ? 'CHEST CARD' : 'CHANCE CARD'}
           </span>
           <h3 className="text-xl font-black rpg-text-gold mt-2">{card.title}</h3>
@@ -101,7 +101,7 @@ export const ChanceChestModal: React.FC<ChanceChestModalProps> = ({
 
         {/* Current Cash Bar */}
         {currentCash !== undefined && (
-          <div className="w-full bg-[#180902] border border-[#522005] rounded-xl py-2 px-3 flex items-center justify-between shadow-inner">
+          <div className="w-full bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))] rounded-xl py-2 px-3 flex items-center justify-between shadow-inner">
             <span className="text-xs text-amber-300/80 font-bold">💵 เงินสดปัจจุบันของคุณ:</span>
             <span className="text-sm font-black font-mono text-yellow-400">{formatMoneyM(currentCash)}</span>
           </div>

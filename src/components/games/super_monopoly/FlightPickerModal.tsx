@@ -46,7 +46,7 @@ export const FlightPickerModal: React.FC<FlightPickerModalProps> = ({
           แตะช่องที่ต้องการบินไป · บินผ่านจุดเริ่มต้นรับเงินเดือนตามปกติ
         </p>
 
-        <div className="w-full aspect-square max-w-[min(78vh,520px)] mx-auto grid grid-cols-11 grid-rows-11 gap-[2px] p-1.5 rounded-2xl bg-[#1c0a02] border-2 border-yellow-700/40">
+        <div className="w-full aspect-square max-w-[min(78vh,520px)] mx-auto grid grid-cols-11 grid-rows-11 gap-[2px] p-1.5 rounded-2xl bg-[rgb(var(--c-bg-deep))] border-2 border-yellow-700/40">
           {SUPER_MONOPOLY_TILES.map((tile) => {
             const { col, row } = getGridPosition(tile.index);
             const owned = properties[tile.index];
@@ -68,12 +68,12 @@ export const FlightPickerModal: React.FC<FlightPickerModalProps> = ({
                 title={`${tile.name}${owner ? ` · ของ ${owner.display_name}` : ''}`}
                 className={`relative flex flex-col items-center justify-center rounded-md border overflow-hidden transition active:scale-90 ${
                   isHere
-                    ? 'bg-[#3d1806] border-amber-500 opacity-60 cursor-default'
+                    ? 'bg-[rgb(var(--c-surface-2))] border-amber-500 opacity-60 cursor-default'
                     : isMine
                     ? 'bg-[#0d2818] border-emerald-500 hover:border-emerald-300'
                     : owner
-                    ? 'bg-[#2a0e03] border-[#5c2409] hover:border-amber-400'
-                    : 'bg-[#f7f2e4] border-[#8a6a3a] hover:border-sky-400'
+                    ? 'bg-[rgb(var(--c-surface))] border-[rgb(var(--c-surface-3))] hover:border-amber-400'
+                    : 'bg-[rgb(var(--c-butter-soft))] border-[rgb(var(--c-butter-deep))] hover:border-sky-400'
                 }`}
               >
                 {ownerColor && (
@@ -86,7 +86,7 @@ export const FlightPickerModal: React.FC<FlightPickerModalProps> = ({
                 <span className="text-[9px] sm:text-xs leading-none">{tile.icon || '🏠'}</span>
                 <span
                   className={`text-[5px] sm:text-[7px] font-black leading-tight text-center px-[1px] truncate w-full ${
-                    isHere || isMine || owner ? 'text-amber-100' : 'text-[#2b1a06]'
+                    isHere || isMine || owner ? 'text-amber-100' : 'text-[rgb(var(--c-surface-2))]'
                   }`}
                 >
                   {isHere ? 'อยู่ตรงนี้' : tile.name}
@@ -102,7 +102,7 @@ export const FlightPickerModal: React.FC<FlightPickerModalProps> = ({
           {/* Middle of the board: the legend, where the play mat would be */}
           <div
             style={{ gridColumn: '2 / 11', gridRow: '2 / 11' }}
-            className="flex flex-col items-center justify-center gap-1.5 rounded-xl bg-[#241003] border border-[#4a1c04] px-3 text-center"
+            className="flex flex-col items-center justify-center gap-1.5 rounded-xl bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-2))] px-3 text-center"
           >
             <span className="text-2xl">✈️</span>
             <span className="text-[11px] font-black text-sky-200">เลือกช่องที่จะบินไป</span>

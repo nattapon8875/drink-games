@@ -153,7 +153,7 @@ export const DoraemonActionModal: React.FC<DoraemonActionModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       showCloseButton={false}
-      className="max-w-md bg-gradient-to-b from-[#2e1305] via-[#1c0c04] to-[#100602] border-2 border-amber-500/80 shadow-[0_0_50px_rgba(245,158,11,0.5)] p-5 text-center"
+      className="max-w-md bg-gradient-to-b from-[rgb(var(--c-surface))] via-[rgb(var(--c-surface))] to-[#100602] border-2 border-amber-500/80 shadow-[0_0_50px_rgba(245,158,11,0.5)] p-5 text-center"
     >
       {/* Top Banner */}
       <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-black mb-3">
@@ -163,7 +163,7 @@ export const DoraemonActionModal: React.FC<DoraemonActionModalProps> = ({
 
       {/* Card Presentation Display */}
       <div className="flex flex-col items-center justify-center my-3">
-        <div className="w-32 h-44 sm:w-36 sm:h-52 bg-gradient-to-b from-[#faf6ee] to-[#f0e6d2] rounded-2xl border-4 border-[#b47a32] shadow-[0_15px_30px_rgba(0,0,0,0.9)] flex flex-col justify-between p-3 relative select-none animate-scaleUp">
+        <div className="w-32 h-44 sm:w-36 sm:h-52 bg-gradient-to-b from-[#faf6ee] to-[rgb(var(--c-butter-soft))] rounded-2xl border-4 border-[rgb(var(--c-butter-deep))] shadow-[0_15px_30px_rgba(0,0,0,0.9)] flex flex-col justify-between p-3 relative select-none animate-scaleUp">
           {/* Top Left Corner */}
           <div className="text-left font-black leading-none" style={{ color: suitInfo.color }}>
             <div className="text-2xl sm:text-3xl font-serif">{card.value}</div>
@@ -195,7 +195,7 @@ export const DoraemonActionModal: React.FC<DoraemonActionModalProps> = ({
       </div>
 
       {/* Action Instruction Box */}
-      <div className="p-3.5 rounded-2xl bg-[#1c0a02]/90 border border-[#522106] my-2 text-left">
+      <div className="p-3.5 rounded-2xl bg-[rgb(var(--c-bg-deep))]/90 border border-[rgb(var(--c-surface-3))] my-2 text-left">
         <p className="text-xs sm:text-sm text-amber-100 font-medium leading-relaxed">
           {rule.type === 'king_punishment' && kingMode === 'preset'
             ? currentKingPreset.description
@@ -204,7 +204,7 @@ export const DoraemonActionModal: React.FC<DoraemonActionModalProps> = ({
 
         {/* Special interactive input: 5 Buddy Dropdown */}
         {rule.type === 'buddy' && (
-          <div className="mt-3 pt-3 border-t border-[#421703]">
+          <div className="mt-3 pt-3 border-t border-[rgb(var(--c-surface-2))]">
             <label className="text-xs font-bold text-amber-300 block mb-1.5">
               🤝 เลือกสหายในวง 1 คนเพื่อผูกชะตาบัดดี้:
             </label>
@@ -212,7 +212,7 @@ export const DoraemonActionModal: React.FC<DoraemonActionModalProps> = ({
               value={selectedBuddyId}
               onChange={(e) => setSelectedBuddyId(e.target.value)}
               disabled={!canAct}
-              className="w-full bg-[#2a1004] border-2 border-amber-600/60 rounded-xl px-3 py-2 text-xs sm:text-sm font-bold text-white focus:outline-none focus:border-amber-400"
+              className="w-full bg-[rgb(var(--c-surface))] border-2 border-amber-600/60 rounded-xl px-3 py-2 text-xs sm:text-sm font-bold text-white focus:outline-none focus:border-amber-400"
             >
               <option value="">-- เลือกเพื่อนร่วมวง --</option>
               {players
@@ -228,13 +228,13 @@ export const DoraemonActionModal: React.FC<DoraemonActionModalProps> = ({
 
         {/* Special interactive input: K King punishment sequence */}
         {rule.type === 'king_punishment' && (
-          <div className="mt-3 pt-3 border-t border-[#421703] space-y-2">
+          <div className="mt-3 pt-3 border-t border-[rgb(var(--c-surface-2))] space-y-2">
             <div className="flex items-center justify-between text-xs font-black text-amber-300">
               <span className="flex items-center gap-1">
                 <Crown className="w-3.5 h-3.5 text-yellow-400" />
                 <span>👑 ไพ่ King ใบที่ {kingCount} / 4</span>
               </span>
-              <span className="text-[10px] text-amber-400/90 font-bold px-2 py-0.5 rounded-full bg-[#2a1004] border border-amber-900/60">
+              <span className="text-[10px] text-amber-400/90 font-bold px-2 py-0.5 rounded-full bg-[rgb(var(--c-surface))] border border-amber-900/60">
                 {kingMode === 'preset' ? 'โหมด: คำสั่งตายตัว' : 'โหมด: พิมพ์สด'}
               </span>
             </div>
@@ -257,7 +257,7 @@ export const DoraemonActionModal: React.FC<DoraemonActionModalProps> = ({
 
             {/* Input or Preset Instruction */}
             {kingMode === 'preset' ? (
-              <div className="p-3 bg-gradient-to-br from-[#2f1304] to-[#1a0701] rounded-xl border border-amber-500/40 text-center">
+              <div className="p-3 bg-gradient-to-br from-[rgb(var(--c-surface))] to-[rgb(var(--c-bg-deep))] rounded-xl border border-amber-500/40 text-center">
                 <div className="text-xs font-black text-amber-300 mb-1">
                   {currentKingPreset.title}
                 </div>
@@ -276,7 +276,7 @@ export const DoraemonActionModal: React.FC<DoraemonActionModalProps> = ({
                   onChange={(e) => setKingInput(e.target.value)}
                   disabled={!canAct}
                   placeholder={getKingQuestionLabel(kingCount).placeholder}
-                  className="w-full bg-[#2a1004] border border-amber-600/60 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none focus:border-amber-400 placeholder-gray-500"
+                  className="w-full bg-[rgb(var(--c-surface))] border border-amber-600/60 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none focus:border-amber-400 placeholder-gray-500"
                 />
               </div>
             )}

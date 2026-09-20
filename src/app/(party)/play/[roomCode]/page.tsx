@@ -190,7 +190,7 @@ export default function PlayPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={handleReturnToLobby}
-            className="flex items-center gap-1 text-xs font-bold text-amber-200 hover:text-white bg-[#331505] hover:bg-[#4a1e06] border border-[#692c0a] px-2.5 py-1 rounded-xl shadow-sm transition"
+            className="flex items-center gap-1 text-xs font-bold text-amber-200 hover:text-white bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] px-2.5 py-1 rounded-xl shadow-sm transition"
             title="กลับไปหน้าห้องรอ"
           >
             <ArrowLeft className="w-4 h-4 text-amber-400" />
@@ -200,7 +200,7 @@ export default function PlayPage() {
           {isHost ? (
             <button
               onClick={handleCloseRoom}
-              className="text-xs font-bold text-rose-300 hover:text-white bg-[#400e07] hover:bg-[#5c1309] border border-[#801c0c] px-2.5 py-1 rounded-xl shadow-sm transition"
+              className="text-xs font-bold text-rose-300 hover:text-white bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] px-2.5 py-1 rounded-xl shadow-sm transition"
               title="ยุบห้องและจบเกมสำหรับทุกคน"
             >
               ยุบห้อง (Host)
@@ -208,7 +208,7 @@ export default function PlayPage() {
           ) : (
             <button
               onClick={handleExitGame}
-              className="text-xs font-bold text-amber-300/70 hover:text-rose-300 bg-[#2b1204] border border-[#4d1f06] px-2 py-1 rounded-xl transition"
+              className="text-xs font-bold text-amber-300/70 hover:text-rose-300 bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-2))] px-2 py-1 rounded-xl transition"
               title="ออกจากเกม"
             >
               ออกเกม
@@ -221,7 +221,7 @@ export default function PlayPage() {
           <button
             type="button"
             onClick={() => setShowPlayersModal(true)}
-            className="flex items-center gap-1 text-xs font-bold text-amber-200 hover:text-white bg-[#2f1304] hover:bg-[#421b06] border border-[#59260a] px-2 py-1 rounded-xl shadow-sm transition active:scale-95"
+            className="flex items-center gap-1 text-xs font-bold text-amber-200 hover:text-white bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] px-2 py-1 rounded-xl shadow-sm transition active:scale-95"
             title="ดูรายชื่อผู้เล่นในวง / จัดการคน"
           >
             <Users className="w-3.5 h-3.5 text-amber-400" />
@@ -236,7 +236,7 @@ export default function PlayPage() {
                 showToast(`คัดลอกรหัสห้อง ${roomCode} แล้ว!`, 'success');
               }
             }}
-            className="px-2.5 py-0.5 rounded-lg bg-[#270e02] hover:bg-[#381604] border border-[#522005] hover:border-yellow-400/50 shadow-inner text-[10px] text-amber-300 font-mono font-black cursor-pointer active:scale-95 transition flex items-center gap-1.5"
+            className="px-2.5 py-0.5 rounded-lg bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-2))] hover:border-yellow-400/50 shadow-inner text-[10px] text-amber-300 font-mono font-black cursor-pointer active:scale-95 transition flex items-center gap-1.5"
             title="คลิกเพื่อคัดลอกรหัสห้อง"
           >
             <BuffaloLogo className="w-4 h-4" />
@@ -266,8 +266,8 @@ export default function PlayPage() {
                 key={p.id}
                 className={`flex items-center justify-between p-2.5 rounded-2xl border transition-all ${
                   isMe
-                    ? 'bg-[#3b1704] border-yellow-400/70 shadow'
-                    : 'bg-[#220c02] border-[#481c05]'
+                    ? 'bg-[rgb(var(--c-surface-2))] border-yellow-400/70 shadow'
+                    : 'bg-[rgb(var(--c-surface))] border-[rgb(var(--c-surface-2))]'
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0 flex-1 mr-2">
@@ -276,7 +276,7 @@ export default function PlayPage() {
                     <div className="flex items-center gap-1.5 font-black text-xs text-amber-100">
                       <span className="truncate max-w-[120px] drop-shadow">{p.display_name}</span>
                       {isMe && (
-                        <span className="text-[9px] bg-amber-500 text-[#301103] font-black px-1.5 py-0.2 rounded-md shrink-0">
+                        <span className="text-[9px] bg-amber-500 text-[rgb(var(--c-surface))] font-black px-1.5 py-0.2 rounded-md shrink-0">
                           คุณ
                         </span>
                       )}

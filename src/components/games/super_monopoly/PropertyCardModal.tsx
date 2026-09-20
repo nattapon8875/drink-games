@@ -174,9 +174,9 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
           </div>
 
           {/* Description & Rules Box */}
-          <div className="bg-[#200c02] border border-[#522005] rounded-2xl p-3.5 text-xs text-left shadow-inner space-y-2.5">
+          <div className="bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-2))] rounded-2xl p-3.5 text-xs text-left shadow-inner space-y-2.5">
             <p className="text-amber-100 font-bold leading-relaxed">{config.description}</p>
-            <div className="border-t border-[#421703] pt-2 space-y-1.5">
+            <div className="border-t border-[rgb(var(--c-surface-2))] pt-2 space-y-1.5">
               <span className="text-[11px] font-black text-amber-300 block">📌 กฎของช่องนี้:</span>
               <ul className="space-y-1.5 text-amber-200/90 text-[11px]">
                 {config.details.map((d, i) => (
@@ -221,7 +221,7 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
         <div
           className={`rounded-2xl px-3 py-2 flex items-center justify-between gap-2 border-2 shadow-inner ${
             isOwner
-              ? 'bg-[#1d0a02] border-[#6b2c08]'
+              ? 'bg-[rgb(var(--c-bg-deep))] border-[rgb(var(--c-surface-3))]'
               : 'bg-[#07240f] border-emerald-700/70'
           }`}
         >
@@ -296,7 +296,7 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
           )
         ) : (
           <>
-            <div className="bg-[#200c02] border border-[#522005] rounded-2xl p-3 text-xs space-y-1.5 shadow-inner">
+            <div className="bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-2))] rounded-2xl p-3 text-xs space-y-1.5 shadow-inner">
               <div className="flex justify-between items-center text-amber-200">
                 <span>ค่าผ่านทาง (ที่ดินเปล่า):</span>
                 <span className="font-bold text-yellow-400">{tile.baseRent ? formatMoneyM(tile.baseRent) : '-'}</span>
@@ -319,7 +319,7 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
                 </span>
                 <span className="font-bold text-yellow-400">{tile.rent3House ? formatMoneyM(tile.rent3House) : '-'}</span>
               </div>
-              <div className="flex justify-between items-center text-amber-200 font-bold border-t border-[#421703] pt-1">
+              <div className="flex justify-between items-center text-amber-200 font-bold border-t border-[rgb(var(--c-surface-2))] pt-1">
                 <span className="flex items-center gap-1 text-rose-300">
                   <Building2 className="w-3.5 h-3.5 text-rose-400 inline" /> โรงแรม:
                 </span>
@@ -328,7 +328,7 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
             </div>
 
             {/* Cost to Build Info */}
-            <div className="grid grid-cols-2 gap-2 text-[11px] text-amber-200/80 bg-[#2a1003] border border-[#522207] p-2 rounded-xl text-center">
+            <div className="grid grid-cols-2 gap-2 text-[11px] text-amber-200/80 bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-3))] p-2 rounded-xl text-center">
               <div>
                 ค่าสร้างบ้าน: <strong className="text-yellow-400">{tile.houseCost ? formatMoneyM(tile.houseCost) : '-'}</strong> /หลัง
               </div>
@@ -341,7 +341,7 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
 
         {/* Cash Balance & Remaining After Purchase Bar */}
         {isMyTurn && (
-          <div className="bg-[#180902] border-2 border-[#5c2709] rounded-2xl p-2.5 flex items-center justify-between shadow-lg">
+          <div className="bg-[rgb(var(--c-bg-deep))] border-2 border-[rgb(var(--c-surface-3))] rounded-2xl p-2.5 flex items-center justify-between shadow-lg">
             <div className="flex items-center gap-2">
               <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-lg shadow">
                 💵
@@ -434,7 +434,7 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
                 )}
               </button>
             ) : (
-              <div className="flex-1 py-2 text-center text-xs font-bold text-amber-300 bg-[#381604] rounded-xl border border-[#6b2c08]">
+              <div className="flex-1 py-2 text-center text-xs font-bold text-amber-300 bg-[rgb(var(--c-surface-2))] rounded-xl border border-[rgb(var(--c-surface-3))]">
                 ⭐ พัฒนาที่ดินขั้นสูงสุดแล้ว (โรงแรม)
               </div>
             )}
@@ -442,7 +442,7 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="wood-btn-brown px-5 py-3 rounded-xl font-bold text-xs sm:text-sm text-amber-200 border border-[#522207]"
+              className="wood-btn-brown px-5 py-3 rounded-xl font-bold text-xs sm:text-sm text-amber-200 border border-[rgb(var(--c-surface-3))]"
             >
               ข้าม / ปิด
             </button>

@@ -152,7 +152,7 @@ export const WheelCustomModal: React.FC<WheelCustomModalProps> = ({
       className="max-w-xl max-h-[88vh] flex flex-col p-4 sm:p-5"
     >
       {/* Top Banner */}
-      <div className="mb-3 text-xs text-amber-200/80 bg-[#2b1204] p-3 rounded-2xl border border-[#522208] flex items-center justify-between gap-2">
+      <div className="mb-3 text-xs text-amber-200/80 bg-[rgb(var(--c-surface))] p-3 rounded-2xl border border-[rgb(var(--c-surface-3))] flex items-center justify-between gap-2">
         <span>
           💡 {isHost ? 'Host สามารถเพิ่ม ลบ และสลับเปิด/ปิดชิ้นส่วนวงล้อได้ตามใจชอบ (เปิดใช้งานอยู่: ' : 'รายการข้อความทั้งหมดในวงล้อ (เปิดใช้งานอยู่: '}
           <b className="text-amber-300">{activeCount}</b> ช่อง)
@@ -173,7 +173,7 @@ export const WheelCustomModal: React.FC<WheelCustomModalProps> = ({
       {isHost && showAddForm && (
         <form
           onSubmit={handleAddItem}
-          className="mb-3 p-3.5 rounded-2xl bg-[#1f0a02] border-2 border-amber-500/60 shadow-lg space-y-3"
+          className="mb-3 p-3.5 rounded-2xl bg-[rgb(var(--c-bg-deep))] border-2 border-amber-500/60 shadow-lg space-y-3"
         >
           <div className="text-xs font-black text-amber-300 flex items-center gap-1.5">
             <Sparkles className="w-4 h-4 text-yellow-400" />
@@ -197,7 +197,7 @@ export const WheelCustomModal: React.FC<WheelCustomModalProps> = ({
               placeholder="เช่น ดื่ม 2 อึก, เล่าเรื่องผี, คนซ้ายโดน..."
               maxLength={30}
               autoFocus
-              className="w-full bg-[#2e1205] border border-amber-600/60 rounded-xl px-3 py-1.5 text-xs font-bold text-white focus:outline-none focus:border-amber-400"
+              className="w-full bg-[rgb(var(--c-surface))] border border-amber-600/60 rounded-xl px-3 py-1.5 text-xs font-bold text-white focus:outline-none focus:border-amber-400"
             />
           </div>
 
@@ -209,7 +209,7 @@ export const WheelCustomModal: React.FC<WheelCustomModalProps> = ({
               <select
                 value={newDrinkCount}
                 onChange={(e) => setNewDrinkCount(parseInt(e.target.value) || 0)}
-                className="w-full bg-[#2e1205] border border-amber-600/60 rounded-xl px-2.5 py-1.5 text-xs font-bold text-white focus:outline-none focus:border-amber-400"
+                className="w-full bg-[rgb(var(--c-surface))] border border-amber-600/60 rounded-xl px-2.5 py-1.5 text-xs font-bold text-white focus:outline-none focus:border-amber-400"
               >
                 <option value={0}>0 (รอดตัว / กิจกรรม)</option>
                 <option value={1}>1 อึก</option>
@@ -226,7 +226,7 @@ export const WheelCustomModal: React.FC<WheelCustomModalProps> = ({
               <select
                 value={newActionType}
                 onChange={(e) => setNewActionType(e.target.value as WheelActionType)}
-                className="w-full bg-[#2e1205] border border-amber-600/60 rounded-xl px-2.5 py-1.5 text-xs font-bold text-white focus:outline-none focus:border-amber-400"
+                className="w-full bg-[rgb(var(--c-surface))] border border-amber-600/60 rounded-xl px-2.5 py-1.5 text-xs font-bold text-white focus:outline-none focus:border-amber-400"
               >
                 <option value="self">คนหมุนเอง</option>
                 <option value="left">เพื่อนคนซ้าย</option>
@@ -282,8 +282,8 @@ export const WheelCustomModal: React.FC<WheelCustomModalProps> = ({
             key={item.id}
             className={`p-2.5 sm:p-3 rounded-2xl border flex items-center justify-between gap-2.5 transition ${
               item.enabled
-                ? 'bg-[#220d03] border-[#522106] shadow-sm'
-                : 'bg-[#140601] border-stone-900 opacity-50'
+                ? 'bg-[rgb(var(--c-surface))] border-[rgb(var(--c-surface-3))] shadow-sm'
+                : 'bg-[rgb(var(--c-bg-deep))] border-stone-900 opacity-50'
             }`}
           >
             <div className="flex items-center gap-2.5 min-w-0">
@@ -361,13 +361,13 @@ export const WheelCustomModal: React.FC<WheelCustomModalProps> = ({
       </div>
 
       {/* Footer Controls */}
-      <div className="pt-3 mt-3 border-t border-[#4a1d06] flex items-center justify-between gap-2">
+      <div className="pt-3 mt-3 border-t border-[rgb(var(--c-surface-2))] flex items-center justify-between gap-2">
         {isHost ? (
           <>
             <button
               type="button"
               onClick={handleReset}
-              className="flex items-center gap-1.5 text-xs text-amber-400/80 hover:text-amber-200 font-bold px-3 py-2 rounded-xl bg-[#260e03] border border-[#481c05] transition"
+              className="flex items-center gap-1.5 text-xs text-amber-400/80 hover:text-amber-200 font-bold px-3 py-2 rounded-xl bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-2))] transition"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>คืนค่า 8 ข้อเดิม</span>

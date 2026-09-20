@@ -32,8 +32,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="th" className={`dark ${chakraPetch.variable}`} suppressHydrationWarning>
-      <body suppressHydrationWarning className={`${chakraPetch.className} antialiased min-h-screen selection:bg-neon-pink selection:text-white bg-[#0f0401]`}>
+    <html lang="th" className={chakraPetch.variable} suppressHydrationWarning>
+      <head>
+        {/* Set the theme before the first paint, so a light-mode visitor never
+            gets a dark flash on the way in (or the other way round). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('party_theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();`,
+          }}
+        />
+      </head>
+      <body
+        suppressHydrationWarning
+        className={`${chakraPetch.className} antialiased min-h-screen selection:bg-mint selection:text-white bg-bg text-ink`}
+      >
         {children}
       </body>
     </html>

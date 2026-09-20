@@ -193,7 +193,7 @@ export const CrocodileGame: React.FC<BaseGameProps> = ({
   return (
     <div className="w-full max-w-md mx-auto px-2 py-2 flex flex-col items-center select-none">
       {/* Top Banner Control Bar */}
-      <div className="w-full mb-3 bg-[#260e03]/90 border border-amber-900/50 rounded-2xl px-4 py-2.5 shadow-lg flex items-center justify-between gap-2">
+      <div className="w-full mb-3 bg-[rgb(var(--c-surface))]/90 border border-amber-900/50 rounded-2xl px-4 py-2.5 shadow-lg flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-lg">
             🐃
@@ -217,7 +217,7 @@ export const CrocodileGame: React.FC<BaseGameProps> = ({
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
             onClick={() => setViewMode(viewMode === '3d' ? '2d' : '3d')}
-            className="flex items-center gap-1.5 text-xs font-black text-yellow-300 bg-[#3b1805] hover:bg-[#522207] px-3 py-1.5 rounded-xl border border-yellow-500/50 shadow transition active:scale-95"
+            className="flex items-center gap-1.5 text-xs font-black text-yellow-300 bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-3))] px-3 py-1.5 rounded-xl border border-yellow-500/50 shadow transition active:scale-95"
             title="สลับมุมมอง 3D / 2D"
           >
             <Box className="w-3.5 h-3.5" />
@@ -226,7 +226,7 @@ export const CrocodileGame: React.FC<BaseGameProps> = ({
 
           <button
             onClick={() => setShowSettingsModal(true)}
-            className="flex items-center gap-1.5 text-xs font-bold text-amber-200 bg-[#351505] hover:bg-[#481c05] px-3 py-1.5 rounded-xl border border-[#6b2e0a] shadow transition active:scale-95"
+            className="flex items-center gap-1.5 text-xs font-bold text-amber-200 bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-2))] px-3 py-1.5 rounded-xl border border-[rgb(var(--c-surface-3))] shadow transition active:scale-95"
             title="ปรับแต่งบทลงโทษและฟันน้องควาย"
           >
             <Settings className="w-3.5 h-3.5 text-amber-400" />
@@ -261,7 +261,7 @@ export const CrocodileGame: React.FC<BaseGameProps> = ({
       </div>
 
       {/* Roster & Stats Footer */}
-      <div className="w-full max-w-lg mt-3 p-3 rounded-2xl bg-[#1c0a02] border border-[#481c05] shadow-lg">
+      <div className="w-full max-w-lg mt-3 p-3 rounded-2xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))] shadow-lg">
         <div className="flex items-center justify-between text-[11px] font-black text-amber-300 mb-2">
           <span>สหายร่วมวง ({players.length})</span>
           <span className="text-[10px] text-gray-400">
@@ -279,7 +279,7 @@ export const CrocodileGame: React.FC<BaseGameProps> = ({
                   'flex items-center gap-1.5 p-1.5 rounded-xl border transition ' +
                   (isTurn
                     ? 'bg-amber-500/20 border-amber-400 shadow-sm ring-1 ring-amber-400/50'
-                    : 'bg-[#2b1205]/60 border-[#50220a]')
+                    : 'bg-[rgb(var(--c-surface))]/60 border-[rgb(var(--c-surface-3))]')
                 }
               >
                 <Avatar

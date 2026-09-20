@@ -46,7 +46,7 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
   return (
     <div className="flex flex-col w-full max-w-md mx-auto px-2 pb-8 pt-2 select-none">
       {/* Top Header: Compact Player Ribbon showing ONLY Avatars */}
-      <div className="w-full bg-[#2a1104]/95 border-2 border-[#54240a] rounded-2xl px-3 py-2 mb-2 relative shadow-xl">
+      <div className="w-full bg-[rgb(var(--c-surface))]/95 border-2 border-[rgb(var(--c-surface-3))] rounded-2xl px-3 py-2 mb-2 relative shadow-xl">
         <div className="flex items-center justify-between gap-2">
           {/* Left: Mini Avatar roster (Only avatars, clickable to view details) */}
           <div
@@ -69,8 +69,8 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
                   key={p.id}
                   className={`relative flex items-center justify-center p-0.5 rounded-full border transition-all flex-shrink-0 active:scale-95 ${
                     isPlayerTurn
-                      ? 'bg-[#4a1c04] border-yellow-400 ring-2 ring-yellow-400 shadow-lg scale-110'
-                      : 'bg-[#1e0a02] border-[#421703] opacity-80 hover:opacity-100'
+                      ? 'bg-[rgb(var(--c-surface-2))] border-yellow-400 ring-2 ring-yellow-400 shadow-lg scale-110'
+                      : 'bg-[rgb(var(--c-bg-deep))] border-[rgb(var(--c-surface-2))] opacity-80 hover:opacity-100'
                   }`}
                   title={`${p.display_name} (${p.drinks_count} ช็อต)${isPlayerTurn ? ' - กำลังเล่นตานี้' : ''}`}
                 >
@@ -83,7 +83,7 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
                   />
                   {/* Miniature player color badge in bottom-right corner */}
                   <span
-                    className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[#2a1104] shadow"
+                    className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[rgb(var(--c-surface))] shadow"
                     style={{ backgroundColor: playerColor }}
                   />
                 </div>
@@ -91,7 +91,7 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
             })}
 
             {/* Tap to inspect badge */}
-            <span className="flex items-center gap-1 text-[11px] font-bold text-amber-300/80 bg-[#381604] border border-[#632808] px-2 py-1 rounded-xl shadow-inner shrink-0 hover:text-amber-200">
+            <span className="flex items-center gap-1 text-[11px] font-bold text-amber-300/80 bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] px-2 py-1 rounded-xl shadow-inner shrink-0 hover:text-amber-200">
               <Users className="w-3 h-3" />
               <span>{players.length}</span>
             </span>
@@ -101,7 +101,7 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
           <div className="flex items-center gap-1.5 flex-shrink-0">
             <button
               onClick={() => setIs3DMode(!is3DMode)}
-              className="flex items-center gap-1.5 text-xs font-black text-yellow-300 bg-[#3b1805] hover:bg-[#522207] px-2.5 py-1.5 rounded-xl border border-yellow-500/50 shadow transition active:scale-95"
+              className="flex items-center gap-1.5 text-xs font-black text-yellow-300 bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-3))] px-2.5 py-1.5 rounded-xl border border-yellow-500/50 shadow transition active:scale-95"
               title="สลับมุมมอง 3D / 2D"
             >
               <Box className="w-3.5 h-3.5" />
@@ -110,7 +110,7 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
 
             <button
               onClick={() => setShowRulesModal(true)}
-              className="flex items-center gap-1.5 text-xs font-bold text-amber-200 bg-[#351505] hover:bg-[#481c05] px-2.5 py-1.5 rounded-xl border border-[#6b2e0a] shadow transition active:scale-95"
+              className="flex items-center gap-1.5 text-xs font-bold text-amber-200 bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-2))] px-2.5 py-1.5 rounded-xl border border-[rgb(var(--c-surface-3))] shadow transition active:scale-95"
               title="ดู/แก้ไขคำสั่งกระดาน 28 ช่อง"
             >
               <Settings className="w-3.5 h-3.5 text-amber-400" />
@@ -124,8 +124,8 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
       <div
         className={`w-full py-2.5 px-4 rounded-2xl mb-2 text-center text-sm sm:text-base font-black transition-all ${
           canAct
-            ? 'wood-btn-gold border-b-4 border-[#2f1103] shadow-lg animate-pulse'
-            : 'bg-[#240d02] border-2 border-[#451803] text-amber-200/90 shadow-inner'
+            ? 'wood-btn-gold border-b-4 border-[rgb(var(--c-surface))] shadow-lg animate-pulse'
+            : 'bg-[rgb(var(--c-surface))] border-2 border-[rgb(var(--c-surface-2))] text-amber-200/90 shadow-inner'
         }`}
       >
         {isRolling ? (
@@ -178,7 +178,7 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
               )}
 
               {room.game_state?.lastTileIndex !== undefined && (
-                <div className="text-xs font-bold text-amber-200 bg-[#250e03]/95 px-4 py-1.5 rounded-full border border-[#6b2e0a] shadow-xl backdrop-blur-sm">
+                <div className="text-xs font-bold text-amber-200 bg-[rgb(var(--c-surface))]/95 px-4 py-1.5 rounded-full border border-[rgb(var(--c-surface-3))] shadow-xl backdrop-blur-sm">
                   ช่องล่าสุด: <span className="text-yellow-300 font-black">{tiles[room.game_state.lastTileIndex]?.title}</span>
                 </div>
               )}
@@ -221,7 +221,7 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
                 />
 
                 {room.game_state?.lastTileIndex !== undefined && (
-                  <div className="mt-2 text-[10px] font-bold text-amber-200 bg-[#250e03] px-3 py-1 rounded-full border border-[#522005] shadow-inner">
+                  <div className="mt-2 text-[10px] font-bold text-amber-200 bg-[rgb(var(--c-surface))] px-3 py-1 rounded-full border border-[rgb(var(--c-surface-2))] shadow-inner">
                     ช่องล่าสุด: <span className="text-yellow-300 font-black">{tiles[room.game_state.lastTileIndex]?.title}</span>
                   </div>
                 )}
@@ -279,8 +279,8 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
                 key={p.id}
                 className={`flex items-center justify-between p-3 rounded-2xl border transition-all ${
                   isPlayerTurn
-                    ? 'bg-[#3b1704] border-yellow-400 ring-2 ring-yellow-400/40 shadow-lg'
-                    : 'bg-[#200c02] border-[#4a1c04]'
+                    ? 'bg-[rgb(var(--c-surface-2))] border-yellow-400 ring-2 ring-yellow-400/40 shadow-lg'
+                    : 'bg-[rgb(var(--c-surface))] border-[rgb(var(--c-surface-2))]'
                 }`}
               >
                 {/* Left: Avatar & Details */}
@@ -294,7 +294,7 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
                       isTurn={isPlayerTurn}
                     />
                     <span
-                      className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-[#200c02] shadow"
+                      className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-[rgb(var(--c-surface))] shadow"
                       style={{ backgroundColor: playerColor }}
                       title="สีตัวละครบนกระดาน"
                     />
@@ -306,7 +306,7 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
                         {p.display_name}
                       </span>
                       {isMe && (
-                        <span className="text-[10px] font-bold text-amber-300 bg-[#3b1704] border border-amber-600/50 px-1.5 py-0.2 rounded-md">
+                        <span className="text-[10px] font-bold text-amber-300 bg-[rgb(var(--c-surface-2))] border border-amber-600/50 px-1.5 py-0.2 rounded-md">
                           คุณ
                         </span>
                       )}
@@ -332,7 +332,7 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
 
                 {/* Right: Drinks counter badge */}
                 <div className="flex items-center gap-1.5 shrink-0 pl-2">
-                  <div className="flex items-center gap-1 bg-[#330c04] border border-rose-800/80 px-2.5 py-1 rounded-xl shadow-inner">
+                  <div className="flex items-center gap-1 bg-[rgb(var(--c-surface))] border border-rose-800/80 px-2.5 py-1 rounded-xl shadow-inner">
                     <Wine className="w-3.5 h-3.5 text-rose-400" />
                     <span className="text-xs font-black text-rose-200">
                       {p.drinks_count} <span className="text-[10px] font-normal text-rose-300/70">ช็อต</span>

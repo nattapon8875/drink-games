@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { usePlatform } from '@/hooks/usePlatform';
 import { Button } from '@/components/common/Button';
 import { Avatar } from '@/components/common/Avatar';
+import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { Modal } from '@/components/common/Modal';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
 import { THAI_PARTY_NICKNAMES } from '@/lib/platforms/adapter';
@@ -257,7 +258,7 @@ export default function HomePage() {
 
   if (isDiscordRedirecting) {
     return (
-      <main className="w-full min-h-screen flex flex-col items-center justify-center p-6 bg-[#140501] text-amber-100">
+      <main className="w-full min-h-screen flex flex-col items-center justify-center p-6 bg-[rgb(var(--c-bg-deep))] text-amber-100">
         <div className="animate-spin w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full mb-4" />
         <p className="text-base font-black text-amber-200">กำลังเข้าสู่เกมซุปเปอร์เศรษฐีใน Discord...</p>
         <p className="text-xs text-amber-400/60 font-semibold mt-1">กรุณารอสักครู่ ระบบกำลังพาไปยังหน้าเกม</p>
@@ -268,9 +269,9 @@ export default function HomePage() {
   return (
     <main className="w-full flex-1 flex flex-col items-center justify-between p-4 sm:p-5 select-none">
       {/* Top Bar: User Profile & Platform Info (Rustic Wood Plaque) */}
-      <header className="w-full flex items-center justify-between py-2 border-b border-[#5e2802] mb-4">
+      <header className="w-full flex items-center justify-between py-2 border-b border-[rgb(var(--c-surface-3))] mb-4">
         <div className="flex items-center gap-2.5">
-          <div className="p-1 rounded-2xl bg-[#3b1704] border-2 border-[#6d3009] shadow-md flex items-center justify-center">
+          <div className="p-1 rounded-2xl bg-[rgb(var(--c-surface-2))] border-2 border-[rgb(var(--c-surface-3))] shadow-md flex items-center justify-center">
             <BuffaloLogo className="w-8 h-8 drop-shadow" />
           </div>
           <div>
@@ -281,10 +282,13 @@ export default function HomePage() {
           </div>
         </div>
 
+        <div className="flex items-center gap-2">
+        <ThemeToggle />
+
         {/* Profile Chip */}
         <div
           onClick={() => setShowEditModal(true)}
-          className="flex items-center gap-2 bg-[#2d1204] border-2 border-[#572408] px-3 py-1.5 rounded-full cursor-pointer hover:border-amber-400 transition shadow-inner"
+          className="flex items-center gap-2 bg-[rgb(var(--c-surface))] border-2 border-[rgb(var(--c-surface-3))] px-3 py-1.5 rounded-full cursor-pointer hover:border-amber-400 transition shadow-inner"
           title="คลิกเพื่อแก้ไขโปรไฟล์"
         >
           <Avatar
@@ -301,11 +305,12 @@ export default function HomePage() {
           </span>
           <Edit2 className="w-3 h-3 text-amber-400" />
         </div>
+        </div>
       </header>
 
       {/* Hero Section */}
       <section className="text-center my-2 w-full">
-        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#381604] border border-[#78370b] text-amber-300 text-xs font-black mb-2 shadow-inner">
+        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-line))] text-amber-300 text-xs font-black mb-2 shadow-inner">
           <Sparkles className="w-3.5 h-3.5 text-yellow-400 animate-spin" />
           <span>Multi-platform (LINE + Discord + Web)</span>
         </div>
@@ -325,7 +330,7 @@ export default function HomePage() {
       )}
 
       {/* Top Section: Join Room (Moved to the Top!) */}
-      <section className="w-full wood-panel p-3.5 rounded-3xl relative shadow-xl my-2 border-2 border-[#54240a]">
+      <section className="w-full wood-panel p-3.5 rounded-3xl relative shadow-xl my-2 border-2 border-[rgb(var(--c-surface-3))]">
         <div className="wood-rivet absolute top-2 left-2" />
         <div className="wood-rivet absolute top-2 right-2" />
         <div className="wood-rivet absolute bottom-2 left-2" />
@@ -343,7 +348,7 @@ export default function HomePage() {
             value={joinCode}
             onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
             placeholder="รหัสห้อง 4 หลัก"
-            className="flex-1 min-w-0 h-12 bg-[#1a0802] border-2 border-[#5c2709] rounded-2xl px-3 text-center text-lg font-mono font-black tracking-widest text-yellow-300 placeholder:text-amber-800/80 focus:outline-none focus:border-amber-400 uppercase transition shadow-inner"
+            className="flex-1 min-w-0 h-12 bg-[rgb(var(--c-bg-deep))] border-2 border-[rgb(var(--c-surface-3))] rounded-2xl px-3 text-center text-lg font-mono font-black tracking-widest text-yellow-300 placeholder:text-amber-800/80 focus:outline-none focus:border-amber-400 uppercase transition shadow-inner"
           />
           <Button
             type="submit"
@@ -376,16 +381,16 @@ export default function HomePage() {
                 key={game.id}
                 className={`p-4 rounded-3xl border-2 transition-all select-none relative ${
                   !isReady
-                    ? 'opacity-50 bg-[#1c0a02] border-[#361302]'
-                    : 'bg-[#2b1104] border-[#572408] hover:border-amber-500/60 shadow-md'
+                    ? 'opacity-50 bg-[rgb(var(--c-bg-deep))] border-[rgb(var(--c-surface))]'
+                    : 'bg-[rgb(var(--c-surface))] border-[rgb(var(--c-surface-3))] hover:border-amber-500/60 shadow-md'
                 }`}
               >
                 <div className="flex items-start gap-3 mb-3">
                   <div
                     className={`p-3 rounded-2xl border-2 shadow-inner shrink-0 ${
                       isReady
-                        ? 'bg-[#3b1704] border-[#703209] text-amber-300'
-                        : 'bg-[#1e0a02] border-[#421703] text-amber-200/50'
+                        ? 'bg-[rgb(var(--c-surface-2))] border-[rgb(var(--c-surface-3))] text-amber-300'
+                        : 'bg-[rgb(var(--c-bg-deep))] border-[rgb(var(--c-surface-2))] text-amber-200/50'
                     }`}
                   >
                     {game.icon === 'dice' && <Dice5 className="w-6 h-6" />}
@@ -457,7 +462,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="w-full text-center text-[10px] text-amber-300/60 font-bold mt-6 pt-3 border-t border-[#421703] flex items-center justify-center gap-1.5">
+      <footer className="w-full text-center text-[10px] text-amber-300/60 font-bold mt-6 pt-3 border-t border-[rgb(var(--c-surface-2))] flex items-center justify-center gap-1.5">
         <BuffaloLogo className="w-4 h-4 inline-block opacity-75" />
         <span>Buffy Party Drink • เล่นอย่างมีความรับผิดชอบ ไม่เมาแล้วขับนะสหาย 🍻</span>
       </footer>
@@ -482,7 +487,7 @@ export default function HomePage() {
                 onChange={(e) => setEditName(e.target.value)}
                 maxLength={20}
                 placeholder="กรอกชื่อเล่นของคุณ"
-                className="flex-1 bg-[#200c02] border-2 border-[#54240a] rounded-2xl p-3 text-amber-100 font-bold focus:outline-none focus:border-amber-400 shadow-inner"
+                className="flex-1 bg-[rgb(var(--c-surface))] border-2 border-[rgb(var(--c-surface-3))] rounded-2xl p-3 text-amber-100 font-bold focus:outline-none focus:border-amber-400 shadow-inner"
               />
               <button
                 type="button"
@@ -490,7 +495,7 @@ export default function HomePage() {
                   const randomName = THAI_PARTY_NICKNAMES[Math.floor(Math.random() * THAI_PARTY_NICKNAMES.length)];
                   setEditName(randomName);
                 }}
-                className="p-3 rounded-2xl bg-[#381604] hover:bg-[#522207] border-2 border-[#6b2e0a] text-yellow-400 text-sm font-bold transition active:scale-95 shrink-0 shadow"
+                className="p-3 rounded-2xl bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-3))] border-2 border-[rgb(var(--c-surface-3))] text-yellow-400 text-sm font-bold transition active:scale-95 shrink-0 shadow"
                 title="สุ่มชื่อใหม่"
               >
                 <Dice5 className="w-5 h-5" />

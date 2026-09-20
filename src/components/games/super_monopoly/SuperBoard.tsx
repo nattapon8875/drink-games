@@ -77,9 +77,9 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
     // Same height as the 3D board so switching modes does not resize the page.
     // The grid has to stay square - eleven columns of eleven - so the width
     // follows the height, centred in whatever space the column has.
-    <div className="relative mx-auto max-w-full w-full aspect-square sm:w-auto sm:h-[560px] lg:h-[640px] bg-gradient-to-b from-[#4a2208] via-[#331505] to-[#240e03] border-4 border-[#733d16] rounded-3xl p-1.5 sm:p-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.85)] select-none">
+    <div className="relative mx-auto max-w-full w-full aspect-square sm:w-auto sm:h-[560px] lg:h-[640px] bg-gradient-to-b from-[rgb(var(--c-surface-2))] via-[rgb(var(--c-surface-2))] to-[rgb(var(--c-surface))] border-4 border-[rgb(var(--c-line))] rounded-3xl p-1.5 sm:p-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.85)] select-none">
       {/* 11x11 Grid Container */}
-      <div className="grid grid-cols-11 grid-rows-11 w-full h-full gap-[1.5px] sm:gap-[2.5px] relative bg-[#1c0a02] p-1 rounded-2xl border border-yellow-700/40">
+      <div className="grid grid-cols-11 grid-rows-11 w-full h-full gap-[1.5px] sm:gap-[2.5px] relative bg-[rgb(var(--c-bg-deep))] p-1 rounded-2xl border border-yellow-700/40">
         
         {/* Render All 40 Tiles on Perimeter */}
         {SUPER_MONOPOLY_TILES.map((tile) => {
@@ -120,10 +120,10 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
                     : tile.index === 0
                     ? 'bg-gradient-to-br from-[#e8f5e9] via-[#c8e6c9] to-[#a5d6a7] border-emerald-600 text-emerald-950 shadow-md'
                     : tile.index === 10
-                    ? 'bg-gradient-to-br from-[#fff3e0] via-[#ffe0b2] to-[#ffcc80] border-amber-600 text-amber-950 shadow-md'
+                    ? 'bg-gradient-to-br from-[rgb(var(--c-butter-soft))] via-[rgb(var(--c-butter-soft))] to-[rgb(var(--c-butter))] border-amber-600 text-amber-950 shadow-md'
                     : tile.index === 20
                     ? 'bg-gradient-to-br from-[#e0f2fe] via-[#bae6fd] to-[#7dd3fc] border-sky-600 text-sky-950 shadow-md'
-                    : 'bg-gradient-to-br from-[#fee2e2] via-[#fecaca] to-[#fca5a5] border-rose-600 text-rose-950 shadow-md'
+                    : 'bg-gradient-to-br from-[rgb(var(--c-butter-soft))] via-[rgb(var(--c-butter))] to-[rgb(var(--c-butter))] border-rose-600 text-rose-950 shadow-md'
                 } hover:scale-[1.04] hover:z-20`}
                 title={`${tile.name}: ${tile.description || ''}`}
               >
@@ -152,7 +152,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
                     <span className="text-[7px] sm:text-[8.5px] font-bold text-amber-900">
                       แวะเยี่ยม
                     </span>
-                    <div className="w-full bg-[#3d1a06] rounded-lg p-0.5 sm:p-1 border border-amber-800 text-center shadow-inner">
+                    <div className="w-full bg-[rgb(var(--c-surface-2))] rounded-lg p-0.5 sm:p-1 border border-amber-800 text-center shadow-inner">
                       <span className="text-xs sm:text-base block">⛓️</span>
                       <span className="text-[7px] sm:text-[9px] font-black text-amber-200">
                         ห้องขัง
@@ -230,7 +230,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
               className={`relative flex flex-col justify-between rounded-lg transition-all cursor-pointer overflow-hidden border ${
                 isStepActive
                   ? 'ring-4 ring-yellow-400 bg-yellow-100 z-30 scale-105 shadow-[0_0_20px_rgba(250,204,21,1)]'
-                  : 'bg-[#fffef7] hover:bg-[#fff9e6] border-[#d8c89d] shadow-sm'
+                  : 'bg-[#fffef7] hover:bg-[rgb(var(--c-butter-soft))] border-[rgb(var(--c-butter))] shadow-sm'
               } hover:scale-[1.04] hover:z-20`}
               title={`${tile.name}${tile.cost ? ` (${formatMoneyM(tile.cost)})` : ''}`}
             >
@@ -289,7 +289,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
                   {tile.icon}
                 </span>
 
-                <span className="text-[7.5px] sm:text-[9.5px] font-black text-[#260e02] tracking-tight truncate w-full">
+                <span className="text-[7.5px] sm:text-[9.5px] font-black text-[rgb(var(--c-surface))] tracking-tight truncate w-full">
                   {getTileShortName(tile.name)}
                 </span>
 
@@ -315,7 +315,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
                   className="absolute top-0.5 right-0.5 z-20 pointer-events-none flex items-start"
                   title={`เจ้าของ: ${ownerPlayer.display_name}`}
                 >
-                  <span className="w-[1.5px] h-2.5 sm:h-3 bg-[#f5f0e0] shadow" />
+                  <span className="w-[1.5px] h-2.5 sm:h-3 bg-[rgb(var(--c-butter-soft))] shadow" />
                   <span
                     className="w-2 h-1.5 sm:w-2.5 sm:h-2 border border-white/60 shadow"
                     style={{ backgroundColor: ownerColor }}
@@ -363,11 +363,11 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
             gridColumn: '2 / 11',
             gridRow: '2 / 11',
           }}
-          className="relative bg-gradient-to-br from-[#fff7e2] via-[#faeed1] to-[#f5dfb2] rounded-2xl border-2 border-[#b0883b] flex flex-col items-center justify-between p-3 sm:p-5 shadow-inner overflow-hidden m-[1px]"
+          className="relative bg-gradient-to-br from-[rgb(var(--c-butter-soft))] via-[rgb(var(--c-butter-soft))] to-[rgb(var(--c-butter-soft))] rounded-2xl border-2 border-[rgb(var(--c-butter-deep))] flex flex-col items-center justify-between p-3 sm:p-5 shadow-inner overflow-hidden m-[1px]"
         >
           {/* Subtle Decorative Golden Border Lines inside */}
-          <div className="absolute inset-1.5 border border-[#caa455]/40 rounded-xl pointer-events-none" />
-          <div className="absolute inset-3 border border-dashed border-[#caa455]/30 rounded-lg pointer-events-none" />
+          <div className="absolute inset-1.5 border border-[rgb(var(--c-butter-deep))]/40 rounded-xl pointer-events-none" />
+          <div className="absolute inset-3 border border-dashed border-[rgb(var(--c-butter-deep))]/30 rounded-lg pointer-events-none" />
 
           {/* Top Logo & Title */}
           <div className="text-center z-10 pt-1 sm:pt-2">
@@ -376,10 +376,10 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
               <span>เกมเศรษฐีคลาสสิกของไทย</span>
               <span>★</span>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-black text-[#b91c1c] tracking-widest drop-shadow-[0_2px_4px_rgba(185,28,28,0.25)] font-serif uppercase">
+            <h1 className="text-2xl sm:text-4xl font-black text-[rgb(var(--c-line))] tracking-widest drop-shadow-[0_2px_4px_rgba(185,28,28,0.25)] font-serif uppercase">
               ซุปเปอร์เศรษฐี
             </h1>
-            <p className="text-[9px] sm:text-xs font-black text-[#854d0e] tracking-widest mt-0.5">
+            <p className="text-[9px] sm:text-xs font-black text-[rgb(var(--c-line-strong))] tracking-widest mt-0.5">
               SUPER MONOPOLY CLASSIC • THAILAND
             </p>
           </div>
@@ -389,7 +389,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
 
           {/* Bottom Slogan & Quick Rule Badges */}
           <div className="flex flex-col items-center gap-1 z-10 pb-0.5 text-center">
-            <span className="text-[9px] sm:text-[11.5px] font-black text-[#78350f] opacity-85">
+            <span className="text-[9px] sm:text-[11.5px] font-black text-[rgb(var(--c-line))] opacity-85">
               ★ สนุกสนาน เพลิดเพลิน ซื้อขายที่ดินทั่วสยาม ★
             </span>
             <div className="flex flex-wrap items-center justify-center gap-1.5 text-[7px] sm:text-[9px] font-bold text-amber-950/80 bg-amber-100/70 border border-amber-300/60 px-2.5 py-0.5 rounded-full shadow-sm">

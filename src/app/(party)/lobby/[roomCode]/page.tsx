@@ -207,10 +207,10 @@ export default function LobbyPage() {
   return (
     <main className="w-full flex-1 flex flex-col justify-between p-4 sm:p-5 select-none">
       {/* Top Header */}
-      <header className="flex items-center justify-between py-2 border-b border-[#54240a] mb-4">
+      <header className="flex items-center justify-between py-2 border-b border-[rgb(var(--c-surface-3))] mb-4">
         <button
           onClick={handleLeaveRoom}
-          className="flex items-center gap-1 text-xs font-bold text-amber-300 hover:text-white bg-[#301304] border border-[#5c2609] px-2.5 py-1 rounded-xl shadow-sm transition active:scale-95"
+          className="flex items-center gap-1 text-xs font-bold text-amber-300 hover:text-white bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-3))] px-2.5 py-1 rounded-xl shadow-sm transition active:scale-95"
           title="ออกจากห้องนี้"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -220,7 +220,7 @@ export default function LobbyPage() {
         {/* Profile Chip (Edit Name/Avatar) */}
         <div
           onClick={() => setShowEditProfileModal(true)}
-          className="flex items-center gap-2 bg-[#2d1204] border-2 border-[#572408] px-3 py-1.5 rounded-full cursor-pointer hover:border-amber-400 transition shadow-inner active:scale-95"
+          className="flex items-center gap-2 bg-[rgb(var(--c-surface))] border-2 border-[rgb(var(--c-surface-3))] px-3 py-1.5 rounded-full cursor-pointer hover:border-amber-400 transition shadow-inner active:scale-95"
           title="คลิกเพื่อแก้ไขชื่อ / รูปโปรไฟล์"
         >
           <Avatar
@@ -243,7 +243,7 @@ export default function LobbyPage() {
       <div className="flex-1 flex flex-col gap-4">
         {/* Game Title Badge / Quest Header */}
         <div className="text-center py-2">
-          <span className="text-[10px] font-black tracking-widest uppercase text-amber-300 px-3 py-1 rounded-full bg-[#351505] border border-[#6b2f0a] shadow-inner">
+          <span className="text-[10px] font-black tracking-widest uppercase text-amber-300 px-3 py-1 rounded-full bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] shadow-inner">
               {room?.game_type === 'super-monopoly'
                 ? 'ซุปเปอร์เศรษฐี คลาสสิก'
                 : room?.game_type === 'monopoly'
@@ -296,7 +296,7 @@ export default function LobbyPage() {
             size="md"
             fullWidth
             onClick={() => setShowCustomModal(true)}
-            className="text-xs sm:text-sm font-black border-2 border-[#54240a]"
+            className="text-xs sm:text-sm font-black border-2 border-[rgb(var(--c-surface-3))]"
           >
             ⚙️ {isHost ? 'ปรับแต่งคำสั่งกระดาน (28 ช่อง)' : 'ดูกฎและคำสั่งกระดาน (28 ช่อง)'}
           </Button>
@@ -308,7 +308,7 @@ export default function LobbyPage() {
             size="md"
             fullWidth
             onClick={() => setShowCustomModal(true)}
-            className="text-xs sm:text-sm font-black border-2 border-[#54240a]"
+            className="text-xs sm:text-sm font-black border-2 border-[rgb(var(--c-surface-3))]"
           >
             📜 {isHost ? 'ปรับแต่งกฎไพ่โดราเอมอน (A-K)' : 'ดูกฎไพ่โดราเอมอน (A-K)'}
           </Button>
@@ -320,7 +320,7 @@ export default function LobbyPage() {
             size="md"
             fullWidth
             onClick={() => setShowCustomModal(true)}
-            className="text-xs sm:text-sm font-black border-2 border-[#54240a]"
+            className="text-xs sm:text-sm font-black border-2 border-[rgb(var(--c-surface-3))]"
           >
             🎡 {isHost ? 'ปรับแต่งคำสั่งวงล้อเสี่ยงทาย' : 'ดูคำสั่งในวงล้อเสี่ยงทาย'}
           </Button>
@@ -332,7 +332,7 @@ export default function LobbyPage() {
             size="md"
             fullWidth
             onClick={() => setShowCustomModal(true)}
-            className="text-xs sm:text-sm font-black border-2 border-[#54240a]"
+            className="text-xs sm:text-sm font-black border-2 border-[rgb(var(--c-surface-3))]"
           >
             🐃 {isHost ? 'ตั้งค่าจำนวนฟันและกับดักน้องควาย' : 'ดูกติกาน้องควายงับนิ้ว'}
           </Button>
@@ -340,7 +340,7 @@ export default function LobbyPage() {
       </div>
 
       {/* Bottom Start Game Controls */}
-      <div className="pt-4 border-t border-[#54240a] mt-4">
+      <div className="pt-4 border-t border-[rgb(var(--c-surface-3))] mt-4">
         {isHost ? (
           <>
             <Button
@@ -369,7 +369,7 @@ export default function LobbyPage() {
           </>
         ) : (
           <div className="space-y-2">
-            <div className="p-3 rounded-2xl bg-[#240d02] border-2 border-[#4d1e05] shadow-inner text-center">
+            <div className="p-3 rounded-2xl bg-[rgb(var(--c-surface))] border-2 border-[rgb(var(--c-surface-2))] shadow-inner text-center">
               <p className="text-xs text-amber-200 font-bold flex items-center justify-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
                 <span>
@@ -473,7 +473,7 @@ export default function LobbyPage() {
                 onChange={(e) => setEditName(e.target.value)}
                 maxLength={20}
                 placeholder="กรอกชื่อเล่นของคุณ"
-                className="flex-1 bg-[#200c02] border-2 border-[#54240a] rounded-2xl p-3 text-amber-100 font-bold focus:outline-none focus:border-amber-400 shadow-inner"
+                className="flex-1 bg-[rgb(var(--c-surface))] border-2 border-[rgb(var(--c-surface-3))] rounded-2xl p-3 text-amber-100 font-bold focus:outline-none focus:border-amber-400 shadow-inner"
               />
               <button
                 type="button"
@@ -481,7 +481,7 @@ export default function LobbyPage() {
                   const randomName = THAI_PARTY_NICKNAMES[Math.floor(Math.random() * THAI_PARTY_NICKNAMES.length)];
                   setEditName(randomName);
                 }}
-                className="p-3 rounded-2xl bg-[#381604] hover:bg-[#522207] border-2 border-[#6b2e0a] text-yellow-400 text-sm font-bold transition active:scale-95 shrink-0 shadow"
+                className="p-3 rounded-2xl bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-3))] border-2 border-[rgb(var(--c-surface-3))] text-yellow-400 text-sm font-bold transition active:scale-95 shrink-0 shadow"
                 title="สุ่มชื่อใหม่"
               >
                 <Dice5 className="w-5 h-5" />

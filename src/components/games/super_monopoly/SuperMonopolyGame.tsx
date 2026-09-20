@@ -121,7 +121,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
 
     return (
       <div
-        className={`w-14 h-14 rounded-2xl bg-gradient-to-b from-[#ffffff] via-[#f7f5e8] to-[#e8dec0] border-2 border-b-4 border-[#826131] shadow-xl flex items-center justify-center ${
+        className={`w-14 h-14 rounded-2xl bg-gradient-to-b from-[#ffffff] via-[#f7f5e8] to-[rgb(var(--c-butter))] border-2 border-b-4 border-[rgb(var(--c-line-strong))] shadow-xl flex items-center justify-center ${
           isRollingAnim ? 'animate-spin' : ''
         }`}
       >
@@ -130,7 +130,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
             <span
               key={cls}
               className={`w-2.5 h-2.5 rounded-full ${
-                val === 1 ? 'bg-red-600 ring-1 ring-red-400' : 'bg-[#1c0802]'
+                val === 1 ? 'bg-red-600 ring-1 ring-red-400' : 'bg-[rgb(var(--c-bg-deep))]'
               } shadow-inner justify-self-center self-center ${cls}`}
             />
           ))}
@@ -239,7 +239,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
   return (
     <div className="w-full h-full min-h-[90vh] flex flex-col justify-between p-2 sm:p-4 select-none mx-auto max-w-none">
       {/* Top Status Header */}
-      <div className="w-full flex items-center justify-between bg-[#2a1104]/90 border-2 border-[#54240a] rounded-2xl px-4 py-2 mb-2 shadow-xl">
+      <div className="w-full flex items-center justify-between bg-[rgb(var(--c-surface))]/90 border-2 border-[rgb(var(--c-surface-3))] rounded-2xl px-4 py-2 mb-2 shadow-xl">
         <div className="flex items-center gap-2">
           <span className="text-xl">🐃</span>
           <div>
@@ -265,7 +265,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
             <span className="sm:hidden">กติกา</span>
           </button>
 
-          <div className="flex items-center gap-2 bg-[#1f0b02] border border-[#522005] px-3 py-1 rounded-xl">
+          <div className="flex items-center gap-2 bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-2))] px-3 py-1 rounded-xl">
             <Avatar
               src={currentTurnPlayer?.avatar_url}
               name={currentTurnPlayer?.display_name || 'Player'}
@@ -285,7 +285,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
       </div>
 
       {/* Persistent Live Action Ticker (Always Visible on all devices!) */}
-      <div className="w-full bg-[#250f04] border border-[#6b2a09] rounded-2xl px-3 sm:px-4 py-2 mb-2.5 shadow-xl flex items-center justify-between gap-2 transition hover:border-amber-500/50">
+      <div className="w-full bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-3))] rounded-2xl px-3 sm:px-4 py-2 mb-2.5 shadow-xl flex items-center justify-between gap-2 transition hover:border-amber-500/50">
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <span className="flex h-2.5 w-2.5 relative shrink-0">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
@@ -319,7 +319,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           <button
             type="button"
             onClick={() => setShowRulesModal(true)}
-            className="px-2.5 py-1 rounded-xl bg-[#3d1806] hover:bg-[#522108] border border-[#7d320b] text-[11px] font-black text-amber-200 hover:text-white flex items-center gap-1.5 transition active:scale-95 shadow cursor-pointer"
+            className="px-2.5 py-1 rounded-xl bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-3))] border border-[rgb(var(--c-line))] text-[11px] font-black text-amber-200 hover:text-white flex items-center gap-1.5 transition active:scale-95 shadow cursor-pointer"
             title="ดูกฎและกติกาการเล่นซุปเปอร์เศรษฐี"
           >
             <BookOpen className="w-3.5 h-3.5 text-yellow-400" />
@@ -328,7 +328,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           <button
             type="button"
             onClick={() => setShowHistoryModal(true)}
-            className="px-2.5 py-1 rounded-xl bg-[#3d1806] hover:bg-[#522108] border border-[#7d320b] text-[11px] font-black text-yellow-300 flex items-center gap-1.5 transition active:scale-95 shadow cursor-pointer"
+            className="px-2.5 py-1 rounded-xl bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-3))] border border-[rgb(var(--c-line))] text-[11px] font-black text-yellow-300 flex items-center gap-1.5 transition active:scale-95 shadow cursor-pointer"
             title="ดูประวัติการเดินและซื้อที่ดินทั้งหมด"
           >
             <span>📜 ประวัติ</span>
@@ -345,8 +345,8 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 items-start my-auto w-full max-w-none">
         {/* Left Column: Player Leaderboard & Net Worth (3 cols) */}
         <div className={`lg:col-span-3 flex-col gap-2 order-2 lg:order-1 ${is3DMode ? 'hidden' : 'flex'}`}>
-          <div className="bg-[#240e03] border-2 border-[#54240a] rounded-2xl p-3 shadow-xl">
-            <h3 className="text-xs font-black text-amber-300 uppercase tracking-wider mb-2 flex items-center gap-1.5 border-b border-[#451803] pb-1.5">
+          <div className="bg-[rgb(var(--c-surface))] border-2 border-[rgb(var(--c-surface-3))] rounded-2xl p-3 shadow-xl">
+            <h3 className="text-xs font-black text-amber-300 uppercase tracking-wider mb-2 flex items-center gap-1.5 border-b border-[rgb(var(--c-surface-2))] pb-1.5">
               <Award className="w-4 h-4 text-yellow-400" />
               <span>ผู้เล่นในกระดาน ({players.length} คน)</span>
             </h3>
@@ -376,8 +376,8 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                     key={p.id}
                     className={`p-2.5 rounded-xl border transition-all flex flex-col gap-1.5 ${
                       isCurrent
-                        ? 'bg-[#3d1805] border-yellow-400 ring-2 ring-yellow-400/40 shadow-lg'
-                        : 'bg-[#1a0801] border-[#3d1503]'
+                        ? 'bg-[rgb(var(--c-surface-2))] border-yellow-400 ring-2 ring-yellow-400/40 shadow-lg'
+                        : 'bg-[rgb(var(--c-bg-deep))] border-[rgb(var(--c-surface-2))]'
                     }`}
                   >
                     {/* Top row: Avatar, Name, Cash */}
@@ -478,7 +478,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               <span>กระดานซุปเปอร์เศรษฐี</span>
             </span>
 
-            <div className="flex items-center gap-1 bg-[#1c0801] p-0.5 rounded-xl border border-[#4d1d05]">
+            <div className="flex items-center gap-1 bg-[rgb(var(--c-bg-deep))] p-0.5 rounded-xl border border-[rgb(var(--c-surface-2))]">
               <button
                 type="button"
                 onClick={() => setIs3DMode(true)}
@@ -520,7 +520,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               return (
                 <div
                   key={seatPlayer.id}
-                  className={`rounded-xl border-2 bg-[#140501]/95 px-2 py-1 shadow-xl ${
+                  className={`rounded-xl border-2 bg-[rgb(var(--c-bg-deep))]/95 px-2 py-1 shadow-xl ${
                     isSeatTurn ? 'border-yellow-300' : 'border-white/15'
                   }`}
                 >
@@ -565,7 +565,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                 // Solid, not translucent: a blurred backdrop over the animating
                 // WebGL board repaints every frame and makes the dice shimmer
                 // while a token is walking.
-                className={`flex flex-col items-center gap-1.5 px-4 py-3 rounded-3xl bg-[#140501] border-2 shadow-2xl ${
+                className={`flex flex-col items-center gap-1.5 px-4 py-3 rounded-3xl bg-[rgb(var(--c-bg-deep))] border-2 shadow-2xl ${
                   isRolling ? 'border-yellow-400/90' : 'border-amber-600/60'
                 }`}
               >
@@ -685,7 +685,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                     type="button"
                     disabled={controlsBusy}
                     onClick={handleServeJailTurn}
-                    className={`pointer-events-auto px-5 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 ${isProxying ? 'bg-purple-800 hover:bg-purple-700 border-2 border-purple-300 text-purple-50' : 'bg-[#3d1806] border-2 border-[#7d320b] text-amber-200'}`}
+                    className={`pointer-events-auto px-5 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 ${isProxying ? 'bg-purple-800 hover:bg-purple-700 border-2 border-purple-300 text-purple-50' : 'bg-[rgb(var(--c-surface-2))] border-2 border-[rgb(var(--c-line))] text-amber-200'}`}
                   >
                     ⛓️ รับโทษ (ส่งตา)
                   </button>
@@ -713,7 +713,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                   type="button"
                   disabled={controlsBusy}
                   onClick={handleEndTurn}
-                  className={`pointer-events-auto px-7 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 ${isProxying ? 'bg-purple-800 hover:bg-purple-700 border-2 border-purple-300 text-purple-50' : 'bg-[#3d1806] border-2 border-[#7d320b] text-amber-200'}`}
+                  className={`pointer-events-auto px-7 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 ${isProxying ? 'bg-purple-800 hover:bg-purple-700 border-2 border-purple-300 text-purple-50' : 'bg-[rgb(var(--c-surface-2))] border-2 border-[rgb(var(--c-line))] text-amber-200'}`}
                 >
                   ส่งตาเดิน ➜
                 </button>
@@ -728,7 +728,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           {/* Turn status. Rolling, ending the turn and acknowledging jail
               all live on the floating action now, so only the things it
               cannot show are kept here. */}
-          <div className="bg-[#240e03] border-2 border-[#54240a] rounded-2xl p-3 shadow-xl">
+          <div className="bg-[rgb(var(--c-surface))] border-2 border-[rgb(var(--c-surface-3))] rounded-2xl p-3 shadow-xl">
             {/* Host standing in for an absent player */}
             {isProxying && currentTurnPlayer && (
               <div className="mb-2 px-3 py-2 rounded-2xl bg-purple-950/80 border-2 border-purple-500 text-purple-100 font-black text-xs flex items-center justify-center gap-2 shadow-lg">
@@ -761,12 +761,12 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
 
             {!isMyTurn && !isProxying && (
               isBotTurn ? (
-                <div className="py-3 px-2 rounded-xl bg-[#2a0e03] border border-yellow-600/40 text-xs text-yellow-300 font-bold flex items-center justify-center gap-2">
+                <div className="py-3 px-2 rounded-xl bg-[rgb(var(--c-surface))] border border-yellow-600/40 text-xs text-yellow-300 font-bold flex items-center justify-center gap-2">
                   <Bot className="w-4 h-4 text-yellow-400" />
                   <span>🤖 {currentTurnPlayer?.display_name} กำลังคิดและทอยเต๋า...</span>
                 </div>
               ) : (
-                <div className="py-3 px-2 rounded-xl bg-[#1c0801] border border-[#3d1503] text-xs text-amber-300/70 font-bold text-center">
+                <div className="py-3 px-2 rounded-xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))] text-xs text-amber-300/70 font-bold text-center">
                   ⏳ รอ {currentTurnPlayer?.display_name} ทอยลูกเต๋า...
                 </div>
               )
@@ -774,8 +774,8 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           </div>
 
           {/* Live History Feed Box */}
-          <div className="bg-[#240e03] border-2 border-[#54240a] rounded-2xl p-3 shadow-xl flex-1 flex flex-col min-h-[160px]">
-            <div className="flex items-center justify-between border-b border-[#451803] pb-1.5 mb-2">
+          <div className="bg-[rgb(var(--c-surface))] border-2 border-[rgb(var(--c-surface-3))] rounded-2xl p-3 shadow-xl flex-1 flex flex-col min-h-[160px]">
+            <div className="flex items-center justify-between border-b border-[rgb(var(--c-surface-2))] pb-1.5 mb-2">
               <h3 className="text-xs font-black text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
                 <Scroll className="w-3.5 h-3.5 text-yellow-400" />
                 <span>ประวัติการเดิน (Live Feed)</span>
@@ -798,7 +798,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                 gameLogs.map((log, lI) => (
                   <div
                     key={lI}
-                    className="p-2 rounded-xl bg-[#1a0801] border border-[#3d1503] text-left leading-relaxed flex items-start justify-between gap-1.5 shadow-sm"
+                    className="p-2 rounded-xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))] text-left leading-relaxed flex items-start justify-between gap-1.5 shadow-sm"
                   >
                     <span style={{ color: log.color || '#fef3c7' }} className="break-words">
                       {log.text}
@@ -942,8 +942,8 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                 key={p.id}
                 className={`flex items-center justify-between px-3 py-2 rounded-xl border text-xs font-black ${
                   p.id === winnerId
-                    ? 'bg-[#3d2a05] border-yellow-400 text-yellow-100'
-                    : 'bg-[#1a0801] border-[#3d1503] text-amber-300/60'
+                    ? 'bg-[rgb(var(--c-surface-3))] border-yellow-400 text-yellow-100'
+                    : 'bg-[rgb(var(--c-bg-deep))] border-[rgb(var(--c-surface-2))] text-amber-300/60'
                 }`}
               >
                 <span className="truncate">
@@ -1018,7 +1018,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
             gameLogs.map((log, idx) => (
               <div
                 key={idx}
-                className="p-2.5 rounded-xl bg-[#1d0801] border border-[#421704] flex items-start justify-between gap-2 shadow-sm"
+                className="p-2.5 rounded-xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))] flex items-start justify-between gap-2 shadow-sm"
               >
                 <div className="flex items-start gap-2 min-w-0">
                   <span className="text-xs text-amber-400/50 font-mono shrink-0 pt-0.5">
@@ -1031,7 +1031,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                     {log.text}
                   </span>
                 </div>
-                <span className="text-[10px] font-mono text-amber-400/60 shrink-0 bg-[#2b0e03] px-2 py-0.5 rounded-lg border border-[#4d1a06]">
+                <span className="text-[10px] font-mono text-amber-400/60 shrink-0 bg-[rgb(var(--c-surface))] px-2 py-0.5 rounded-lg border border-[rgb(var(--c-surface-2))]">
                   {log.time}
                 </span>
               </div>

@@ -26,7 +26,7 @@ export const Crocodile2D: React.FC<Crocodile2DProps> = ({
   const teethList = useMemo(() => generateCrocodileTeeth(totalTeeth), [totalTeeth]);
 
   return (
-    <div className="relative w-full max-w-[420px] aspect-[9/13] mx-auto flex flex-col items-center justify-between p-3 select-none rounded-3xl bg-[#1e1008] border-2 border-amber-900/60 shadow-2xl overflow-hidden">
+    <div className="relative w-full max-w-[420px] aspect-[9/13] mx-auto flex flex-col items-center justify-between p-3 select-none rounded-3xl bg-[rgb(var(--c-surface))] border-2 border-amber-900/60 shadow-2xl overflow-hidden">
       {/* Wood plank texture backdrop */}
       <div className="absolute inset-0 opacity-20 bg-[repeating-linear-gradient(90deg,#000_0px,#000_40px,#222_41px,#222_42px)] pointer-events-none" />
 
@@ -68,10 +68,10 @@ export const Crocodile2D: React.FC<Crocodile2DProps> = ({
           >
             {/* Cute Buffalo Ears on sides */}
             <div className="absolute -left-7 top-14 w-10 h-7 rounded-[50%] bg-[#334155] border-2 border-[#0f172a] shadow -rotate-45 flex items-center justify-center">
-              <div className="w-6 h-3 rounded-[50%] bg-[#fed7aa]" />
+              <div className="w-6 h-3 rounded-[50%] bg-[rgb(var(--c-butter))]" />
             </div>
             <div className="absolute -right-7 top-14 w-10 h-7 rounded-[50%] bg-[#334155] border-2 border-[#0f172a] shadow rotate-45 flex items-center justify-center">
-              <div className="w-6 h-3 rounded-[50%] bg-[#fed7aa]" />
+              <div className="w-6 h-3 rounded-[50%] bg-[rgb(var(--c-butter))]" />
             </div>
 
             {/* Forehead Hair Fluff */}
@@ -113,11 +113,11 @@ export const Crocodile2D: React.FC<Crocodile2DProps> = ({
             </div>
 
             {/* Broad Tan Buffalo Snout with Golden Ring */}
-            <div className="mt-2 w-[180px] h-[85px] rounded-[40px] bg-gradient-to-b from-[#fed7aa] to-[#fdba74] border-2 border-amber-900/40 shadow-inner flex flex-col items-center justify-center relative">
+            <div className="mt-2 w-[180px] h-[85px] rounded-[40px] bg-gradient-to-b from-[rgb(var(--c-butter))] to-[rgb(var(--c-butter))] border-2 border-amber-900/40 shadow-inner flex flex-col items-center justify-center relative">
               {/* Nostrils */}
               <div className="flex gap-10 mt-1">
-                <div className="w-5 h-6 rounded-full bg-[#431407] shadow-inner" />
-                <div className="w-5 h-6 rounded-full bg-[#431407] shadow-inner" />
+                <div className="w-5 h-6 rounded-full bg-[rgb(var(--c-surface-2))] shadow-inner" />
+                <div className="w-5 h-6 rounded-full bg-[rgb(var(--c-surface-2))] shadow-inner" />
               </div>
 
               {/* Golden Buffalo Nose Ring! 🐃💍 */}
@@ -202,7 +202,7 @@ export const Crocodile2D: React.FC<Crocodile2DProps> = ({
 
       {/* Footer Instructions */}
       <div className="relative z-10 w-full text-center pb-1">
-        <span className="text-xs font-black text-amber-200 bg-[#2b1104] px-4 py-1.5 rounded-full border border-[#522108] shadow">
+        <span className="text-xs font-black text-amber-200 bg-[rgb(var(--c-surface))] px-4 py-1.5 rounded-full border border-[rgb(var(--c-surface-3))] shadow">
           {isBitten
             ? '💥 น้องควายงับมือแล้ว! แตะเริ่มรอบใหม่'
             : canInteract

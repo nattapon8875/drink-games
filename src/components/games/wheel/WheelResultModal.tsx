@@ -68,7 +68,7 @@ export const WheelResultModal: React.FC<WheelResultModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       showCloseButton={false}
-      className="max-w-md bg-gradient-to-b from-[#2e1305] via-[#1c0c04] to-[#100602] border-2 border-amber-500/80 shadow-[0_0_50px_rgba(245,158,11,0.5)] p-5 text-center"
+      className="max-w-md bg-gradient-to-b from-[rgb(var(--c-surface))] via-[rgb(var(--c-surface))] to-[#100602] border-2 border-amber-500/80 shadow-[0_0_50px_rgba(245,158,11,0.5)] p-5 text-center"
     >
       {/* Top Banner Badge */}
       <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-black mb-3">
@@ -79,7 +79,7 @@ export const WheelResultModal: React.FC<WheelResultModalProps> = ({
       {/* Result Display Box with Slice Color */}
       <div
         style={{ borderColor: item.color }}
-        className="my-3 p-5 rounded-3xl bg-gradient-to-b from-[#1c0a02] to-[#120501] border-4 shadow-[0_10px_30px_rgba(0,0,0,0.8)] flex flex-col items-center justify-center relative overflow-hidden"
+        className="my-3 p-5 rounded-3xl bg-gradient-to-b from-[rgb(var(--c-bg-deep))] to-[#120501] border-4 shadow-[0_10px_30px_rgba(0,0,0,0.8)] flex flex-col items-center justify-center relative overflow-hidden"
       >
         <div
           style={{ backgroundColor: item.color }}
@@ -99,7 +99,7 @@ export const WheelResultModal: React.FC<WheelResultModalProps> = ({
       </div>
 
       {/* Target Description & Interactive Friend Picker */}
-      <div className="p-3.5 rounded-2xl bg-[#1a0701] border border-[#481c05] text-left text-xs my-2 space-y-2">
+      <div className="p-3.5 rounded-2xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))] text-left text-xs my-2 space-y-2">
         {item.actionType === 'self' && (
           <p className="text-amber-100 font-bold leading-relaxed">
             👉 คนหมุนคือ <b>{spinnerPlayer.display_name}</b> ต้องรับบทลงโทษนี้!
@@ -142,7 +142,7 @@ export const WheelResultModal: React.FC<WheelResultModalProps> = ({
               value={selectedFriendId}
               onChange={(e) => setSelectedFriendId(e.target.value)}
               disabled={!canAct}
-              className="w-full bg-[#2a1004] border-2 border-amber-600/60 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none focus:border-amber-400"
+              className="w-full bg-[rgb(var(--c-surface))] border-2 border-amber-600/60 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none focus:border-amber-400"
             >
               <option value="">-- เลือกเพื่อนร่วมวง --</option>
               {players

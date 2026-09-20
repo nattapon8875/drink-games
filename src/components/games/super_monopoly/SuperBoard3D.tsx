@@ -916,24 +916,54 @@ const PlayerToken3D: React.FC<{
 };
 
 // 3D Center Deck & Play Mat (Clean, spacious luxury felt mat - all decks/plaques removed as requested)
+// The table and the backdrop are drawn by three.js, which cannot read a CSS
+// variable. Sample the tokens instead, and resample whenever the theme changes
+// so the wooden table does not sit in the middle of a mint-coloured app.
+function useThemeColor(varName: string, fallback: string): string {
+  const [value, setValue] = React.useState(fallback);
+
+  React.useEffect(() => {
+    const read = () => {
+      const raw = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+      if (raw) setValue(`rgb(${raw.split(/\s+/).join(',')})`);
+    };
+    read();
+
+    const obs = new MutationObserver(read);
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    mq.addEventListener('change', read);
+    return () => {
+      obs.disconnect();
+      mq.removeEventListener('change', read);
+    };
+  }, [varName]);
+
+  return value;
+}
+
 const CenterDeck3D: React.FC = () => {
+  const tableTop = useThemeColor('--c-surface-2', 'rgb(33,49,76)');
+  const tableEdge = useThemeColor('--c-line', 'rgb(56,79,115)');
+  const mat = useThemeColor('--c-mint-soft', 'rgb(27,66,62)');
+
   return (
     <group position={[0, 0, 0]}>
-      {/* 1. Large Mahogany Table Base (Extends under the board) */}
+      {/* 1. The table the board sits on */}
       <mesh position={[0, -0.22, 0]} receiveShadow>
         <boxGeometry args={[13.2, 0.35, 13.2]} />
-        <meshStandardMaterial color="#2d1609" roughness={0.5} metalness={0.2} />
+        <meshStandardMaterial color={tableTop} roughness={0.75} metalness={0.02} />
       </mesh>
-      {/* Table Gold/Brass Bevel Border */}
+      {/* Its edge */}
       <mesh position={[0, -0.04, 0]}>
         <boxGeometry args={[13.3, 0.04, 13.3]} />
-        <meshStandardMaterial color="#542c13" roughness={0.4} />
+        <meshStandardMaterial color={tableEdge} roughness={0.6} />
       </mesh>
 
-      {/* 2. Center Felt Playing Mat (Clean, elegant luxury gray felt) */}
+      {/* 2. The felt in the middle */}
       <mesh position={[0, 0.02, 0]} receiveShadow>
         <boxGeometry args={[7.34, 0.18, 7.34]} />
-        <meshStandardMaterial color="#cbd5e1" roughness={0.8} metalness={0.05} />
+        <meshStandardMaterial color={mat} roughness={0.9} metalness={0} />
       </mesh>
     </group>
   );
@@ -955,6 +985,13 @@ const CANVAS_CAMERA = { position: [0, 10.7, 11.6] as [number, number, number], f
 const CANVAS_TARGET: [number, number, number] = [0, -0.7, 0];
 const CANVAS_GL = { antialias: true, toneMapping: THREE.ACESFilmicToneMapping };
 
+// The canvas clears to the app's own background, so the board sits on the page
+// rather than in a dark box cut out of it.
+const SceneBackdrop: React.FC = () => {
+  const bg = useThemeColor('--c-bg-deep', 'rgb(11,18,31)');
+  return <color attach="background" args={[bg]} />;
+};
+
 const SuperBoard3DBase: React.FC<SuperBoard3DProps> = ({
   positions,
   properties,
@@ -970,24 +1007,24 @@ const SuperBoard3DBase: React.FC<SuperBoard3DProps> = ({
       // Full width of the column with the height pinned, rather than a square
       // capped to the viewport height. The camera keeps the board centred, so
       // the extra width is just more table around it.
-      className="w-full h-[460px] sm:h-[560px] lg:h-[640px] rounded-2xl overflow-hidden shadow-2xl relative bg-[#0f0703] border-2 border-[#54280a]"
+      className="w-full h-[460px] sm:h-[560px] lg:h-[640px] rounded-2xl overflow-hidden shadow-2xl relative bg-[rgb(var(--c-bg-deep))] border-2 border-[rgb(var(--c-line))]"
       onContextMenu={(e) => e.preventDefault()}
     >
       <Canvas shadows dpr={CANVAS_DPR} camera={CANVAS_CAMERA} gl={CANVAS_GL}>
-        <color attach="background" args={['#120703']} />
+        <SceneBackdrop />
 
         {/* Ambient & Directional Warm Sunlight Lighting */}
-        <ambientLight intensity={0.9} color="#fff8ed" />
+        <ambientLight intensity={1.15} color="#ffffff" />
         <directionalLight
           position={[8, 16, 10]}
-          intensity={2.2}
+          intensity={1.9}
           castShadow
           shadow-mapSize-width={2048}
           shadow-mapSize-height={2048}
           shadow-bias={-0.0001}
           color="#fffdf5"
         />
-        <pointLight position={[0, 5, 0]} intensity={1.5} color="#fef08a" distance={12} />
+        <pointLight position={[0, 5, 0]} intensity={0.9} color="#ffffff" distance={14} />
 
         {/* Orbit Camera Controls (Constrained to smooth isometric view) */}
         <OrbitControls
@@ -1055,7 +1092,7 @@ const SuperBoard3DBase: React.FC<SuperBoard3DProps> = ({
       </Canvas>
 
       {/* Overlay Hint */}
-      <div className="absolute bottom-2 left-2 pointer-events-none px-2.5 py-1 rounded-lg bg-[#140501] border border-amber-500/30 text-[10px] text-amber-200/90 font-bold flex items-center gap-1.5 shadow">
+      <div className="absolute bottom-2 left-2 pointer-events-none px-2.5 py-1 rounded-lg bg-[rgb(var(--c-bg-deep))] border border-amber-500/30 text-[10px] text-amber-200/90 font-bold flex items-center gap-1.5 shadow">
         <span>🎮 มุมมอง 3D สไตล์เกมเศรษฐี</span>
         <span className="text-amber-400/50">•</span>
         <span>ลากเพื่อหมุน • เลื่อนลูกกลิ้งเพื่อซูม</span>

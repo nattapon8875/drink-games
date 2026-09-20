@@ -244,7 +244,7 @@ export const WheelCanvas: React.FC<WheelCanvasProps> = ({
         }`}
         title={canSpin ? 'กดเพื่อหมุนวงล้อ!' : 'รอก่อน...'}
       >
-        <div className="w-full h-full rounded-full bg-gradient-to-b from-[#854d0e] via-[#54240a] to-[#270e02] border-4 border-amber-400 p-1 flex flex-col items-center justify-center shadow-2xl">
+        <div className="w-full h-full rounded-full bg-gradient-to-b from-[rgb(var(--c-line-strong))] via-[rgb(var(--c-surface-3))] to-[rgb(var(--c-surface))] border-4 border-amber-400 p-1 flex flex-col items-center justify-center shadow-2xl">
           <span className="text-xl sm:text-2xl drop-shadow">🎡</span>
           <span className="text-[11px] sm:text-xs font-black text-amber-200 tracking-wider mt-0.5">
             {isSpinning ? 'กำลังหมุน' : canSpin ? 'หมุนเลย!' : 'รอก่อน'}

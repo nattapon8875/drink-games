@@ -134,7 +134,7 @@ export const DoraemonRulesModal: React.FC<DoraemonRulesModalProps> = ({
       className="max-w-xl max-h-[88vh] flex flex-col p-4 sm:p-5"
     >
       {/* Navigation Tabs */}
-      <div className="flex items-center gap-2 mb-3 bg-[#1e0a02] p-1 rounded-xl border border-[#4a1d06]">
+      <div className="flex items-center gap-2 mb-3 bg-[rgb(var(--c-bg-deep))] p-1 rounded-xl border border-[rgb(var(--c-surface-2))]">
         <button
           onClick={() => setActiveTab('cards')}
           className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition ${
@@ -163,7 +163,7 @@ export const DoraemonRulesModal: React.FC<DoraemonRulesModalProps> = ({
       {activeTab === 'cards' ? (
         <>
           {/* Top Description */}
-          <div className="mb-3 text-xs text-amber-200/80 bg-[#2b1204] p-3 rounded-2xl border border-[#522208]">
+          <div className="mb-3 text-xs text-amber-200/80 bg-[rgb(var(--c-surface))] p-3 rounded-2xl border border-[rgb(var(--c-surface-3))]">
             💡 {isHost ? 'คุณในฐานะ Host สามารถปรับแต่งชื่อและคำสั่งของไพ่แต่ละใบตามใจชอบ กฎใหม่จะซิงก์ให้ทุกคนในห้องทันที' : 'ดูกฎและคำสั่งของไพ่แต่ละใบที่ใช้ในห้องนี้'}
           </div>
 
@@ -174,7 +174,7 @@ export const DoraemonRulesModal: React.FC<DoraemonRulesModalProps> = ({
               return (
                 <div
                   key={val}
-                  className="p-3 rounded-2xl bg-[#220d03] border border-[#4a1d06] flex flex-col gap-2 shadow"
+                  className="p-3 rounded-2xl bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-2))] flex flex-col gap-2 shadow"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -184,7 +184,7 @@ export const DoraemonRulesModal: React.FC<DoraemonRulesModalProps> = ({
                           type="text"
                           value={rule.title}
                           onChange={(e) => handleRuleChange(val, 'title', e.target.value)}
-                          className="bg-[#381604] border border-[#6b2e0a] rounded-lg px-2 py-0.5 text-xs sm:text-sm font-black text-amber-200 focus:outline-none focus:border-amber-400"
+                          className="bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] rounded-lg px-2 py-0.5 text-xs sm:text-sm font-black text-amber-200 focus:outline-none focus:border-amber-400"
                         />
                       ) : (
                         <span className="font-black text-xs sm:text-sm text-amber-200">
@@ -202,10 +202,10 @@ export const DoraemonRulesModal: React.FC<DoraemonRulesModalProps> = ({
                           max={10}
                           value={rule.drinkCount}
                           onChange={(e) => handleRuleChange(val, 'drinkCount', parseInt(e.target.value) || 0)}
-                          className="w-12 text-center bg-[#381604] border border-[#6b2e0a] rounded px-1 py-0.5 text-xs font-black text-amber-300"
+                          className="w-12 text-center bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] rounded px-1 py-0.5 text-xs font-black text-amber-300"
                         />
                       ) : (
-                        <span className="text-xs font-black text-amber-300 px-1.5 py-0.5 rounded bg-[#381604]">
+                        <span className="text-xs font-black text-amber-300 px-1.5 py-0.5 rounded bg-[rgb(var(--c-surface-2))]">
                           {rule.drinkCount} อึก
                         </span>
                       )}
@@ -218,10 +218,10 @@ export const DoraemonRulesModal: React.FC<DoraemonRulesModalProps> = ({
                       rows={2}
                       value={rule.actionText}
                       onChange={(e) => handleRuleChange(val, 'actionText', e.target.value)}
-                      className="w-full bg-[#170802] border border-[#451803] rounded-xl p-2 text-xs text-gray-200 focus:outline-none focus:border-amber-400 resize-none font-medium leading-relaxed"
+                      className="w-full bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))] rounded-xl p-2 text-xs text-gray-200 focus:outline-none focus:border-amber-400 resize-none font-medium leading-relaxed"
                     />
                   ) : (
-                    <p className="text-xs text-gray-300 font-medium leading-relaxed bg-[#170802] p-2 rounded-xl border border-[#3b1503]">
+                    <p className="text-xs text-gray-300 font-medium leading-relaxed bg-[rgb(var(--c-bg-deep))] p-2 rounded-xl border border-[rgb(var(--c-surface-2))]">
                       {rule.actionText}
                     </p>
                   )}
@@ -233,7 +233,7 @@ export const DoraemonRulesModal: React.FC<DoraemonRulesModalProps> = ({
       ) : (
         <>
           {/* King Tab Content */}
-          <div className="mb-3 text-xs text-amber-200/80 bg-[#2b1204] p-3 rounded-2xl border border-[#522208] space-y-2">
+          <div className="mb-3 text-xs text-amber-200/80 bg-[rgb(var(--c-surface))] p-3 rounded-2xl border border-[rgb(var(--c-surface-3))] space-y-2">
             <div className="font-black text-amber-300 flex items-center gap-1">
               <Crown className="w-4 h-4 text-yellow-400" />
               <span>การตั้งค่าแอ็กชันไพ่ K (ทั้ง 4 ใบ)</span>
@@ -251,7 +251,7 @@ export const DoraemonRulesModal: React.FC<DoraemonRulesModalProps> = ({
                   className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-black border transition ${
                     selectedKingMode === 'preset'
                       ? 'bg-amber-500 text-stone-950 border-amber-300 shadow'
-                      : 'bg-[#180802] text-gray-300 border-amber-900/60 hover:border-amber-600'
+                      : 'bg-[rgb(var(--c-bg-deep))] text-gray-300 border-amber-900/60 hover:border-amber-600'
                   }`}
                 >
                   📌 คำสั่งตายตัว (Preset)
@@ -262,14 +262,14 @@ export const DoraemonRulesModal: React.FC<DoraemonRulesModalProps> = ({
                   className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-black border transition ${
                     selectedKingMode === 'custom_input'
                       ? 'bg-amber-500 text-stone-950 border-amber-300 shadow'
-                      : 'bg-[#180802] text-gray-300 border-amber-900/60 hover:border-amber-600'
+                      : 'bg-[rgb(var(--c-bg-deep))] text-gray-300 border-amber-900/60 hover:border-amber-600'
                   }`}
                 >
                   ✍️ พิมพ์สดในเกม (Custom Input)
                 </button>
               </div>
             ) : (
-              <div className="text-xs font-bold text-amber-300 bg-[#160601] p-2 rounded-xl border border-amber-900/50">
+              <div className="text-xs font-bold text-amber-300 bg-[rgb(var(--c-bg-deep))] p-2 rounded-xl border border-amber-900/50">
                 โหมดปัจจุบัน: <b>{selectedKingMode === 'preset' ? '📌 คำสั่งตายตัว (Preset)' : '✍️ พิมพ์สดในเกม (Custom Input)'}</b>
               </div>
             )}
@@ -282,7 +282,7 @@ export const DoraemonRulesModal: React.FC<DoraemonRulesModalProps> = ({
               return (
                 <div
                   key={idx}
-                  className="p-3 rounded-2xl bg-[#220d03] border border-[#4a1d06] flex flex-col gap-2 shadow"
+                  className="p-3 rounded-2xl bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-2))] flex flex-col gap-2 shadow"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -292,7 +292,7 @@ export const DoraemonRulesModal: React.FC<DoraemonRulesModalProps> = ({
                           type="text"
                           value={pRule.title}
                           onChange={(e) => handleKingPresetChange(idx, 'title', e.target.value)}
-                          className="bg-[#381604] border border-[#6b2e0a] rounded-lg px-2 py-0.5 text-xs sm:text-sm font-black text-amber-200 focus:outline-none focus:border-amber-400"
+                          className="bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] rounded-lg px-2 py-0.5 text-xs sm:text-sm font-black text-amber-200 focus:outline-none focus:border-amber-400"
                         />
                       ) : (
                         <span className="font-black text-xs sm:text-sm text-amber-200">
@@ -300,7 +300,7 @@ export const DoraemonRulesModal: React.FC<DoraemonRulesModalProps> = ({
                         </span>
                       )}
                     </div>
-                    <span className="text-[10px] text-amber-400/80 font-bold bg-[#381604] px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] text-amber-400/80 font-bold bg-[rgb(var(--c-surface-2))] px-2 py-0.5 rounded-full">
                       ใบที่ {idx} / 4
                     </span>
                   </div>
@@ -312,10 +312,10 @@ export const DoraemonRulesModal: React.FC<DoraemonRulesModalProps> = ({
                       value={pRule.description}
                       onChange={(e) => handleKingPresetChange(idx, 'description', e.target.value)}
                       placeholder="คำสั่ง / บทลงโทษสำหรับ K ใบนี้"
-                      className="w-full bg-[#170802] border border-[#451803] rounded-xl p-2 text-xs text-gray-200 focus:outline-none focus:border-amber-400 resize-none font-medium leading-relaxed"
+                      className="w-full bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))] rounded-xl p-2 text-xs text-gray-200 focus:outline-none focus:border-amber-400 resize-none font-medium leading-relaxed"
                     />
                   ) : (
-                    <p className="text-xs text-gray-300 font-medium leading-relaxed bg-[#170802] p-2 rounded-xl border border-[#3b1503]">
+                    <p className="text-xs text-gray-300 font-medium leading-relaxed bg-[rgb(var(--c-bg-deep))] p-2 rounded-xl border border-[rgb(var(--c-surface-2))]">
                       {pRule.description}
                     </p>
                   )}
@@ -327,12 +327,12 @@ export const DoraemonRulesModal: React.FC<DoraemonRulesModalProps> = ({
       )}
 
       {/* Bottom Footer Actions */}
-      <div className="pt-3 mt-3 border-t border-[#4a1d06] flex items-center justify-between gap-2">
+      <div className="pt-3 mt-3 border-t border-[rgb(var(--c-surface-2))] flex items-center justify-between gap-2">
         {isHost ? (
           <>
             <button
               onClick={handleReset}
-              className="flex items-center gap-1.5 text-xs text-amber-400/80 hover:text-amber-200 font-bold px-3 py-2 rounded-xl bg-[#260e03] border border-[#481c05] transition"
+              className="flex items-center gap-1.5 text-xs text-amber-400/80 hover:text-amber-200 font-bold px-3 py-2 rounded-xl bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-2))] transition"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>คืนค่าเดิม</span>

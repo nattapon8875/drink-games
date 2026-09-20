@@ -74,7 +74,7 @@ export const CrocodileSettingsModal: React.FC<CrocodileSettingsModalProps> = ({
       className="max-w-md p-5"
     >
       <div className="space-y-4">
-        <div className="text-xs text-amber-200/80 bg-[#2b1204] p-3 rounded-2xl border border-[#522208]">
+        <div className="text-xs text-amber-200/80 bg-[rgb(var(--c-surface))] p-3 rounded-2xl border border-[rgb(var(--c-surface-3))]">
           💡 {isHost
             ? 'Host สามารถกำหนดจำนวนซี่ฟัน, ฟันกับดักน้องควาย และจำนวนอึกที่ต้องดื่ม'
             : 'กติกาและบทลงโทษในรอบนี้'}
@@ -99,7 +99,7 @@ export const CrocodileSettingsModal: React.FC<CrocodileSettingsModalProps> = ({
                     'py-2 px-1 rounded-xl border text-center font-black transition text-xs ' +
                     (totalTeeth === cnt
                       ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow ring-1 ring-amber-400/40'
-                      : 'bg-[#220e04] border-[#481c05] text-gray-400 hover:bg-[#311406]')
+                      : 'bg-[rgb(var(--c-surface))] border-[rgb(var(--c-surface-2))] text-gray-400 hover:bg-[rgb(var(--c-surface))]')
                   }
                 >
                   {cnt} ซี่
@@ -107,7 +107,7 @@ export const CrocodileSettingsModal: React.FC<CrocodileSettingsModalProps> = ({
               ))}
             </div>
           ) : (
-            <div className="p-2.5 rounded-xl bg-[#220e04] border border-[#481c05] text-xs font-black text-amber-300">
+            <div className="p-2.5 rounded-xl bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-2))] text-xs font-black text-amber-300">
               {totalTeeth} ซี่
             </div>
           )}
@@ -137,7 +137,7 @@ export const CrocodileSettingsModal: React.FC<CrocodileSettingsModalProps> = ({
                       'py-2.5 px-2 rounded-xl border text-center transition ' +
                       (safeTrapCount === cnt
                         ? 'bg-rose-500/20 border-rose-500 text-rose-300 shadow ring-1 ring-rose-500/40 font-black'
-                        : 'bg-[#220e04] border-[#481c05] text-gray-400 hover:bg-[#311406] font-bold') +
+                        : 'bg-[rgb(var(--c-surface))] border-[rgb(var(--c-surface-2))] text-gray-400 hover:bg-[rgb(var(--c-surface))] font-bold') +
                       (disabled ? ' opacity-30 cursor-not-allowed' : '')
                     }
                   >
@@ -150,7 +150,7 @@ export const CrocodileSettingsModal: React.FC<CrocodileSettingsModalProps> = ({
               })}
             </div>
           ) : (
-            <div className="p-2.5 rounded-xl bg-[#220e04] border border-[#481c05] text-xs font-black text-rose-300">
+            <div className="p-2.5 rounded-xl bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-2))] text-xs font-black text-rose-300">
               {safeTrapCount} ซี่
             </div>
           )}
@@ -177,7 +177,7 @@ export const CrocodileSettingsModal: React.FC<CrocodileSettingsModalProps> = ({
                     'p-2.5 rounded-2xl border text-left transition ' +
                     (drinkCount === opt.count
                       ? 'bg-amber-600/30 border-amber-400 shadow-md ring-2 ring-amber-400/40'
-                      : 'bg-[#220e04] border-[#481c05] hover:bg-[#311406]')
+                      : 'bg-[rgb(var(--c-surface))] border-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface))]')
                   }
                 >
                   <div className="text-xs font-black text-amber-300">{opt.label}</div>
@@ -186,7 +186,7 @@ export const CrocodileSettingsModal: React.FC<CrocodileSettingsModalProps> = ({
               ))}
             </div>
           ) : (
-            <div className="p-3 rounded-2xl bg-[#220e04] border border-[#481c05] text-center">
+            <div className="p-3 rounded-2xl bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-2))] text-center">
               <div className="text-sm font-black text-amber-300">
                 {drinkCount === 4 ? '🍾 ยกหมดแก้ว!' : `ดื่ม ${drinkCount} อึก`}
               </div>
@@ -194,7 +194,7 @@ export const CrocodileSettingsModal: React.FC<CrocodileSettingsModalProps> = ({
           )}
         </div>
 
-        <div className="pt-2 border-t border-[#481c05] flex justify-end gap-2">
+        <div className="pt-2 border-t border-[rgb(var(--c-surface-2))] flex justify-end gap-2">
           {isHost ? (
             <>
               <Button variant="ghost" size="sm" onClick={onClose} disabled={saving}>

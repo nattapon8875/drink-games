@@ -28,7 +28,7 @@ export const Bottle2D: React.FC<Bottle2DProps> = ({
   return (
     <div className="relative w-full max-w-[480px] aspect-square mx-auto flex items-center justify-center select-none">
       {/* Outer Glow & Tavern Table Mat */}
-      <div className="absolute inset-2 rounded-full bg-gradient-to-b from-[#3d1e08] via-[#241004] to-[#140802] border-4 border-[#b47a32] shadow-[0_0_40px_rgba(217,119,6,0.3)] flex items-center justify-center overflow-hidden">
+      <div className="absolute inset-2 rounded-full bg-gradient-to-b from-[rgb(var(--c-surface-2))] via-[rgb(var(--c-surface))] to-[#140802] border-4 border-[rgb(var(--c-butter-deep))] shadow-[0_0_40px_rgba(217,119,6,0.3)] flex items-center justify-center overflow-hidden">
         {/* Wood ring textures */}
         <div className="absolute inset-4 rounded-full border border-amber-600/30 opacity-70" />
         <div className="absolute inset-10 rounded-full border border-amber-500/20 opacity-50" />
@@ -38,7 +38,7 @@ export const Bottle2D: React.FC<Bottle2DProps> = ({
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(251,191,36,0.08)_0%,transparent_70%)] pointer-events-none" />
 
         {/* Center circular emblem */}
-        <div className="absolute w-24 h-24 rounded-full border border-amber-500/40 bg-[#1e0e05]/80 shadow-inner flex items-center justify-center pointer-events-none">
+        <div className="absolute w-24 h-24 rounded-full border border-amber-500/40 bg-[rgb(var(--c-surface))]/80 shadow-inner flex items-center justify-center pointer-events-none">
           <div className="w-16 h-16 rounded-full border border-amber-400/30 flex items-center justify-center opacity-40">
             <BuffaloLogo className="w-10 h-10" />
           </div>

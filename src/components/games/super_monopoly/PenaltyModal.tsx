@@ -64,7 +64,7 @@ export const PenaltyModal: React.FC<PenaltyModalProps> = ({
 
         {/* Title & Reason */}
         <div>
-          <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-[#290d02] border border-[#522005] text-amber-300">
+          <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-2))] text-amber-300">
             {isRent ? 'PROPERTY RENT FEE' : isTax ? 'GOVERNMENT TAX' : 'PENALTY FEE'}
           </span>
           <h3 className="text-lg sm:text-xl font-black text-white mt-1.5 flex items-center justify-center gap-1.5">
@@ -77,16 +77,16 @@ export const PenaltyModal: React.FC<PenaltyModalProps> = ({
 
         {/* Recipient info if Rent */}
         {notice.recipientName && (
-          <div className="w-full py-1.5 px-3 rounded-xl bg-[#1c0801] border border-[#4d1a04] flex items-center justify-between text-xs">
+          <div className="w-full py-1.5 px-3 rounded-xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))] flex items-center justify-between text-xs">
             <span className="text-amber-400/80 font-bold">จ่ายให้แก่เจ้าของ:</span>
             <span className="font-black text-amber-100">{notice.recipientName}</span>
           </div>
         )}
 
         {/* Financial Details Box */}
-        <div className="w-full flex flex-col gap-2 bg-[#190801] border-2 border-[#542106] rounded-2xl p-3 shadow-inner">
+        <div className="w-full flex flex-col gap-2 bg-[rgb(var(--c-bg-deep))] border-2 border-[rgb(var(--c-surface-3))] rounded-2xl p-3 shadow-inner">
           {/* Deducted Amount */}
-          <div className="flex items-center justify-between border-b border-[#3b1503] pb-2">
+          <div className="flex items-center justify-between border-b border-[rgb(var(--c-surface-2))] pb-2">
             <span className="text-xs font-bold text-red-300 flex items-center gap-1">
               <span>💸 ยอดที่ต้องจ่าย:</span>
             </span>
