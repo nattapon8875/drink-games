@@ -62,7 +62,7 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
 
     return (
       <div
-        className={`w-9 h-9 rounded-xl bg-gradient-to-b from-[#ffffff] via-[#f7f5e8] to-[rgb(var(--c-butter))] border border-b-2 border-[rgb(var(--c-line-strong))] shadow-md flex items-center justify-center transition-all ${
+        className={`w-9 h-9 rounded-xl bg-gradient-to-b from-[#ffffff] via-[#fbfbf7] to-[#e9e9e0] border border-b-2 border-[#9a9a90] shadow-md flex items-center justify-center transition-all ${
           isRollingAnim ? 'animate-spin' : ''
         }`}
       >
@@ -70,9 +70,8 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
           {dotClasses.map((cls, idx) => (
             <span
               key={idx}
-              className={`w-1.5 h-1.5 rounded-full ${
-                val === 1 ? 'bg-red-600' : 'bg-[rgb(var(--c-bg-deep))]'
-              } justify-self-center self-center ${cls}`}
+              style={{ backgroundColor: val === 1 ? '#d42a2a' : '#1b1b1b' }}
+              className={`w-1.5 h-1.5 rounded-full justify-self-center self-center ${cls}`}
             />
           ))}
         </div>
@@ -364,7 +363,7 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
                         {p.display_name}
                       </span>
                       {isMe && (
-                        <span className="text-[8px] font-black bg-amber-500 text-amber-950 px-1.5 py-0.2 rounded-full border border-white">
+                        <span className="text-[8px] font-black bg-amber-500 text-[rgb(var(--c-on-accent))] px-1.5 py-0.2 rounded-full border border-white">
                           คุณ
                         </span>
                       )}
@@ -377,7 +376,7 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
                         <Crown className="w-3 h-3 text-yellow-400" />
                       )}
                     </div>
-                    <span className="text-[10px] text-amber-300/60 font-semibold block">
+                    <span className="text-[10px] text-amber-300/80 font-semibold block">
                       {allRolled && rankIndex >= 0
                         ? rankIndex === 0
                           ? '👑 ลำดับ 1 (เริ่มเดินคนแรก)'
@@ -403,7 +402,7 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
                         <span className="text-xs font-black font-mono text-yellow-300">
                           {roll.total}
                         </span>
-                        <span className="text-[8px] text-amber-400/60 block -mt-0.5">แต้ม</span>
+                        <span className="text-[8px] text-amber-400/80 block -mt-0.5">แต้ม</span>
                       </div>
                     </div>
                   ) : isMe ? (
@@ -417,7 +416,7 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
                       <span>{isLocalRolling ? 'กำลังทอย...' : 'ทอยเต๋าของฉัน!'}</span>
                     </button>
                   ) : (
-                    <div className="text-[11px] text-amber-400/50 font-bold px-2 py-1 rounded-lg bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))]">
+                    <div className="text-[11px] text-amber-400/80 font-bold px-2 py-1 rounded-lg bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))]">
                       {isBot ? '🤖 กำลังทอย...' : '⏳ รอทอย'}
                     </div>
                   )}
@@ -467,7 +466,7 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
             </div>
           ) : (
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[11px] text-amber-300/70 font-semibold text-left">
+              <span className="text-[11px] text-amber-300/85 font-semibold text-left">
                 {myRoll ? '✅ คุณทอยแล้ว รอเพื่อนคนอื่นทอยครบ...' : '👉 กดปุ่มทอยเต๋าของคุณเพื่อสุ่มแต้ม'}
               </span>
 
@@ -475,7 +474,7 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
                 <button
                   type="button"
                   onClick={handleRollForAll}
-                  className="px-3 py-1.5 rounded-xl bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] text-[11px] font-black text-amber-200 hover:text-white shadow transition flex items-center gap-1 shrink-0"
+                  className="px-3 py-1.5 rounded-xl bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] text-[11px] font-black text-amber-200 hover:text-[rgb(var(--c-ink))] shadow transition flex items-center gap-1 shrink-0"
                   title="ทอยให้ทุกคนอัตโนมัติทันที"
                 >
                   <Zap className="w-3.5 h-3.5 text-yellow-400" />

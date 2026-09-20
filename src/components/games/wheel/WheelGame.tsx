@@ -277,7 +277,7 @@ export const WheelGame: React.FC<BaseGameProps> = ({
           size="lg"
           onClick={handleSpinClick}
           disabled={isSpinning || localSpinning || (!isMyTurn && !isHost) || activeItems.length < 2}
-          className="w-full py-4 text-base font-black bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 border border-amber-300 shadow-[0_0_25px_rgba(245,158,11,0.5)]"
+          className="w-full py-4 text-base font-black bg-mint border border-amber-300 shadow-[0_0_25px_rgba(245,158,11,0.5)]"
         >
           {isSpinning || localSpinning ? (
             <span className="flex items-center gap-2 animate-pulse">

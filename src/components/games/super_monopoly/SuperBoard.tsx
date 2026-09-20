@@ -120,7 +120,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
                     : tile.index === 0
                     ? 'bg-gradient-to-br from-[#e8f5e9] via-[#c8e6c9] to-[#a5d6a7] border-emerald-600 text-emerald-950 shadow-md'
                     : tile.index === 10
-                    ? 'bg-gradient-to-br from-[rgb(var(--c-butter-soft))] via-[rgb(var(--c-butter-soft))] to-[rgb(var(--c-butter))] border-amber-600 text-amber-950 shadow-md'
+                    ? 'bg-gradient-to-br from-[rgb(var(--c-butter-soft))] via-[rgb(var(--c-butter-soft))] to-[rgb(var(--c-butter))] border-amber-600 text-[rgb(var(--c-on-accent))] shadow-md'
                     : tile.index === 20
                     ? 'bg-gradient-to-br from-[#e0f2fe] via-[#bae6fd] to-[#7dd3fc] border-sky-600 text-sky-950 shadow-md'
                     : 'bg-gradient-to-br from-[rgb(var(--c-butter-soft))] via-[rgb(var(--c-butter))] to-[rgb(var(--c-butter))] border-rose-600 text-rose-950 shadow-md'
@@ -289,7 +289,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
                   {tile.icon}
                 </span>
 
-                <span className="text-[7.5px] sm:text-[9.5px] font-black text-[rgb(var(--c-surface))] tracking-tight truncate w-full">
+                <span className="text-[7.5px] sm:text-[9.5px] font-black text-[rgb(var(--c-ink))] tracking-tight truncate w-full">
                   {getTileShortName(tile.name)}
                 </span>
 
@@ -371,15 +371,15 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
 
           {/* Top Logo & Title */}
           <div className="text-center z-10 pt-1 sm:pt-2">
-            <div className="inline-flex items-center justify-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-200/50 border border-amber-400/40 text-[9px] sm:text-[11px] font-black text-amber-900 mb-1">
+            <div className="inline-flex items-center justify-center gap-1.5 px-3 py-0.5 rounded-full bg-[rgb(var(--c-surface-2))]/50 border border-amber-400/40 text-[9px] sm:text-[11px] font-black text-amber-900 mb-1">
               <span>★</span>
               <span>เกมเศรษฐีคลาสสิกของไทย</span>
               <span>★</span>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-black text-[rgb(var(--c-line))] tracking-widest drop-shadow-[0_2px_4px_rgba(185,28,28,0.25)] font-serif uppercase">
+            <h1 className="text-2xl sm:text-4xl font-black text-[rgb(var(--c-ink))] tracking-widest drop-shadow-[0_2px_4px_rgba(185,28,28,0.25)] font-serif uppercase">
               ซุปเปอร์เศรษฐี
             </h1>
-            <p className="text-[9px] sm:text-xs font-black text-[rgb(var(--c-line-strong))] tracking-widest mt-0.5">
+            <p className="text-[9px] sm:text-xs font-black text-[rgb(var(--c-ink))] tracking-widest mt-0.5">
               SUPER MONOPOLY CLASSIC • THAILAND
             </p>
           </div>
@@ -389,10 +389,10 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
 
           {/* Bottom Slogan & Quick Rule Badges */}
           <div className="flex flex-col items-center gap-1 z-10 pb-0.5 text-center">
-            <span className="text-[9px] sm:text-[11.5px] font-black text-[rgb(var(--c-line))] opacity-85">
+            <span className="text-[9px] sm:text-[11.5px] font-black text-[rgb(var(--c-ink))] opacity-85">
               ★ สนุกสนาน เพลิดเพลิน ซื้อขายที่ดินทั่วสยาม ★
             </span>
-            <div className="flex flex-wrap items-center justify-center gap-1.5 text-[7px] sm:text-[9px] font-bold text-amber-950/80 bg-amber-100/70 border border-amber-300/60 px-2.5 py-0.5 rounded-full shadow-sm">
+            <div className="flex flex-wrap items-center justify-center gap-1.5 text-[7px] sm:text-[9px] font-bold text-[rgb(var(--c-on-accent))]/80 bg-[rgb(var(--c-surface-2))]/70 border border-amber-300/60 px-2.5 py-0.5 rounded-full shadow-sm">
               <span>🏁 ผ่านจุดเริ่มต้น รับ +2M</span>
               <span>•</span>
               <span>🏖️ จุดพัก หยุดพัก 1 ตา</span>

@@ -68,7 +68,7 @@ export const WheelResultModal: React.FC<WheelResultModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       showCloseButton={false}
-      className="max-w-md bg-gradient-to-b from-[rgb(var(--c-surface))] via-[rgb(var(--c-surface))] to-[#100602] border-2 border-amber-500/80 shadow-[0_0_50px_rgba(245,158,11,0.5)] p-5 text-center"
+      className="max-w-md bg-gradient-to-b from-[rgb(var(--c-surface))] via-[rgb(var(--c-surface))] to-[rgb(var(--c-surface-2))] border-2 border-amber-500/80 shadow-[0_0_50px_rgba(245,158,11,0.5)] p-5 text-center"
     >
       {/* Top Banner Badge */}
       <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-black mb-3">
@@ -79,7 +79,7 @@ export const WheelResultModal: React.FC<WheelResultModalProps> = ({
       {/* Result Display Box with Slice Color */}
       <div
         style={{ borderColor: item.color }}
-        className="my-3 p-5 rounded-3xl bg-gradient-to-b from-[rgb(var(--c-bg-deep))] to-[#120501] border-4 shadow-[0_10px_30px_rgba(0,0,0,0.8)] flex flex-col items-center justify-center relative overflow-hidden"
+        className="my-3 p-5 rounded-3xl bg-gradient-to-b from-[rgb(var(--c-bg-deep))] to-[rgb(var(--c-surface-2))] border-4 shadow-[0_10px_30px_rgba(0,0,0,0.8)] flex flex-col items-center justify-center relative overflow-hidden"
       >
         <div
           style={{ backgroundColor: item.color }}
@@ -171,7 +171,7 @@ export const WheelResultModal: React.FC<WheelResultModalProps> = ({
             {submitting ? 'กำลังบันทึก...' : 'รับทราบคำสั่งและส่งต่อเทิร์น! 🍻'}
           </Button>
         ) : (
-          <div className="p-3 bg-black/40 rounded-2xl border border-amber-900/40 text-xs text-amber-200/70 font-semibold">
+          <div className="p-3 bg-black/40 rounded-2xl border border-amber-900/40 text-xs text-amber-200/85 font-semibold">
             ⏳ กำลังรอให้ <b>{spinnerPlayer.display_name}</b> กดยืนยัน...
           </div>
         )}

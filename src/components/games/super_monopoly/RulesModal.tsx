@@ -42,8 +42,8 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
             onClick={() => setActiveTab('overview')}
             className={`px-3 py-1.5 rounded-xl text-xs font-black shrink-0 transition flex items-center gap-1.5 ${
               activeTab === 'overview'
-                ? 'bg-gradient-to-r from-amber-600 to-yellow-500 text-amber-950 shadow'
-                : 'text-amber-300/70 hover:text-white bg-[rgb(var(--c-bg-deep))]'
+                ? 'bg-mint text-[rgb(var(--c-on-accent))] shadow'
+                : 'text-[rgb(var(--c-on-accent))]/85 hover:text-[rgb(var(--c-ink))] bg-[rgb(var(--c-bg-deep))]'
             }`}
           >
             <Coins className="w-3.5 h-3.5" />
@@ -55,8 +55,8 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
             onClick={() => setActiveTab('dice')}
             className={`px-3 py-1.5 rounded-xl text-xs font-black shrink-0 transition flex items-center gap-1.5 ${
               activeTab === 'dice'
-                ? 'bg-gradient-to-r from-amber-600 to-yellow-500 text-amber-950 shadow'
-                : 'text-amber-300/70 hover:text-white bg-[rgb(var(--c-bg-deep))]'
+                ? 'bg-mint text-[rgb(var(--c-on-accent))] shadow'
+                : 'text-[rgb(var(--c-on-accent))]/85 hover:text-[rgb(var(--c-ink))] bg-[rgb(var(--c-bg-deep))]'
             }`}
           >
             <Dices className="w-3.5 h-3.5" />
@@ -68,8 +68,8 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
             onClick={() => setActiveTab('properties')}
             className={`px-3 py-1.5 rounded-xl text-xs font-black shrink-0 transition flex items-center gap-1.5 ${
               activeTab === 'properties'
-                ? 'bg-gradient-to-r from-amber-600 to-yellow-500 text-amber-950 shadow'
-                : 'text-amber-300/70 hover:text-white bg-[rgb(var(--c-bg-deep))]'
+                ? 'bg-mint text-[rgb(var(--c-on-accent))] shadow'
+                : 'text-[rgb(var(--c-on-accent))]/85 hover:text-[rgb(var(--c-ink))] bg-[rgb(var(--c-bg-deep))]'
             }`}
           >
             <Home className="w-3.5 h-3.5" />
@@ -81,8 +81,8 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
             onClick={() => setActiveTab('corners')}
             className={`px-3 py-1.5 rounded-xl text-xs font-black shrink-0 transition flex items-center gap-1.5 ${
               activeTab === 'corners'
-                ? 'bg-gradient-to-r from-amber-600 to-yellow-500 text-amber-950 shadow'
-                : 'text-amber-300/70 hover:text-white bg-[rgb(var(--c-bg-deep))]'
+                ? 'bg-mint text-[rgb(var(--c-on-accent))] shadow'
+                : 'text-[rgb(var(--c-on-accent))]/85 hover:text-[rgb(var(--c-ink))] bg-[rgb(var(--c-bg-deep))]'
             }`}
           >
             <ShieldAlert className="w-3.5 h-3.5" />
@@ -94,8 +94,8 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
             onClick={() => setActiveTab('cards')}
             className={`px-3 py-1.5 rounded-xl text-xs font-black shrink-0 transition flex items-center gap-1.5 ${
               activeTab === 'cards'
-                ? 'bg-gradient-to-r from-amber-600 to-yellow-500 text-amber-950 shadow'
-                : 'text-amber-300/70 hover:text-white bg-[rgb(var(--c-bg-deep))]'
+                ? 'bg-mint text-[rgb(var(--c-on-accent))] shadow'
+                : 'text-[rgb(var(--c-on-accent))]/85 hover:text-[rgb(var(--c-ink))] bg-[rgb(var(--c-bg-deep))]'
             }`}
           >
             <Gift className="w-3.5 h-3.5" />
@@ -108,7 +108,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
             className={`px-3 py-1.5 rounded-xl text-xs font-black shrink-0 transition flex items-center gap-1.5 ${
               activeTab === 'discord'
                 ? 'bg-gradient-to-r from-indigo-600 to-blue-500 text-white shadow'
-                : 'text-amber-300/70 hover:text-white bg-[rgb(var(--c-bg-deep))]'
+                : 'text-amber-300/85 hover:text-[rgb(var(--c-ink))] bg-[rgb(var(--c-bg-deep))]'
             }`}
           >
             <span>🎮 เล่นบน Discord</span>
@@ -289,7 +289,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                   </div>
 
                   {/* Rest 20 */}
-                  <div className="p-2.5 rounded-xl bg-[#0c242e] border-2 border-sky-600/60 flex items-start gap-2.5">
+                  <div className="p-2.5 rounded-xl bg-[rgb(var(--c-sky-soft))] border-2 border-sky-600/60 flex items-start gap-2.5">
                     <span className="text-xl">🏖️</span>
                     <div>
                       <span className="text-xs font-black text-sky-300 block">ช่อง 20: จุดพักผ่อน (Rest Area)</span>
@@ -318,7 +318,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
           {activeTab === 'cards' && (
             <div className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <div className="p-3 rounded-2xl bg-gradient-to-b from-[#2e0d16] to-[#1c080e] border-2 border-pink-700/60">
+                <div className="p-3 rounded-2xl bg-gradient-to-b from-[rgb(var(--c-berry-soft))] to-[rgb(var(--c-surface-2))] border-2 border-pink-700/60">
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className="text-2xl">🎁</span>
                     <h4 className="text-xs font-black text-pink-300">หีบสมบัติ (Chest)</h4>
@@ -353,7 +353,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
           {/* TAB 6: วิธีเล่นบน Discord */}
           {activeTab === 'discord' && (
             <div className="space-y-3">
-              <div className="p-3.5 rounded-2xl bg-[#181935] border-2 border-[#5865F2]/70 shadow-sm space-y-2.5">
+              <div className="p-3.5 rounded-2xl bg-[rgb(var(--c-sky-soft))] border-2 border-[#5865F2]/70 shadow-sm space-y-2.5">
                 <div className="flex items-center gap-2 text-[#5865F2] font-black text-sm">
                   <span className="text-xl">🚀</span>
                   <span className="text-white font-extrabold">ขั้นตอนการเข้าเล่นผ่าน Discord Activity (ห้องเสียง)</span>
@@ -363,19 +363,19 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                 </p>
 
                 <div className="space-y-2 text-xs text-indigo-100">
-                  <div className="flex items-start gap-2 bg-[#101124] p-2.5 rounded-xl border border-[#5865F2]/30">
+                  <div className="flex items-start gap-2 bg-[rgb(var(--c-surface-2))] p-2.5 rounded-xl border border-[#5865F2]/30">
                     <span className="font-black text-yellow-400 bg-yellow-400/20 px-2 py-0.5 rounded-md shrink-0">1</span>
                     <span>เข้าไปที่ห้องคุยเสียง (<strong>Voice Channel</strong>) บน Discord Server ที่กำลังคุยกับเพื่อนๆ</span>
                   </div>
-                  <div className="flex items-start gap-2 bg-[#101124] p-2.5 rounded-xl border border-[#5865F2]/30">
+                  <div className="flex items-start gap-2 bg-[rgb(var(--c-surface-2))] p-2.5 rounded-xl border border-[#5865F2]/30">
                     <span className="font-black text-yellow-400 bg-yellow-400/20 px-2 py-0.5 rounded-md shrink-0">2</span>
                     <span>กดที่ปุ่มไอคอนรูปจรวด <strong>🚀 (Start an Activity / เริ่มกิจกรรม)</strong> ตรงแถบเมนูด้านล่างข้างปุ่มไมโครโฟน</span>
                   </div>
-                  <div className="flex items-start gap-2 bg-[#101124] p-2.5 rounded-xl border border-[#5865F2]/30">
+                  <div className="flex items-start gap-2 bg-[rgb(var(--c-surface-2))] p-2.5 rounded-xl border border-[#5865F2]/30">
                     <span className="font-black text-yellow-400 bg-yellow-400/20 px-2 py-0.5 rounded-md shrink-0">3</span>
                     <span>ค้นหาและเลือกแอป <strong>"Party Games"</strong> หรือ <strong>"Drink Games"</strong></span>
                   </div>
-                  <div className="flex items-start gap-2 bg-[#101124] p-2.5 rounded-xl border border-[#5865F2]/30">
+                  <div className="flex items-start gap-2 bg-[rgb(var(--c-surface-2))] p-2.5 rounded-xl border border-[#5865F2]/30">
                     <span className="font-black text-yellow-400 bg-yellow-400/20 px-2 py-0.5 rounded-md shrink-0">4</span>
                     <span>เลือก <strong>"ซุปเปอร์เศรษฐี"</strong> ➔ กดเข้าร่วมห้องแล้วใส่รหัสห้อง หรือหากมีเพื่อนเปิดกิจกรรมอยู่แล้ว สามารถกดปุ่ม <strong>"Join Activity"</strong> เพื่อเข้าร่วมเล่นได้ทันที!</span>
                   </div>
@@ -399,7 +399,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
           <button
             type="button"
             onClick={onClose}
-            className="w-full sm:w-auto px-6 py-2 rounded-xl bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 hover:from-amber-500 hover:to-yellow-400 text-amber-950 font-black text-xs shadow-lg transition active:scale-95"
+            className="w-full sm:w-auto px-6 py-2 rounded-xl bg-mint hover:from-amber-500 hover:to-yellow-400 text-[rgb(var(--c-on-accent))] font-black text-xs shadow-lg transition active:scale-95"
           >
             เข้าใจแล้ว ปิดหน้าต่าง
           </button>

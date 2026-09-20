@@ -261,7 +261,7 @@ export default function HomePage() {
       <main className="w-full min-h-screen flex flex-col items-center justify-center p-6 bg-[rgb(var(--c-bg-deep))] text-amber-100">
         <div className="animate-spin w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full mb-4" />
         <p className="text-base font-black text-amber-200">กำลังเข้าสู่เกมซุปเปอร์เศรษฐีใน Discord...</p>
-        <p className="text-xs text-amber-400/60 font-semibold mt-1">กรุณารอสักครู่ ระบบกำลังพาไปยังหน้าเกม</p>
+        <p className="text-xs text-amber-400/80 font-semibold mt-1">กรุณารอสักครู่ ระบบกำลังพาไปยังหน้าเกม</p>
       </main>
     );
   }
@@ -390,7 +390,7 @@ export default function HomePage() {
                     className={`p-3 rounded-2xl border-2 shadow-inner shrink-0 ${
                       isReady
                         ? 'bg-[rgb(var(--c-surface-2))] border-[rgb(var(--c-surface-3))] text-amber-300'
-                        : 'bg-[rgb(var(--c-bg-deep))] border-[rgb(var(--c-surface-2))] text-amber-200/50'
+                        : 'bg-[rgb(var(--c-bg-deep))] border-[rgb(var(--c-surface-2))] text-amber-200/80'
                     }`}
                   >
                     {game.icon === 'dice' && <Dice5 className="w-6 h-6" />}
@@ -415,7 +415,7 @@ export default function HomePage() {
                         {isReady ? 'พร้อมลุย' : 'เร็วๆ นี้'}
                       </span>
                     </div>
-                    <p className="text-[11px] text-amber-200/70 font-semibold mt-1 leading-snug">
+                    <p className="text-[11px] text-amber-200/85 font-semibold mt-1 leading-snug">
                       {game.description}
                     </p>
                     <div className="flex items-center gap-2 text-[10px] text-amber-300/80 font-black mt-1.5">
@@ -432,7 +432,7 @@ export default function HomePage() {
                       <button
                         type="button"
                         onClick={() => router.push('/super')}
-                        className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 text-amber-950 font-black text-xs flex items-center justify-center gap-1.5 shadow-md hover:brightness-110 active:scale-95 transition"
+                        className="w-full py-2 px-3 rounded-xl bg-mint text-[rgb(var(--c-on-accent))] font-black text-xs flex items-center justify-center gap-1.5 shadow-md hover:brightness-110 active:scale-95 transition"
                       >
                         <Sparkles className="w-3.5 h-3.5" />
                         <span>เข้าสู่โหมดเต็มจอ Discord & Web (/super)</span>
@@ -462,7 +462,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="w-full text-center text-[10px] text-amber-300/60 font-bold mt-6 pt-3 border-t border-[rgb(var(--c-surface-2))] flex items-center justify-center gap-1.5">
+      <footer className="w-full text-center text-[10px] text-amber-300/80 font-bold mt-6 pt-3 border-t border-[rgb(var(--c-surface-2))] flex items-center justify-center gap-1.5">
         <BuffaloLogo className="w-4 h-4 inline-block opacity-75" />
         <span>Buffy Party Drink • เล่นอย่างมีความรับผิดชอบ ไม่เมาแล้วขับนะสหาย 🍻</span>
       </footer>

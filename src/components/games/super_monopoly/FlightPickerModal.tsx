@@ -70,7 +70,7 @@ export const FlightPickerModal: React.FC<FlightPickerModalProps> = ({
                   isHere
                     ? 'bg-[rgb(var(--c-surface-2))] border-amber-500 opacity-60 cursor-default'
                     : isMine
-                    ? 'bg-[#0d2818] border-emerald-500 hover:border-emerald-300'
+                    ? 'bg-[rgb(var(--c-mint-soft))] border-emerald-500 hover:border-emerald-300'
                     : owner
                     ? 'bg-[rgb(var(--c-surface))] border-[rgb(var(--c-surface-3))] hover:border-amber-400'
                     : 'bg-[rgb(var(--c-butter-soft))] border-[rgb(var(--c-butter-deep))] hover:border-sky-400'
@@ -86,7 +86,7 @@ export const FlightPickerModal: React.FC<FlightPickerModalProps> = ({
                 <span className="text-[9px] sm:text-xs leading-none">{tile.icon || '🏠'}</span>
                 <span
                   className={`text-[5px] sm:text-[7px] font-black leading-tight text-center px-[1px] truncate w-full ${
-                    isHere || isMine || owner ? 'text-amber-100' : 'text-[rgb(var(--c-surface-2))]'
+                    isHere || isMine || owner ? 'text-amber-100' : 'text-[rgb(var(--c-ink))]'
                   }`}
                 >
                   {isHere ? 'อยู่ตรงนี้' : tile.name}
@@ -106,7 +106,7 @@ export const FlightPickerModal: React.FC<FlightPickerModalProps> = ({
           >
             <span className="text-2xl">✈️</span>
             <span className="text-[11px] font-black text-sky-200">เลือกช่องที่จะบินไป</span>
-            <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 text-[8px] font-bold text-amber-200/70">
+            <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 text-[8px] font-bold text-amber-200/85">
               <span>🏁 = ผ่านจุดเริ่มต้น รับ {formatMoneyM(2)}</span>
               <span>· ขอบสี = เจ้าของที่ดิน</span>
             </div>

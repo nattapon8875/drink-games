@@ -30,7 +30,7 @@ export const CardCircle: React.FC<CardCircleProps> = ({
   return (
     <div className="relative w-full max-w-[460px] aspect-square mx-auto flex items-center justify-center select-none py-2">
       {/* Outer Wooden Tavern Mat */}
-      <div className="absolute inset-2 rounded-full bg-gradient-to-b from-[rgb(var(--c-surface-2))] via-[rgb(var(--c-surface))] to-[#140802] border-4 border-[rgb(var(--c-butter-deep))] shadow-[0_0_50px_rgba(217,119,6,0.35)] flex items-center justify-center overflow-hidden">
+      <div className="absolute inset-2 rounded-full bg-gradient-to-b from-[rgb(var(--c-surface-2))] via-[rgb(var(--c-surface))] to-[rgb(var(--c-surface-2))] border-4 border-[rgb(var(--c-butter-deep))] shadow-[0_0_50px_rgba(217,119,6,0.35)] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-6 rounded-full border border-amber-600/30 opacity-70 pointer-events-none" />
         <div className="absolute inset-14 rounded-full border border-amber-500/20 opacity-50 pointer-events-none" />
         <div className="absolute inset-24 rounded-full border border-amber-400/10 opacity-30 pointer-events-none" />
@@ -85,7 +85,7 @@ export const CardCircle: React.FC<CardCircleProps> = ({
             <div className="absolute inset-0 translate-x-3 translate-y-4 rounded-2xl bg-[rgb(var(--c-surface))] border-2 border-amber-950/80 -z-20 shadow-2xl" />
 
             {/* Top Deck Card */}
-            <div className="w-full h-full rounded-2xl bg-gradient-to-br from-[#881337] via-[#9f1239] to-[#4c0519] border-2 border-amber-300 p-2 flex flex-col items-center justify-between shadow-xl relative overflow-hidden">
+            <div className="w-full h-full rounded-2xl bg-gradient-to-br from-[rgb(var(--c-berry-soft))] via-[rgb(var(--c-berry-soft))] to-[rgb(var(--c-berry-soft))] border-2 border-amber-300 p-2 flex flex-col items-center justify-between shadow-xl relative overflow-hidden">
               {/* Gold Filigree Corner Ornaments */}
               <div className="absolute top-1 left-1 text-[10px] text-amber-300">♦</div>
               <div className="absolute top-1 right-1 text-[10px] text-amber-300">♦</div>

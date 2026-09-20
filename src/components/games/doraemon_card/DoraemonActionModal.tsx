@@ -153,7 +153,7 @@ export const DoraemonActionModal: React.FC<DoraemonActionModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       showCloseButton={false}
-      className="max-w-md bg-gradient-to-b from-[rgb(var(--c-surface))] via-[rgb(var(--c-surface))] to-[#100602] border-2 border-amber-500/80 shadow-[0_0_50px_rgba(245,158,11,0.5)] p-5 text-center"
+      className="max-w-md bg-gradient-to-b from-[rgb(var(--c-surface))] via-[rgb(var(--c-surface))] to-[rgb(var(--c-surface-2))] border-2 border-amber-500/80 shadow-[0_0_50px_rgba(245,158,11,0.5)] p-5 text-center"
     >
       {/* Top Banner */}
       <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-black mb-3">
@@ -240,7 +240,7 @@ export const DoraemonActionModal: React.FC<DoraemonActionModalProps> = ({
             </div>
 
             {/* Past K Parts Summary */}
-            <div className="bg-[#120501] p-2.5 rounded-xl border border-amber-900/60 text-[11px] space-y-1 text-gray-300">
+            <div className="bg-[rgb(var(--c-surface-2))] p-2.5 rounded-xl border border-amber-900/60 text-[11px] space-y-1 text-gray-300">
               <div>
                 • ใบที่ 1: <b className="text-amber-200">{kingSentences['1'] || kingParts.what || (kingCount === 1 ? '(กำลังดำเนินการ...)' : '-')}</b>
               </div>
@@ -302,7 +302,7 @@ export const DoraemonActionModal: React.FC<DoraemonActionModalProps> = ({
               : 'รับทราบคำสั่งและดำเนินการต่อ! 🍻'}
           </Button>
         ) : (
-          <div className="p-3 bg-black/40 rounded-2xl border border-amber-900/40 text-xs text-amber-200/70 font-semibold">
+          <div className="p-3 bg-black/40 rounded-2xl border border-amber-900/40 text-xs text-amber-200/85 font-semibold">
             ⏳ กำลังรอให้ <b>{drawerPlayer.display_name}</b> กดดำเนินการ...
           </div>
         )}

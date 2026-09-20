@@ -356,7 +356,7 @@ export const DoraemonCardGame: React.FC<DoraemonCardGameProps> = ({
 
         {/* 4th King Complete Punishment Grand Announcement */}
         {kingCount === 4 && (
-          <div className="w-full p-3 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 text-stone-950 font-black text-center shadow-[0_0_30px_rgba(245,158,11,0.8)] border-2 border-yellow-200 animate-pulse">
+          <div className="w-full p-3 rounded-2xl bg-mint text-stone-950 font-black text-center shadow-[0_0_30px_rgba(245,158,11,0.8)] border-2 border-yellow-200 animate-pulse">
             <div className="text-xs uppercase tracking-widest text-stone-900 mb-1">
               ⚡ มหาบทลงโทษไพ่คิงครบ 4 ส่วน! ⚡
             </div>
@@ -454,7 +454,7 @@ export const DoraemonCardGame: React.FC<DoraemonCardGameProps> = ({
           size="lg"
           onClick={handleDrawCard}
           disabled={isDrawing || localDrawing || (!isMyTurn && !isHost)}
-          className="w-full py-4 text-base font-black bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 border border-amber-300 shadow-[0_0_25px_rgba(245,158,11,0.5)]"
+          className="w-full py-4 text-base font-black bg-mint border border-amber-300 shadow-[0_0_25px_rgba(245,158,11,0.5)]"
         >
           {isDrawing || localDrawing ? (
             <span className="flex items-center gap-2 animate-pulse">

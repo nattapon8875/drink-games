@@ -23,30 +23,40 @@
   --c-line: 197 224 212;
   --c-line-strong: 160 205 187;
 
-  --c-ink: 20 49 42;
-  --c-ink-soft: 61 94 85;
-  --c-ink-faint: 122 152 143;
+  --c-ink: 17 43 37;
+  --c-ink-soft: 36 63 56;
+  --c-ink-faint: 64 90 83;
 
-  /* mint - the primary action colour */
-  --c-mint: 45 190 155;
-  --c-mint-deep: 18 143 115;
-  --c-mint-soft: 209 243 232;
+  /* mint - the primary action colour. Deep enough to carry white text on a
+     button and to be read as small text on cream, which is the harder of the
+     two and the one that set the value. */
+  --c-mint: 11 122 99;
+  --c-mint-deep: 7 94 76;
+  --c-mint-soft: 205 242 230;
   /* sky - secondary */
-  --c-sky: 76 190 235;
-  --c-sky-deep: 26 141 190;
-  --c-sky-soft: 210 238 250;
-  /* butter - highlights, money, winners */
-  --c-butter: 245 185 66;
-  --c-butter-deep: 199 137 16;
-  --c-butter-soft: 253 238 205;
+  --c-sky: 15 118 162;
+  --c-sky-deep: 9 88 122;
+  --c-sky-soft: 207 237 250;
+  /* butter - highlights, money, winners. The deep one is a label colour, so
+     it has to read on cream rather than glow. */
+  --c-butter: 222 157 22;
+  --c-butter-deep: 112 71 4;
+  --c-butter-soft: 253 240 210;
   /* berry - penalties */
-  --c-berry: 244 114 132;
-  --c-berry-deep: 205 63 84;
-  --c-berry-soft: 253 224 229;
+  --c-berry: 188 42 70;
+  --c-berry-deep: 146 28 50;
+  --c-berry-soft: 253 226 231;
   /* grape - special */
-  --c-grape: 160 132 232;
-  --c-grape-deep: 114 84 190;
+  --c-grape: 118 84 202;
+  --c-grape-deep: 88 60 166;
+  --c-grape-soft: 232 224 252;
 
+  /* A label on a soft accent chip needs the opposite end of the accent in each
+     theme: the deep one on a pale chip, the bright one on a dark chip. */
+  --c-mint-label: var(--c-mint-deep);
+  --c-butter-label: var(--c-butter-deep);
+  --c-sky-label: var(--c-sky-deep);
+  --c-berry-label: var(--c-berry-deep);
   --c-on-accent: 255 255 255;
   --shadow-soft: 0 6px 16px rgba(26, 62, 54, 0.12);
   --shadow-lift: 0 10px 26px rgba(26, 62, 54, 0.18);
@@ -81,7 +91,12 @@
   --c-berry-soft: 70 33 42;
   --c-grape: 181 158 244;
   --c-grape-deep: 134 104 212;
+  --c-grape-soft: 52 42 82;
 
+  --c-mint-label: var(--c-mint);
+  --c-butter-label: var(--c-butter);
+  --c-sky-label: var(--c-sky);
+  --c-berry-label: var(--c-berry);
   --c-on-accent: 10 22 38;
   --shadow-soft: 0 6px 16px rgba(0, 0, 0, 0.42);
   --shadow-lift: 0 10px 26px rgba(0, 0, 0, 0.55);
@@ -117,7 +132,12 @@
     --c-berry-soft: 70 33 42;
     --c-grape: 181 158 244;
     --c-grape-deep: 134 104 212;
+    --c-grape-soft: 52 42 82;
 
+    --c-mint-label: var(--c-mint);
+    --c-butter-label: var(--c-butter);
+    --c-sky-label: var(--c-sky);
+    --c-berry-label: var(--c-berry);
     --c-on-accent: 10 22 38;
     --shadow-soft: 0 6px 16px rgba(0, 0, 0, 0.42);
     --shadow-lift: 0 10px 26px rgba(0, 0, 0, 0.55);
@@ -131,9 +151,12 @@
 :root {
   --c-amber-50: var(--c-ink);
   --c-amber-100: var(--c-ink);
-  --c-amber-200: var(--c-ink-soft);
-  --c-amber-300: var(--c-ink-soft);
-  --c-amber-400: var(--c-mint-deep);
+  /* These two are almost always written with an opacity modifier - /60, /70 -
+     for muted labels, so the base has to be the full ink or the faded result
+     drops under the readable line. */
+  --c-amber-200: var(--c-ink);
+  --c-amber-300: var(--c-ink);
+  --c-amber-400: var(--c-ink-soft);
   --c-amber-500: var(--c-mint);
   --c-amber-600: var(--c-mint-deep);
   --c-amber-700: var(--c-mint-deep);
@@ -210,6 +233,16 @@ body {
 .rpg-text-gold {
   color: rgb(var(--c-butter-deep));
   text-shadow: none;
+}
+
+:root[data-theme='dark'] .rpg-text-gold {
+  color: rgb(var(--c-butter));
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-theme='dark']) .rpg-text-gold {
+    color: rgb(var(--c-butter));
+  }
 }
 
 .rpg-text-white {

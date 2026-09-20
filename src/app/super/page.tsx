@@ -446,7 +446,7 @@ export default function SuperHomePage() {
               }
               setIsDiscordAutoConnecting(false);
             }}
-            className="text-xs text-amber-400/70 hover:text-amber-200 underline font-semibold transition cursor-pointer"
+            className="text-xs text-amber-400/85 hover:text-amber-200 underline font-semibold transition cursor-pointer"
           >
             ยกเลิก / ไปยังหน้าหลัก
           </button>
@@ -474,7 +474,7 @@ export default function SuperHomePage() {
                   Widescreen Edition
                 </span>
               </div>
-              <p className="text-[11px] text-amber-300/70 font-semibold">
+              <p className="text-[11px] text-amber-300/85 font-semibold">
                 Super Monopoly Thai Edition • Discord & Web Fullscreen
               </p>
             </div>
@@ -492,7 +492,7 @@ export default function SuperHomePage() {
                 <span className="text-xs font-bold text-amber-100 group-hover:text-yellow-300 block leading-tight">
                   {user.displayName}
                 </span>
-                <span className="text-[9px] text-amber-400/60 font-semibold flex items-center gap-1">
+                <span className="text-[9px] text-amber-400/80 font-semibold flex items-center gap-1">
                   <Edit2 className="w-2.5 h-2.5" /> เปลี่ยนชื่อ
                 </span>
               </div>
@@ -501,7 +501,7 @@ export default function SuperHomePage() {
             {/* Link back to Drinking Games */}
             <Link
               href="/"
-              className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-amber-300/80 hover:text-white bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] px-3 py-2 rounded-xl transition"
+              className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-amber-300/80 hover:text-[rgb(var(--c-ink))] bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] px-3 py-2 rounded-xl transition"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>โหมดเกมวงเหล้า</span>
@@ -584,7 +584,7 @@ export default function SuperHomePage() {
                 type="button"
                 disabled={isCreating}
                 onClick={handleSoloVsBots}
-                className="wood-btn-brown px-5 py-3.5 rounded-xl font-black text-sm text-amber-200 border border-[rgb(var(--c-surface-3))] flex items-center gap-2 shadow-lg hover:text-white active:scale-95 transition"
+                className="wood-btn-brown px-5 py-3.5 rounded-xl font-black text-sm text-amber-200 border border-[rgb(var(--c-surface-3))] flex items-center gap-2 shadow-lg hover:text-[rgb(var(--c-ink))] active:scale-95 transition"
               >
                 <Bot className="w-5 h-5 text-yellow-400" />
                 <span>เล่นคนเดียวกับบอท (Solo vs 3 Bots)</span>
@@ -602,7 +602,7 @@ export default function SuperHomePage() {
                 <Users className="w-5 h-5 text-yellow-400" />
                 <span>เข้าร่วมห้องที่เพื่อนสร้าง</span>
               </h3>
-              <p className="text-xs text-amber-300/70 font-semibold mb-4">
+              <p className="text-xs text-amber-300/85 font-semibold mb-4">
                 กรอกรหัสห้อง 4 หลักเพื่อเข้าร่วมกระดานของเพื่อน
               </p>
 
@@ -617,7 +617,7 @@ export default function SuperHomePage() {
                     onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
                     maxLength={6}
                     placeholder="เช่น A8K2"
-                    className="w-full text-center text-2xl font-black font-mono tracking-widest uppercase py-3 rounded-xl bg-[rgb(var(--c-bg-deep))] border-2 border-[rgb(var(--c-surface-2))] text-yellow-400 placeholder:text-amber-700/40 focus:outline-none focus:border-yellow-400"
+                    className="w-full text-center text-2xl font-black font-mono tracking-widest uppercase py-3 rounded-xl bg-[rgb(var(--c-bg-deep))] border-2 border-[rgb(var(--c-surface-2))] text-yellow-400 placeholder:text-amber-700/75 focus:outline-none focus:border-yellow-400"
                   />
                 </div>
 
@@ -632,7 +632,7 @@ export default function SuperHomePage() {
               </form>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-[rgb(var(--c-surface-2))] text-[11px] text-amber-300/60 font-semibold flex items-center justify-between">
+            <div className="mt-6 pt-4 border-t border-[rgb(var(--c-surface-2))] text-[11px] text-amber-300/80 font-semibold flex items-center justify-between">
               <span>สามารถเล่นได้พร้อมกัน 2-8 คน</span>
               <span className="text-yellow-400/80">มีระบบบอท AI อัตโนมัติ</span>
             </div>
@@ -646,7 +646,7 @@ export default function SuperHomePage() {
               </div>
               <div>
                 <h4 className="text-xs font-black text-amber-100 mb-1">ทุนเริ่มต้น 15M (ล้าน)</h4>
-                <p className="text-[11px] text-amber-300/70 font-semibold leading-relaxed">
+                <p className="text-[11px] text-amber-300/85 font-semibold leading-relaxed">
                   ผู้เล่นทุกคนเริ่มต้นด้วยเงินสด 15 ล้าน และเมื่อเดินครบรอบผ่านจุดเริ่มต้น รับเพิ่มทันที 2M
                 </p>
               </div>
@@ -658,7 +658,7 @@ export default function SuperHomePage() {
               </div>
               <div>
                 <h4 className="text-xs font-black text-amber-100 mb-1">ปลูกบ้าน & โรงแรม</h4>
-                <p className="text-[11px] text-amber-300/70 font-semibold leading-relaxed">
+                <p className="text-[11px] text-amber-300/85 font-semibold leading-relaxed">
                   ซื้อที่ดินแล้วสร้างบ้านได้สูงสุด 3 หลัง และอัปเกรดเป็นโรงแรมหรูเพื่อเรียกค่าเช่าสูงสุด!
                 </p>
               </div>
@@ -670,7 +670,7 @@ export default function SuperHomePage() {
               </div>
               <div>
                 <h4 className="text-xs font-black text-amber-100 mb-1">หีบสมบัติ & เสี่ยงโชค</h4>
-                <p className="text-[11px] text-amber-300/70 font-semibold leading-relaxed">
+                <p className="text-[11px] text-amber-300/85 font-semibold leading-relaxed">
                   การ์ดสุ่มคำสั่งคลาสสิก: ได้เงินปันผล, ถูกปรับภาษี, ย้ายไปสถานีรถไฟ หรือถูกส่งเข้าคุก
                 </p>
               </div>
@@ -682,7 +682,7 @@ export default function SuperHomePage() {
               </div>
               <div>
                 <h4 className="text-xs font-black text-amber-100 mb-1">ระบบบอท AI อัตโนมัติ</h4>
-                <p className="text-[11px] text-amber-300/70 font-semibold leading-relaxed">
+                <p className="text-[11px] text-amber-300/85 font-semibold leading-relaxed">
                   ขาดคนก็เล่นได้! เพิ่มบอทลงในห้อง บอทจะทอยเต๋า ซื้อที่ดิน และสร้างบ้านเองโดยอัตโนมัติ
                 </p>
               </div>
@@ -691,7 +691,7 @@ export default function SuperHomePage() {
         </div>
 
         {/* Footer info */}
-        <footer className="w-full text-center py-4 text-xs text-amber-400/50 font-semibold">
+        <footer className="w-full text-center py-4 text-xs text-amber-400/80 font-semibold">
           Buffy Super Monopoly Thai Edition • เล่นเพลินบน Discord Activity, Web Browser & แท็บเล็ต
         </footer>
       </div>

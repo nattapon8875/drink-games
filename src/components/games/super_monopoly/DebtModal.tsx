@@ -38,15 +38,15 @@ export const DebtModal: React.FC<DebtModalProps> = ({ isOpen, debt, onMortgage, 
 
         <div className="grid grid-cols-3 gap-1.5 text-[11px] font-bold">
           <div className="p-2 rounded-xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))]">
-            <span className="block text-amber-400/70 text-[9px]">ต้องจ่าย</span>
+            <span className="block text-amber-400/85 text-[9px]">ต้องจ่าย</span>
             <span className="block text-rose-300 font-black font-mono">{formatMoneyM(debt.amount)}</span>
           </div>
           <div className="p-2 rounded-xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))]">
-            <span className="block text-amber-400/70 text-[9px]">เงินสดที่มี</span>
+            <span className="block text-amber-400/85 text-[9px]">เงินสดที่มี</span>
             <span className="block text-amber-100 font-black font-mono">{formatMoneyM(debt.cashNow)}</span>
           </div>
           <div className="p-2 rounded-xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))]">
-            <span className="block text-amber-400/70 text-[9px]">ยังขาด</span>
+            <span className="block text-amber-400/85 text-[9px]">ยังขาด</span>
             <span className="block text-orange-300 font-black font-mono">{formatMoneyM(shortfall)}</span>
           </div>
         </div>
@@ -54,7 +54,7 @@ export const DebtModal: React.FC<DebtModalProps> = ({ isOpen, debt, onMortgage, 
         <div className="flex items-center justify-center gap-2 text-[11px] font-bold text-sky-200 p-2 rounded-xl bg-sky-500/10 border border-sky-500/40">
           <Landmark className="w-4 h-4 text-sky-300" />
           <span>จำนองที่ดิน + บ้านทั้งหมดได้</span>
-          <ArrowRight className="w-3.5 h-3.5 text-sky-400/70" />
+          <ArrowRight className="w-3.5 h-3.5 text-sky-400/85" />
           <span className="font-black font-mono text-sky-100">{formatMoneyM(debt.raisable)}</span>
         </div>
 

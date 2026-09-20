@@ -121,7 +121,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
 
     return (
       <div
-        className={`w-14 h-14 rounded-2xl bg-gradient-to-b from-[#ffffff] via-[#f7f5e8] to-[rgb(var(--c-butter))] border-2 border-b-4 border-[rgb(var(--c-line-strong))] shadow-xl flex items-center justify-center ${
+        className={`w-14 h-14 rounded-2xl bg-gradient-to-b from-[#ffffff] via-[#fbfbf7] to-[#e9e9e0] border-2 border-b-4 border-[#9a9a90] shadow-xl flex items-center justify-center ${
           isRollingAnim ? 'animate-spin' : ''
         }`}
       >
@@ -129,9 +129,8 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           {dotClasses.map((cls) => (
             <span
               key={cls}
-              className={`w-2.5 h-2.5 rounded-full ${
-                val === 1 ? 'bg-red-600 ring-1 ring-red-400' : 'bg-[rgb(var(--c-bg-deep))]'
-              } shadow-inner justify-self-center self-center ${cls}`}
+              style={{ backgroundColor: val === 1 ? '#d42a2a' : '#1b1b1b' }}
+              className={`w-2.5 h-2.5 rounded-full shadow-inner justify-self-center self-center ${cls}`}
             />
           ))}
         </div>
@@ -257,7 +256,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           <button
             type="button"
             onClick={() => setShowRulesModal(true)}
-            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-700 via-amber-600 to-amber-700 hover:from-amber-600 hover:to-amber-500 border border-yellow-500/50 text-xs font-black text-amber-100 shadow flex items-center gap-1.5 transition active:scale-95 cursor-pointer"
+            className="px-3 py-1.5 rounded-xl bg-mint hover:from-amber-600 hover:to-amber-500 border border-yellow-500/50 text-xs font-black text-[rgb(var(--c-on-accent))] shadow flex items-center gap-1.5 transition active:scale-95 cursor-pointer"
             title="ดูกฎและกติกาการเล่นซุปเปอร์เศรษฐี"
           >
             <BookOpen className="w-4 h-4 text-yellow-300" />
@@ -306,20 +305,20 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               {gameLogs[0]?.text}
             </span>
           ) : (
-            <span className="text-xs text-amber-400/50">ยังไม่มีประวัติการเดิน เริ่มเกมโดยการทอยลูกเต๋าได้เลย!</span>
+            <span className="text-xs text-amber-400/80">ยังไม่มีประวัติการเดิน เริ่มเกมโดยการทอยลูกเต๋าได้เลย!</span>
           )}
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
           {gameLogs[0]?.time && (
-            <span className="text-[10px] font-mono text-amber-400/60 hidden md:inline">
+            <span className="text-[10px] font-mono text-amber-400/80 hidden md:inline">
               {gameLogs[0].time}
             </span>
           )}
           <button
             type="button"
             onClick={() => setShowRulesModal(true)}
-            className="px-2.5 py-1 rounded-xl bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-3))] border border-[rgb(var(--c-line))] text-[11px] font-black text-amber-200 hover:text-white flex items-center gap-1.5 transition active:scale-95 shadow cursor-pointer"
+            className="px-2.5 py-1 rounded-xl bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-3))] border border-[rgb(var(--c-line))] text-[11px] font-black text-amber-200 hover:text-[rgb(var(--c-ink))] flex items-center gap-1.5 transition active:scale-95 shadow cursor-pointer"
             title="ดูกฎและกติกาการเล่นซุปเปอร์เศรษฐี"
           >
             <BookOpen className="w-3.5 h-3.5 text-yellow-400" />
@@ -391,7 +390,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                             isTurn={isCurrent}
                           />
                           {isMe && (
-                            <span className="absolute -bottom-1 -right-1 text-[8px] font-black bg-amber-500 text-amber-950 px-1 rounded-full border border-white">
+                            <span className="absolute -bottom-1 -right-1 text-[8px] font-black bg-amber-500 text-[rgb(var(--c-on-accent))] px-1 rounded-full border border-white">
                               คุณ
                             </span>
                           )}
@@ -412,7 +411,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                             )}
                           </div>
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-[10px] text-amber-300/70">
+                            <span className="text-[10px] text-amber-300/85">
                               โฉนด: <strong className="text-amber-200">{propCount}</strong>
                             </span>
                             {scoreInfo && (
@@ -457,7 +456,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                             <span className="text-xs font-black text-emerald-400 font-mono">
                               {formatMoneyM(playerCash)}
                             </span>
-                            <span className="text-[9px] text-amber-400/60 font-bold">เงินสด</span>
+                            <span className="text-[9px] text-amber-400/80 font-bold">เงินสด</span>
                           </div>
                         )}
                       </div>
@@ -484,8 +483,8 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                 onClick={() => setIs3DMode(true)}
                 className={`px-3 py-1 rounded-lg text-xs font-black transition ${
                   is3DMode
-                    ? 'bg-gradient-to-r from-amber-600 to-yellow-500 text-amber-950 shadow'
-                    : 'text-amber-300/70 hover:text-white'
+                    ? 'bg-mint text-[rgb(var(--c-on-accent))] shadow'
+                    : 'text-[rgb(var(--c-ink-soft))] hover:text-[rgb(var(--c-ink))]'
                 }`}
               >
                 🧊 โหมด 3D
@@ -495,8 +494,8 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                 onClick={() => setIs3DMode(false)}
                 className={`px-3 py-1 rounded-lg text-xs font-black transition ${
                   !is3DMode
-                    ? 'bg-gradient-to-r from-amber-600 to-yellow-500 text-amber-950 shadow'
-                    : 'text-amber-300/70 hover:text-white'
+                    ? 'bg-mint text-[rgb(var(--c-on-accent))] shadow'
+                    : 'text-[rgb(var(--c-ink-soft))] hover:text-[rgb(var(--c-ink))]'
                 }`}
               >
                 📜 โหมด 2D
@@ -536,7 +535,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                   </div>
 
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[9px] font-black text-amber-300/70 shrink-0">
+                    <span className="text-[9px] font-black text-amber-300/85 shrink-0">
                       ที่ {seatIdx + 1}
                     </span>
                     <span
@@ -665,7 +664,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                   type="button"
                   disabled={controlsBusy}
                   onClick={handleOpenFlightPicker}
-                  className="pointer-events-auto px-7 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 bg-[#0b2b3d] border-2 border-sky-400 text-sky-100"
+                  className="pointer-events-auto px-7 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 bg-[rgb(var(--c-sky-soft))] border-2 border-sky-400 text-sky-100"
                 >
                   ✈️ เลือกจุดหมายบิน
                 </button>
@@ -738,7 +737,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
             )}
 
             {canOfferProxy && currentTurnPlayer && (
-              <div className="mb-2 p-2.5 rounded-2xl bg-[#1b0f2e] border-2 border-purple-600/70 shadow-lg flex flex-col gap-1.5">
+              <div className="mb-2 p-2.5 rounded-2xl bg-[rgb(var(--c-sky-soft))] border-2 border-purple-600/70 shadow-lg flex flex-col gap-1.5">
                 <span className="text-[10px] font-black text-purple-300 flex items-center gap-1">
                   <span>👑</span>
                   <span>เครื่องมือหัวหน้าห้อง</span>
@@ -766,7 +765,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                   <span>🤖 {currentTurnPlayer?.display_name} กำลังคิดและทอยเต๋า...</span>
                 </div>
               ) : (
-                <div className="py-3 px-2 rounded-xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))] text-xs text-amber-300/70 font-bold text-center">
+                <div className="py-3 px-2 rounded-xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))] text-xs text-amber-300/85 font-bold text-center">
                   ⏳ รอ {currentTurnPlayer?.display_name} ทอยลูกเต๋า...
                 </div>
               )
@@ -793,7 +792,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
 
             <div className="flex flex-col gap-1.5 max-h-[35vh] overflow-y-auto pr-1 text-[11px] font-bold">
               {gameLogs.length === 0 ? (
-                <span className="text-amber-400/50 text-center py-4">ยังไม่มีประวัติการเดิน</span>
+                <span className="text-amber-400/80 text-center py-4">ยังไม่มีประวัติการเดิน</span>
               ) : (
                 gameLogs.map((log, lI) => (
                   <div
@@ -803,7 +802,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                     <span style={{ color: log.color || '#fef3c7' }} className="break-words">
                       {log.text}
                     </span>
-                    <span className="text-[9px] text-amber-400/50 shrink-0 font-mono pt-0.5">
+                    <span className="text-[9px] text-amber-400/80 shrink-0 font-mono pt-0.5">
                       {log.time}
                     </span>
                   </div>
@@ -943,7 +942,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                 className={`flex items-center justify-between px-3 py-2 rounded-xl border text-xs font-black ${
                   p.id === winnerId
                     ? 'bg-[rgb(var(--c-surface-3))] border-yellow-400 text-yellow-100'
-                    : 'bg-[rgb(var(--c-bg-deep))] border-[rgb(var(--c-surface-2))] text-amber-300/60'
+                    : 'bg-[rgb(var(--c-bg-deep))] border-[rgb(var(--c-surface-2))] text-amber-300/80'
                 }`}
               >
                 <span className="truncate">
@@ -1011,7 +1010,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
       >
         <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto pr-1">
           {gameLogs.length === 0 ? (
-            <div className="py-8 text-center text-amber-400/60 text-xs font-bold">
+            <div className="py-8 text-center text-amber-400/80 text-xs font-bold">
               ยังไม่มีประวัติการเดินในเกมนี้
             </div>
           ) : (
@@ -1021,7 +1020,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                 className="p-2.5 rounded-xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))] flex items-start justify-between gap-2 shadow-sm"
               >
                 <div className="flex items-start gap-2 min-w-0">
-                  <span className="text-xs text-amber-400/50 font-mono shrink-0 pt-0.5">
+                  <span className="text-xs text-amber-400/80 font-mono shrink-0 pt-0.5">
                     #{gameLogs.length - idx}
                   </span>
                   <span
@@ -1031,7 +1030,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                     {log.text}
                   </span>
                 </div>
-                <span className="text-[10px] font-mono text-amber-400/60 shrink-0 bg-[rgb(var(--c-surface))] px-2 py-0.5 rounded-lg border border-[rgb(var(--c-surface-2))]">
+                <span className="text-[10px] font-mono text-amber-400/80 shrink-0 bg-[rgb(var(--c-surface))] px-2 py-0.5 rounded-lg border border-[rgb(var(--c-surface-2))]">
                   {log.time}
                 </span>
               </div>

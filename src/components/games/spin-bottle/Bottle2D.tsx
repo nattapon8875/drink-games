@@ -28,7 +28,7 @@ export const Bottle2D: React.FC<Bottle2DProps> = ({
   return (
     <div className="relative w-full max-w-[480px] aspect-square mx-auto flex items-center justify-center select-none">
       {/* Outer Glow & Tavern Table Mat */}
-      <div className="absolute inset-2 rounded-full bg-gradient-to-b from-[rgb(var(--c-surface-2))] via-[rgb(var(--c-surface))] to-[#140802] border-4 border-[rgb(var(--c-butter-deep))] shadow-[0_0_40px_rgba(217,119,6,0.3)] flex items-center justify-center overflow-hidden">
+      <div className="absolute inset-2 rounded-full bg-gradient-to-b from-[rgb(var(--c-surface-2))] via-[rgb(var(--c-surface))] to-[rgb(var(--c-surface-2))] border-4 border-[rgb(var(--c-butter-deep))] shadow-[0_0_40px_rgba(217,119,6,0.3)] flex items-center justify-center overflow-hidden">
         {/* Wood ring textures */}
         <div className="absolute inset-4 rounded-full border border-amber-600/30 opacity-70" />
         <div className="absolute inset-10 rounded-full border border-amber-500/20 opacity-50" />
@@ -89,7 +89,7 @@ export const Bottle2D: React.FC<Bottle2DProps> = ({
 
               {/* Drinks badge if any */}
               {player.drinks_count > 0 && (
-                <div className="absolute -bottom-1 -right-1 bg-neon-pink text-white text-[10px] font-black px-1.5 py-0.5 rounded-full border border-black shadow z-20">
+                <div className="absolute -bottom-1 -right-1 bg-neon-pink text-[rgb(var(--c-on-accent))] text-[10px] font-black px-1.5 py-0.5 rounded-full border border-black shadow z-20">
                   🍺 {player.drinks_count}
                 </div>
               )}
@@ -233,7 +233,7 @@ export const Bottle2D: React.FC<Bottle2DProps> = ({
       {canSpin && !isSpinning && onSpinClick && (
         <button
           onClick={onSpinClick}
-          className="absolute z-30 w-16 h-16 rounded-full bg-gradient-to-tr from-amber-600 to-amber-400 text-stone-900 font-black text-xs shadow-[0_0_20px_rgba(245,158,11,0.8)] border-2 border-white/60 hover:scale-110 active:scale-95 transition-all flex flex-col items-center justify-center animate-pulse"
+          className="absolute z-30 w-16 h-16 rounded-full bg-mint text-stone-900 font-black text-xs shadow-[0_0_20px_rgba(245,158,11,0.8)] border-2 border-white/60 hover:scale-110 active:scale-95 transition-all flex flex-col items-center justify-center animate-pulse"
         >
           <span>หมุน</span>
           <span className="text-[10px]">SPIN</span>

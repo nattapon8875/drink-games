@@ -81,14 +81,14 @@ export const DiscordGuideModal: React.FC<DiscordGuideModalProps> = ({
               <Share2 className="w-4 h-4 text-yellow-400" />
               <span>ข้อมูลห้องสำหรับแชร์ให้เพื่อน:</span>
             </span>
-            <span className="text-[10px] font-mono text-amber-400/60 font-bold">
+            <span className="text-[10px] font-mono text-amber-400/80 font-bold">
               SUPER MONOPOLY
             </span>
           </div>
 
           {/* Row: Code + Copy Code */}
           <div className="flex items-center gap-2">
-            <div className="flex-1 bg-[#120501] border border-[rgb(var(--c-surface-2))] rounded-xl px-3 py-2 flex items-center justify-between">
+            <div className="flex-1 bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-2))] rounded-xl px-3 py-2 flex items-center justify-between">
               <span className="text-[11px] font-bold text-amber-300/80">รหัสห้อง:</span>
               <span className="font-mono text-lg font-black text-yellow-300 tracking-wider">
                 {roomCode}
@@ -98,7 +98,7 @@ export const DiscordGuideModal: React.FC<DiscordGuideModalProps> = ({
             <button
               type="button"
               onClick={handleCopyCode}
-              className="px-3.5 py-2.5 rounded-xl bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-3))] border border-[rgb(var(--c-line))] text-xs font-black text-yellow-300 hover:text-white flex items-center gap-1.5 shadow active:scale-95 transition cursor-pointer shrink-0"
+              className="px-3.5 py-2.5 rounded-xl bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-3))] border border-[rgb(var(--c-line))] text-xs font-black text-yellow-300 hover:text-[rgb(var(--c-ink))] flex items-center gap-1.5 shadow active:scale-95 transition cursor-pointer shrink-0"
               title="คัดลอกเฉพาะรหัส 6 ตัว"
             >
               {copiedCode ? (
@@ -117,7 +117,7 @@ export const DiscordGuideModal: React.FC<DiscordGuideModalProps> = ({
 
           {/* Row: Link + Copy Link */}
           <div className="flex items-center gap-2">
-            <div className="flex-1 bg-[#120501] border border-[rgb(var(--c-surface-2))] rounded-xl px-3 py-2 text-xs font-mono text-amber-200/80 truncate">
+            <div className="flex-1 bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-2))] rounded-xl px-3 py-2 text-xs font-mono text-amber-200/80 truncate">
               {inviteUrl}
             </div>
 
@@ -145,7 +145,7 @@ export const DiscordGuideModal: React.FC<DiscordGuideModalProps> = ({
           <button
             type="button"
             onClick={handleCopyFullMessage}
-            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-700 via-amber-600 to-amber-700 hover:from-amber-600 hover:to-amber-500 border border-yellow-500/50 text-xs font-black text-amber-100 flex items-center justify-center gap-2 shadow active:scale-95 transition cursor-pointer"
+            className="w-full py-2.5 rounded-xl bg-mint hover:from-amber-600 hover:to-amber-500 border border-yellow-500/50 text-xs font-black text-[rgb(var(--c-on-accent))] flex items-center justify-center gap-2 shadow active:scale-95 transition cursor-pointer"
           >
             <MessageSquare className="w-4 h-4 text-yellow-300" />
             <span>
@@ -157,7 +157,7 @@ export const DiscordGuideModal: React.FC<DiscordGuideModalProps> = ({
         {/* Discord Join Guide Steps */}
         <div className="max-h-[46vh] overflow-y-auto pr-1 space-y-3 text-left">
           {/* Option 1: Discord Activity */}
-          <div className="p-3.5 rounded-2xl bg-[#1a1b35] border-2 border-[#5865F2]/60 shadow-md space-y-2.5">
+          <div className="p-3.5 rounded-2xl bg-[rgb(var(--c-sky-soft))] border-2 border-[#5865F2]/60 shadow-md space-y-2.5">
             <div className="flex items-center gap-2 text-[#5865F2] font-black text-sm">
               <span className="text-xl">🚀</span>
               <span className="text-white font-extrabold">วิธีที่ 1: เข้าเล่นผ่าน Discord Activity (ในห้องเสียง)</span>
@@ -167,7 +167,7 @@ export const DiscordGuideModal: React.FC<DiscordGuideModalProps> = ({
             </p>
 
             <div className="space-y-2 text-xs text-indigo-100">
-              <div className="flex items-start gap-2 bg-[#121324] p-2.5 rounded-xl border border-[#5865F2]/30">
+              <div className="flex items-start gap-2 bg-[rgb(var(--c-surface-2))] p-2.5 rounded-xl border border-[#5865F2]/30">
                 <span className="font-black text-yellow-400 bg-yellow-400/20 px-2 py-0.5 rounded-md shrink-0">
                   ขั้นที่ 1
                 </span>
@@ -176,7 +176,7 @@ export const DiscordGuideModal: React.FC<DiscordGuideModalProps> = ({
                 </span>
               </div>
 
-              <div className="flex items-start gap-2 bg-[#121324] p-2.5 rounded-xl border border-[#5865F2]/30">
+              <div className="flex items-start gap-2 bg-[rgb(var(--c-surface-2))] p-2.5 rounded-xl border border-[#5865F2]/30">
                 <span className="font-black text-yellow-400 bg-yellow-400/20 px-2 py-0.5 rounded-md shrink-0">
                   ขั้นที่ 2
                 </span>
@@ -185,7 +185,7 @@ export const DiscordGuideModal: React.FC<DiscordGuideModalProps> = ({
                 </span>
               </div>
 
-              <div className="flex items-start gap-2 bg-[#121324] p-2.5 rounded-xl border border-[#5865F2]/30">
+              <div className="flex items-start gap-2 bg-[rgb(var(--c-surface-2))] p-2.5 rounded-xl border border-[#5865F2]/30">
                 <span className="font-black text-yellow-400 bg-yellow-400/20 px-2 py-0.5 rounded-md shrink-0">
                   ขั้นที่ 3
                 </span>
@@ -194,7 +194,7 @@ export const DiscordGuideModal: React.FC<DiscordGuideModalProps> = ({
                 </span>
               </div>
 
-              <div className="flex items-start gap-2 bg-[#121324] p-2.5 rounded-xl border border-[#5865F2]/30">
+              <div className="flex items-start gap-2 bg-[rgb(var(--c-surface-2))] p-2.5 rounded-xl border border-[#5865F2]/30">
                 <span className="font-black text-yellow-400 bg-yellow-400/20 px-2 py-0.5 rounded-md shrink-0">
                   ขั้นที่ 4
                 </span>

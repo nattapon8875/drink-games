@@ -232,7 +232,7 @@ export default function SuperLobbyPage() {
       <div className="w-full min-h-screen flex flex-col items-center justify-center p-4 max-w-md mx-auto text-center">
         <AlertCircle className="w-12 h-12 text-red-400 mb-3" />
         <h2 className="text-lg font-black text-amber-100 mb-1">ไม่พบห้องที่ระบุ</h2>
-        <p className="text-xs text-amber-300/70 mb-4">{error || 'ห้องนี้อาจถูกปิดไปแล้วหรือรหัสไม่ถูกต้อง'}</p>
+        <p className="text-xs text-amber-300/85 mb-4">{error || 'ห้องนี้อาจถูกปิดไปแล้วหรือรหัสไม่ถูกต้อง'}</p>
         <button
           onClick={() => {
             if (typeof window !== 'undefined' && roomCode) {
@@ -256,7 +256,7 @@ export default function SuperLobbyPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={handleLeave}
-              className="p-2 rounded-xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))] text-amber-300 hover:text-white transition"
+              className="p-2 rounded-xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))] text-amber-300 hover:text-[rgb(var(--c-ink))] transition"
               title="ออกจากห้อง"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -273,7 +273,7 @@ export default function SuperLobbyPage() {
                   {players.length}/8 คน
                 </span>
               </div>
-              <p className="text-[11px] text-amber-300/70 font-semibold">
+              <p className="text-[11px] text-amber-300/85 font-semibold">
                 Super Monopoly Classic Widescreen Lobby
               </p>
             </div>
@@ -293,7 +293,7 @@ export default function SuperLobbyPage() {
                 <span className="text-xs font-bold text-amber-100 group-hover:text-yellow-300 block leading-tight max-w-[120px] truncate">
                   {user.displayName}
                 </span>
-                <span className="text-[9px] text-amber-400/60 font-semibold flex items-center gap-1">
+                <span className="text-[9px] text-amber-400/80 font-semibold flex items-center gap-1">
                   <Edit2 className="w-2.5 h-2.5" /> เปลี่ยนชื่อ
                 </span>
               </div>
@@ -315,7 +315,7 @@ export default function SuperLobbyPage() {
             {isHost && (
               <button
                 onClick={handleCloseRoom}
-                className="text-xs font-bold text-rose-300 hover:text-white bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] px-3 py-2 rounded-xl shadow-sm transition"
+                className="text-xs font-bold text-rose-300 hover:text-[rgb(var(--c-ink))] bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] px-3 py-2 rounded-xl shadow-sm transition"
                 title="ยุบห้องนี้"
               >
                 ยุบห้อง
@@ -337,19 +337,19 @@ export default function SuperLobbyPage() {
 
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div className="p-2.5 rounded-xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))]">
-                  <span className="text-[10px] text-amber-400/70 block font-bold">ทุนเริ่มต้น:</span>
+                  <span className="text-[10px] text-amber-400/85 block font-bold">ทุนเริ่มต้น:</span>
                   <span className="text-sm font-black text-emerald-400 font-mono">15.00 M</span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))]">
-                  <span className="text-[10px] text-amber-400/70 block font-bold">ผ่านจุดเริ่มต้นรับ:</span>
+                  <span className="text-[10px] text-amber-400/85 block font-bold">ผ่านจุดเริ่มต้นรับ:</span>
                   <span className="text-sm font-black text-yellow-400 font-mono">+2.00 M</span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))]">
-                  <span className="text-[10px] text-amber-400/70 block font-bold">จำนวนบ้านสูงสุด:</span>
+                  <span className="text-[10px] text-amber-400/85 block font-bold">จำนวนบ้านสูงสุด:</span>
                   <span className="text-sm font-black text-amber-100">3 หลัง + 1 โรงแรม</span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))]">
-                  <span className="text-[10px] text-amber-400/70 block font-bold">จำนวนช่องกระดาน:</span>
+                  <span className="text-[10px] text-amber-400/85 block font-bold">จำนวนช่องกระดาน:</span>
                   <span className="text-sm font-black text-amber-100">32 ช่องคลาสสิก</span>
                 </div>
               </div>
@@ -391,7 +391,7 @@ export default function SuperLobbyPage() {
                       }
                       showToast('ลบบอททั้งหมดแล้ว', 'info');
                     }}
-                    className="wood-btn-brown px-3 py-2.5 rounded-xl font-bold text-xs text-amber-200 border border-[rgb(var(--c-surface-2))] hover:text-white transition"
+                    className="wood-btn-brown px-3 py-2.5 rounded-xl font-bold text-xs text-amber-200 border border-[rgb(var(--c-surface-2))] hover:text-[rgb(var(--c-ink))] transition"
                     title="ลบบอททั้งหมด"
                   >
                     ล้างบอท
@@ -409,7 +409,7 @@ export default function SuperLobbyPage() {
                   </div>
                   <div>
                     <h4 className="text-xs font-black text-amber-100">ชวนเพื่อนเข้าเล่น</h4>
-                    <p className="text-[10px] text-amber-300/70 font-semibold">
+                    <p className="text-[10px] text-amber-300/85 font-semibold">
                       คัดลอกรหัสหรือลิงก์ส่งให้เพื่อนใน Discord / LINE
                     </p>
                   </div>
@@ -459,13 +459,13 @@ export default function SuperLobbyPage() {
               <button
                 type="button"
                 onClick={handleCopyFullMessage}
-                className="w-full py-2 rounded-xl bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] text-[11px] font-bold text-amber-200 hover:text-white flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition"
+                className="w-full py-2 rounded-xl bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] text-[11px] font-bold text-amber-200 hover:text-[rgb(var(--c-ink))] flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition"
               >
                 <span>💬 คัดลอกข้อความชวนเพื่อน (รหัส + ลิงก์ + วิธีเข้า)</span>
               </button>
 
               {/* Quick Discord Instructions Snippet */}
-              <div className="p-2.5 rounded-xl bg-[#141527] border border-[#5865F2]/40 text-[11px] text-indigo-100 flex flex-col gap-1">
+              <div className="p-2.5 rounded-xl bg-[rgb(var(--c-surface-2))] border border-[#5865F2]/40 text-[11px] text-indigo-100 flex flex-col gap-1">
                 <div className="flex items-center gap-1.5 text-[#5865F2] font-black">
                   <span>🚀 เข้าผ่าน Discord:</span>
                 </div>
@@ -485,7 +485,7 @@ export default function SuperLobbyPage() {
                     <Users className="w-4 h-4 text-yellow-400" />
                     <span>ผู้เล่นที่เข้าร่วม ({players.length}/8 คน)</span>
                   </h3>
-                  <span className="text-[11px] text-amber-300/60 font-semibold">
+                  <span className="text-[11px] text-amber-300/80 font-semibold">
                     พร้อมลุยกระดานเศรษฐี
                   </span>
                 </div>

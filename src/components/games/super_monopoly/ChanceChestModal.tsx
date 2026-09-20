@@ -46,7 +46,7 @@ export const ChanceChestModal: React.FC<ChanceChestModalProps> = ({
           className={`w-20 h-20 rounded-3xl flex items-center justify-center border-4 shadow-xl ${
             isChest
               ? 'bg-gradient-to-br from-pink-500 to-rose-700 border-pink-300 text-white'
-              : 'bg-gradient-to-br from-amber-400 to-yellow-600 border-amber-200 text-amber-950'
+              : 'bg-mint border-amber-200 text-[rgb(var(--c-on-accent))]'
           }`}
         >
           <span className="text-4xl drop-shadow">{isChest ? '🎁' : '⛩️'}</span>

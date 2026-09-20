@@ -321,7 +321,7 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-amber-300/70 mt-0.5">
+                    <div className="flex items-center gap-2 text-xs text-amber-300/85 mt-0.5">
                       <span>อยู่ที่: <strong className="text-yellow-400">{currentTileName}</strong></span>
                       {isPlayerTurn && (
                         <span className="text-yellow-300 font-bold animate-pulse">• กำลังเล่นตา</span>
@@ -335,7 +335,7 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
                   <div className="flex items-center gap-1 bg-[rgb(var(--c-surface))] border border-rose-800/80 px-2.5 py-1 rounded-xl shadow-inner">
                     <Wine className="w-3.5 h-3.5 text-rose-400" />
                     <span className="text-xs font-black text-rose-200">
-                      {p.drinks_count} <span className="text-[10px] font-normal text-rose-300/70">ช็อต</span>
+                      {p.drinks_count} <span className="text-[10px] font-normal text-rose-300/85">ช็อต</span>
                     </span>
                   </div>
                 </div>

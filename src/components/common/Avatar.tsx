@@ -38,7 +38,7 @@ export const Avatar: React.FC<AvatarProps> = ({
   const platformBadge = {
     line: 'bg-[#06C755] text-white',
     discord: 'bg-[#5865F2] text-white',
-    web: 'bg-neon-pink text-white',
+    web: 'bg-neon-pink text-[rgb(var(--c-on-accent))]',
   };
 
   const initials = name ? name.substring(0, 2).toUpperCase() : '??';
@@ -50,7 +50,7 @@ export const Avatar: React.FC<AvatarProps> = ({
     >
       {/* RPG Golden Ribbon Crown if it's player's turn */}
       {isTurn && (
-        <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-20 px-1 py-0.2 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-[8px] font-black text-[rgb(var(--c-surface-2))] shadow-md border border-amber-200 animate-bounce">
+        <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-20 px-1 py-0.2 rounded-full bg-mint text-[8px] font-black text-[rgb(var(--c-on-accent))] shadow-md border border-[rgb(var(--c-mint-deep))] animate-bounce">
           👑ตาคุณ
         </span>
       )}

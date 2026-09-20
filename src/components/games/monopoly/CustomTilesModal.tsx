@@ -116,7 +116,7 @@ export const CustomTilesModal: React.FC<CustomTilesModalProps> = ({
               className={`px-3 py-1 rounded-xl font-black whitespace-nowrap transition ${
                 filter === tab.id
                   ? 'wood-btn-gold text-white'
-                  : 'bg-[rgb(var(--c-surface))] text-amber-200/60 border border-[rgb(var(--c-surface-2))] hover:text-white'
+                  : 'bg-[rgb(var(--c-surface))] text-amber-200/80 border border-[rgb(var(--c-surface-2))] hover:text-[rgb(var(--c-ink))]'
               }`}
             >
               {tab.label}
@@ -162,7 +162,7 @@ export const CustomTilesModal: React.FC<CustomTilesModalProps> = ({
               {isHost ? (
                 <div className="flex items-center gap-2">
                   <div className="flex flex-col items-center">
-                    <span className="text-[9px] text-amber-300/70 font-bold mb-0.5">ไอคอน</span>
+                    <span className="text-[9px] text-amber-300/85 font-bold mb-0.5">ไอคอน</span>
                     <input
                       type="text"
                       value={tile.icon || getTileIcon(tile)}
@@ -177,12 +177,12 @@ export const CustomTilesModal: React.FC<CustomTilesModalProps> = ({
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-0.5">
-                      <span className="text-[9px] text-amber-300/70 font-bold block">ชื่อช่อง</span>
+                      <span className="text-[9px] text-amber-300/85 font-bold block">ชื่อช่อง</span>
                       {tile.title && (
                         <button
                           type="button"
                           onClick={() => handleTileChange(tile.tile_index, 'title', '')}
-                          className="text-[9px] text-amber-400/60 hover:text-amber-200"
+                          className="text-[9px] text-amber-400/80 hover:text-amber-200"
                         >
                           ล้างข้อความ
                         </button>
@@ -203,7 +203,7 @@ export const CustomTilesModal: React.FC<CustomTilesModalProps> = ({
                         <button
                           type="button"
                           onClick={() => handleTileChange(tile.tile_index, 'title', '')}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white p-0.5"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[rgb(var(--c-ink))] p-0.5"
                           title="ลบข้อความ"
                         >
                           <X className="w-3.5 h-3.5" />
@@ -224,7 +224,7 @@ export const CustomTilesModal: React.FC<CustomTilesModalProps> = ({
               {/* Quick Preset Emoji Row for Host */}
               {isHost && (
                 <div className="flex items-center gap-1 overflow-x-auto py-1 scrollbar-none text-xs">
-                  <span className="text-[9px] text-amber-200/50 mr-1 shrink-0">เลือกด่วน:</span>
+                  <span className="text-[9px] text-amber-200/80 mr-1 shrink-0">เลือกด่วน:</span>
                   {['🍺', '🍻', '🥃', '🍷', '👑', '🎯', '🪙', '🎲', '💣', '🛡️', '💃', '🎤', '🌸', '⚔️', '💔', '👀'].map((emoji) => (
                     <button
                       key={emoji}
@@ -241,12 +241,12 @@ export const CustomTilesModal: React.FC<CustomTilesModalProps> = ({
               {isHost ? (
                 <div>
                   <div className="flex items-center justify-between mb-0.5">
-                    <span className="text-[9px] text-amber-300/70 font-bold block">คำสั่งบทลงโทษ</span>
+                    <span className="text-[9px] text-amber-300/85 font-bold block">คำสั่งบทลงโทษ</span>
                     {tile.action_text && (
                       <button
                         type="button"
                         onClick={() => handleTileChange(tile.tile_index, 'action_text', '')}
-                        className="text-[9px] text-amber-400/60 hover:text-amber-200"
+                        className="text-[9px] text-amber-400/80 hover:text-amber-200"
                       >
                         ล้างคำสั่ง
                       </button>
@@ -264,7 +264,7 @@ export const CustomTilesModal: React.FC<CustomTilesModalProps> = ({
                       className="w-full bg-[rgb(var(--c-bg-deep))] border-2 border-[rgb(var(--c-surface-3))] rounded-xl p-2.5 text-xs text-amber-100 font-semibold focus:outline-none focus:border-amber-400 resize-y shadow-inner select-text"
                     />
                   </div>
-                  <div className="flex justify-between items-center text-[10px] text-amber-300/40 px-1">
+                  <div className="flex justify-between items-center text-[10px] text-amber-300/75 px-1">
                     <span>{tile.action_text ? '' : 'กรอกคำสั่งบทลงโทษของช่องนี้'}</span>
                     <span>{tile.action_text.length}/300 ตัวอักษร</span>
                   </div>

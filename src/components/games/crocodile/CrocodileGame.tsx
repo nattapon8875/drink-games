@@ -309,7 +309,7 @@ export const CrocodileGame: React.FC<BaseGameProps> = ({
             variant="wood-gold"
             size="lg"
             onClick={handleStartNewRound}
-            className="w-full py-3 text-sm font-black flex items-center justify-center gap-2 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 shadow-xl"
+            className="w-full py-3 text-sm font-black flex items-center justify-center gap-2 bg-mint shadow-xl"
           >
             <RotateCcw className="w-4 h-4" />
             <span>เริ่มรอบใหม่ (สุ่มฟันใหม่)</span>

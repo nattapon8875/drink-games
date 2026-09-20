@@ -439,7 +439,7 @@ export const Bottle3D: React.FC<Bottle3DProps> = ({
   currentTurnPlayerId,
 }) => {
   return (
-    <div className="relative w-full h-[460px] md:h-[540px] rounded-3xl overflow-hidden bg-[#0c0806] border border-amber-900/40 shadow-[0_0_50px_rgba(0,0,0,0.8)]">
+    <div className="relative w-full h-[460px] md:h-[540px] rounded-3xl overflow-hidden bg-[rgb(var(--c-surface-2))] border border-amber-900/40 shadow-[0_0_50px_rgba(0,0,0,0.8)]">
       <Canvas
         shadows
         camera={{ position: [0, 5.5, 4.5], fov: 48 }}
@@ -494,7 +494,7 @@ export const Bottle3D: React.FC<Bottle3DProps> = ({
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20">
           <button
             onClick={onSpinClick}
-            className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 text-stone-950 font-black text-sm md:text-base tracking-wide shadow-[0_0_25px_rgba(245,158,11,0.7)] border border-amber-200 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 animate-bounce"
+            className="px-8 py-3.5 rounded-2xl bg-mint text-stone-950 font-black text-sm md:text-base tracking-wide shadow-[0_0_25px_rgba(245,158,11,0.7)] border border-amber-200 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 animate-bounce"
           >
             <span>🍾</span>
             <span>หมุนขวดเลย!</span>

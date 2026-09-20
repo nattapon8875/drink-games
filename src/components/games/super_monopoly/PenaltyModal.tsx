@@ -49,7 +49,7 @@ export const PenaltyModal: React.FC<PenaltyModalProps> = ({
               ? 'bg-gradient-to-br from-red-950 via-rose-900 to-black border-red-500 text-red-300 animate-pulse'
               : isRent
               ? 'bg-gradient-to-br from-rose-900 via-red-900 to-amber-950 border-rose-500/80 text-white'
-              : 'bg-gradient-to-br from-amber-900 via-orange-950 to-stone-900 border-amber-500 text-yellow-300'
+              : 'bg-mint to-stone-900 border-amber-500 text-yellow-300'
           }`}
         >
           <span className="text-4xl drop-shadow-lg">

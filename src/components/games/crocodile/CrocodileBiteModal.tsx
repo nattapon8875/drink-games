@@ -39,7 +39,7 @@ export const CrocodileBiteModal: React.FC<CrocodileBiteModalProps> = ({
     >
       <div className="flex flex-col items-center gap-3">
         {/* Animated Buffalo Chomp Badge */}
-        <div className="relative w-24 h-24 rounded-3xl bg-gradient-to-b from-amber-700 via-stone-800 to-stone-950 border-2 border-amber-500 shadow-[0_0_35px_rgba(245,158,11,0.5)] flex items-center justify-center animate-bounce">
+        <div className="relative w-24 h-24 rounded-3xl bg-mint via-stone-800 to-stone-950 border-2 border-amber-500 shadow-[0_0_35px_rgba(245,158,11,0.5)] flex items-center justify-center animate-bounce">
           <span className="text-5xl select-none">🐃💥</span>
           <div className="absolute -bottom-2 px-2.5 py-0.5 rounded-full bg-black/80 border border-amber-400 text-[10px] font-black text-amber-300 uppercase tracking-wider">
             น้องควายงับคาปาก!
@@ -88,7 +88,7 @@ export const CrocodileBiteModal: React.FC<CrocodileBiteModalProps> = ({
               size="lg"
               fullWidth
               onClick={onStartNewRound}
-              className="py-3.5 text-sm font-black flex items-center justify-center gap-2 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 shadow-lg"
+              className="py-3.5 text-sm font-black flex items-center justify-center gap-2 bg-mint shadow-lg"
             >
               <RotateCcw className="w-4 h-4" />
               <span>เริ่มรอบใหม่ (สุ่มฟันใหม่)</span>

@@ -31,7 +31,7 @@ export const RentReceiptModal: React.FC<RentReceiptModalProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="💰 มีคนตกที่ดินของคุณ">
       <div className="flex flex-col gap-3 text-center">
-        <div className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-[#0d2818] border-2 border-emerald-700">
+        <div className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-[rgb(var(--c-mint-soft))] border-2 border-emerald-700">
           <span className="text-3xl">{receipt.tileIcon || '🏨'}</span>
           <span className="text-sm font-black text-emerald-100">{receipt.tileName}</span>
           <span className="text-[11px] font-bold text-emerald-300/80">
@@ -49,7 +49,7 @@ export const RentReceiptModal: React.FC<RentReceiptModalProps> = ({
         <div className="flex items-center justify-center gap-2 text-xs font-bold text-amber-200/90">
           <Wallet className="w-4 h-4 text-amber-300" />
           <span>เงินคงเหลือของคุณ</span>
-          <ArrowRight className="w-3.5 h-3.5 text-amber-400/70" />
+          <ArrowRight className="w-3.5 h-3.5 text-amber-400/85" />
           <span className="text-amber-100 font-black">{formatMoneyM(receipt.ownerCashAfter)}</span>
         </div>
 

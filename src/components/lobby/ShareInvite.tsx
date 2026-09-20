@@ -95,7 +95,7 @@ export const ShareInvite: React.FC<ShareInviteProps> = ({
           title="คลิกเพื่อคัดลอกรหัสห้อง"
         >
           <span>{roomCode}</span>
-          <Copy className="w-4 h-4 text-amber-300/50 group-hover:text-yellow-300 transition shrink-0" />
+          <Copy className="w-4 h-4 text-amber-300/80 group-hover:text-yellow-300 transition shrink-0" />
         </button>
 
         {/* Copy Code Button */}

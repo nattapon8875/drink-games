@@ -73,7 +73,7 @@ const InteractiveCoinToss: React.FC<{
           <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[rgb(var(--c-line-strong))] via-[rgb(var(--c-butter))] to-[rgb(var(--c-butter-soft))] border-4 border-[rgb(var(--c-butter-deep))] shadow-[0_8px_20px_rgba(0,0,0,0.6),inset_0_2px_4px_rgba(255,255,255,0.8),inset_0_-2px_4px_rgba(0,0,0,0.5)] flex flex-col items-center justify-center [backface-visibility:hidden]">
             <div className="w-16 h-16 rounded-full border border-dashed border-[rgb(var(--c-line-strong))] flex flex-col items-center justify-center bg-gradient-to-b from-[rgb(var(--c-butter))]/30 to-[rgb(var(--c-butter-deep))]/40">
               <span className="text-2xl filter drop-shadow">👑</span>
-              <span className="text-[10px] font-black text-[rgb(var(--c-line))] tracking-wider">หัว</span>
+              <span className="text-[10px] font-black text-[rgb(var(--c-ink))] tracking-wider">หัว</span>
             </div>
           </div>
 
@@ -84,7 +84,7 @@ const InteractiveCoinToss: React.FC<{
           >
             <div className="w-16 h-16 rounded-full border border-dashed border-[rgb(var(--c-line))] flex flex-col items-center justify-center bg-gradient-to-b from-[rgb(var(--c-butter))]/30 to-[rgb(var(--c-line-strong))]/40">
               <span className="text-2xl filter drop-shadow">🍷</span>
-              <span className="text-[10px] font-black text-[rgb(var(--c-surface-3))] tracking-wider">ก้อย</span>
+              <span className="text-[10px] font-black text-[rgb(var(--c-ink))] tracking-wider">ก้อย</span>
             </div>
           </div>
         </div>
@@ -100,8 +100,8 @@ const InteractiveCoinToss: React.FC<{
               onClick={() => setSelectedSide('heads')}
               className={`px-3 py-1.5 rounded-xl font-black text-xs border-2 transition active:scale-95 ${
                 selectedSide === 'heads'
-                  ? 'bg-amber-400 border-yellow-200 text-[rgb(var(--c-surface-2))] shadow-[0_0_10px_rgba(252,211,77,0.7)]'
-                  : 'bg-[rgb(var(--c-surface-2))] border-[rgb(var(--c-surface-3))] text-amber-200/80 hover:text-white'
+                  ? 'bg-amber-400 border-yellow-200 text-[rgb(var(--c-on-accent))] shadow-[0_0_10px_rgba(252,211,77,0.7)]'
+                  : 'bg-[rgb(var(--c-surface-2))] border-[rgb(var(--c-surface-3))] text-amber-200/80 hover:text-[rgb(var(--c-ink))]'
               }`}
             >
               👑 เลือก &quot;หัว&quot;
@@ -112,8 +112,8 @@ const InteractiveCoinToss: React.FC<{
               onClick={() => setSelectedSide('tails')}
               className={`px-3 py-1.5 rounded-xl font-black text-xs border-2 transition active:scale-95 ${
                 selectedSide === 'tails'
-                  ? 'bg-amber-400 border-yellow-200 text-[rgb(var(--c-surface-2))] shadow-[0_0_10px_rgba(252,211,77,0.7)]'
-                  : 'bg-[rgb(var(--c-surface-2))] border-[rgb(var(--c-surface-3))] text-amber-200/80 hover:text-white'
+                  ? 'bg-amber-400 border-yellow-200 text-[rgb(var(--c-on-accent))] shadow-[0_0_10px_rgba(252,211,77,0.7)]'
+                  : 'bg-[rgb(var(--c-surface-2))] border-[rgb(var(--c-surface-3))] text-amber-200/80 hover:text-[rgb(var(--c-ink))]'
               }`}
             >
               🍷 เลือก &quot;ก้อย&quot;
@@ -140,7 +140,7 @@ const InteractiveCoinToss: React.FC<{
         <div
           className={`mt-2 px-3 py-1 rounded-xl text-xs font-black border ${
             selectedSide === coinResult
-              ? 'bg-[#154721] border-emerald-400 text-emerald-100 shadow'
+              ? 'bg-[rgb(var(--c-mint-soft))] border-emerald-400 text-emerald-100 shadow'
               : 'bg-[rgb(var(--c-surface-2))] border-rose-400 text-rose-100 shadow'
           }`}
         >
@@ -196,7 +196,7 @@ const InteractiveMiniDice: React.FC<{
     const active = dotsMap[val] || [4];
 
     return (
-      <div className="grid grid-cols-3 grid-rows-3 gap-1 w-14 h-14 p-1.5 bg-gradient-to-b from-[#fffff5] via-[rgb(var(--c-butter-soft))] to-[rgb(var(--c-butter))] rounded-2xl border-2 border-b-4 border-[rgb(var(--c-butter-deep))] shadow-lg select-none">
+      <div className="grid grid-cols-3 grid-rows-3 gap-1 w-14 h-14 p-1.5 bg-gradient-to-b from-[#ffffff] via-[#fbfbf7] to-[#e9e9e0] rounded-2xl border-2 border-b-4 border-[#9a9a90] shadow-lg select-none">
         {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
           <div key={i} className="flex items-center justify-center">
             {active.includes(i) && (
@@ -204,7 +204,7 @@ const InteractiveMiniDice: React.FC<{
                 className={`rounded-full ${
                   val === 1
                     ? 'w-3 h-3 bg-red-600 shadow-inner'
-                    : 'w-2 h-2 bg-[rgb(var(--c-surface))] shadow-inner'
+                    : 'w-2 h-2 bg-[#1b1b1b] shadow-inner'
                 }`}
               />
             )}
@@ -239,7 +239,7 @@ const InteractiveMiniDice: React.FC<{
       )}
 
       {diceVal !== null && (
-        <div className="mt-2 px-3 py-1 rounded-xl text-xs font-black bg-[#154721] border border-emerald-400 text-emerald-100 shadow">
+        <div className="mt-2 px-3 py-1 rounded-xl text-xs font-black bg-[rgb(var(--c-mint-soft))] border border-emerald-400 text-emerald-100 shadow">
           {tileTitle.includes('ยืมมือเพื่อน') ? (
             diceVal % 2 === 0 ? (
               <span>🎲 ออกแต้ม {diceVal} (เลขคู่) — คนสั่งดื่ม 1 จิบ!</span>
@@ -345,7 +345,7 @@ const InteractiveCountdownTimer: React.FC<{
           >
             {timeLeft}s
           </span>
-          <span className="text-[9px] font-bold text-amber-400/70">
+          <span className="text-[9px] font-bold text-amber-400/85">
             {isRunning ? 'กำลังจับเวลา' : finished ? 'หมดเวลา!' : 'พร้อม'}
           </span>
         </div>
@@ -427,11 +427,11 @@ const InteractiveNumberGuesser: React.FC<{
       {/* Secret Number Display Box */}
       <div className="my-1.5 p-3 w-full max-w-[200px] rounded-2xl bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] flex flex-col items-center justify-center shadow-inner">
         {secretNumber === null ? (
-          <span className="text-2xl font-black text-amber-500/50 font-mono">??</span>
+          <span className="text-2xl font-black text-amber-500/80 font-mono">??</span>
         ) : !isMyTurn ? (
           <div className="flex flex-col items-center gap-1">
             <span className="text-2xl font-black text-yellow-400 font-mono tracking-widest">🔒 ??</span>
-            <span className="text-[10px] text-amber-300/70 font-bold">(มีเลขลับอยู่ในระบบแล้ว)</span>
+            <span className="text-[10px] text-amber-300/85 font-bold">(มีเลขลับอยู่ในระบบแล้ว)</span>
           </div>
         ) : showNumber ? (
           <div className="flex flex-col items-center animate-fadeIn">
@@ -444,7 +444,7 @@ const InteractiveNumberGuesser: React.FC<{
           </div>
         ) : (
           <div className="flex flex-col items-center">
-            <span className="text-3xl font-black text-amber-400/60 font-mono">••</span>
+            <span className="text-3xl font-black text-amber-400/80 font-mono">••</span>
             <span className="text-[10px] text-amber-200/80 font-bold">สุ่มแล้ว (แตะตาเพื่อดู)</span>
           </div>
         )}
@@ -555,7 +555,7 @@ export const ActionCard: React.FC<ActionCardProps> = ({
         return {
           icon: <HelpCircle className="w-9 h-9 text-purple-300 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] animate-bounce" />,
           titleColor: 'rpg-text-gold',
-          badgeBg: 'bg-[#3b114d] text-purple-200 border-[#5e2079]',
+          badgeBg: 'bg-[rgb(var(--c-grape-soft))] text-purple-200 border-[rgb(var(--c-grape-soft))]',
           label: '📜 มินิเกมท้าทาย!',
           suggestedDrinks: 1,
         };
@@ -563,7 +563,7 @@ export const ActionCard: React.FC<ActionCardProps> = ({
         return {
           icon: <ShieldCheck className="w-9 h-9 text-emerald-300 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] animate-pulse" />,
           titleColor: 'rpg-text-gold',
-          badgeBg: 'bg-[#103a1d] text-emerald-200 border-[#1d6332]',
+          badgeBg: 'bg-[rgb(var(--c-mint-soft))] text-emerald-200 border-[#1d6332]',
           label: '📜 โซนปลอดภัย / รอดตัว',
           suggestedDrinks: 0,
         };
@@ -585,7 +585,7 @@ export const ActionCard: React.FC<ActionCardProps> = ({
 
         {/* Dice Result Badge */}
         {diceResult !== undefined && (
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full border border-yellow-400/60 bg-gradient-to-r from-amber-600 to-yellow-500 shadow-md mb-2">
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full border border-yellow-400/60 bg-mint shadow-md mb-2">
             <span className="text-xs sm:text-sm font-black text-amber-950">
               🎲 ทอยได้แต้ม {diceResult}!
             </span>
@@ -612,7 +612,7 @@ export const ActionCard: React.FC<ActionCardProps> = ({
         </h2>
 
         {/* Action text card / Parchment Box */}
-        <div className="w-full bg-[rgb(var(--c-butter-soft))] text-[rgb(var(--c-surface-2))] border-2 border-[rgb(var(--c-line-strong))] rounded-2xl p-4 my-2 text-sm sm:text-base leading-relaxed shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_4px_8px_rgba(0,0,0,0.5)]">
+        <div className="w-full bg-[rgb(var(--c-butter-soft))] text-[rgb(var(--c-ink))] border-2 border-[rgb(var(--c-line-strong))] rounded-2xl p-4 my-2 text-sm sm:text-base leading-relaxed shadow-[inset_0_2px_4px_rgba(0,0,0,0.2),0_4px_8px_rgba(0,0,0,0.5)]">
           <p className="font-extrabold">{tile.action_text}</p>
         </div>
 

@@ -105,7 +105,7 @@ export const PlayerList: React.FC<PlayerListProps> = ({
           <Users className="w-5 h-5 text-amber-400" />
           <span className="drop-shadow">สหายในโรงเตี๊ยม ({players.length} คน)</span>
         </div>
-        <span className="text-xs text-amber-200/70 font-bold">
+        <span className="text-xs text-amber-200/85 font-bold">
           {isHostUser ? 'จัดลำดับการเดินได้' : 'พร้อมลุยศึก'}
         </span>
       </div>
@@ -192,14 +192,14 @@ export const PlayerList: React.FC<PlayerListProps> = ({
                     <span className="truncate max-w-[130px] sm:max-w-[170px] drop-shadow">{p.display_name}</span>
                     {isMe && (
                       <div className="flex items-center gap-1 shrink-0">
-                        <span className="text-[9px] bg-amber-500 text-[rgb(var(--c-surface))] font-black px-1.5 py-0.2 rounded-md">
+                        <span className="text-[9px] bg-amber-500 text-[rgb(var(--c-on-accent))] font-black px-1.5 py-0.2 rounded-md">
                           คุณ
                         </span>
                         {onUpdateMyName && (
                           <button
                             type="button"
                             onClick={() => openEditModal(p.display_name, p.avatar_url || undefined)}
-                            className="p-1 rounded-md bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-3))] border border-[rgb(var(--c-surface-3))] text-yellow-300 hover:text-white transition active:scale-90"
+                            className="p-1 rounded-md bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-3))] border border-[rgb(var(--c-surface-3))] text-yellow-300 hover:text-[rgb(var(--c-ink))] transition active:scale-90"
                             title="เปลี่ยนชื่อของคุณ"
                           >
                             <Edit2 className="w-3 h-3" />
@@ -208,7 +208,7 @@ export const PlayerList: React.FC<PlayerListProps> = ({
                       </div>
                     )}
                     {isBot && (
-                      <span className="text-[9px] bg-[#3a1d6e] border border-purple-400/50 text-purple-200 font-black px-1.5 py-0.2 rounded-md shrink-0 flex items-center gap-0.5">
+                      <span className="text-[9px] bg-[rgb(var(--c-grape-soft))] border border-purple-400/50 text-purple-200 font-black px-1.5 py-0.2 rounded-md shrink-0 flex items-center gap-0.5">
                         <Bot className="w-2.5 h-2.5" /> บอท
                       </span>
                     )}
@@ -279,7 +279,7 @@ export const PlayerList: React.FC<PlayerListProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowAddForm(false)}
-                  className="text-amber-200/60 hover:text-amber-100 text-[11px]"
+                  className="text-amber-200/80 hover:text-amber-100 text-[11px]"
                 >
                   ยกเลิก
                 </button>
@@ -311,7 +311,7 @@ export const PlayerList: React.FC<PlayerListProps> = ({
                   {isAdding ? '...' : 'เพิ่ม'}
                 </button>
               </div>
-              <p className="text-[10px] text-amber-200/60">
+              <p className="text-[10px] text-amber-200/80">
                 💡 ผู้เล่นนี้จะเล่นบนเครื่องหัวหน้าห้อง สามารถกดทอยหรือทำคำสั่งแทนกันได้เมื่อถึงตา
               </p>
             </form>

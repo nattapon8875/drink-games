@@ -468,7 +468,7 @@ export const Crocodile3D: React.FC<Crocodile3DProps> = ({
   };
 
   return (
-    <div className="relative w-full aspect-[9/10] max-w-[480px] mx-auto rounded-3xl overflow-hidden border-2 border-amber-900/60 shadow-2xl bg-gradient-to-b from-[rgb(var(--c-bg-deep))] via-[rgb(var(--c-surface))] to-[#120501] select-none">
+    <div className="relative w-full aspect-[9/10] max-w-[480px] mx-auto rounded-3xl overflow-hidden border-2 border-amber-900/60 shadow-2xl bg-gradient-to-b from-[rgb(var(--c-bg-deep))] via-[rgb(var(--c-surface))] to-[rgb(var(--c-surface-2))] select-none">
       <Canvas
         camera={{ position: [0, 2.8, 3.8], fov: 40 }}
         shadows

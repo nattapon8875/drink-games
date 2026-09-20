@@ -190,7 +190,7 @@ export default function PlayPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={handleReturnToLobby}
-            className="flex items-center gap-1 text-xs font-bold text-amber-200 hover:text-white bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] px-2.5 py-1 rounded-xl shadow-sm transition"
+            className="flex items-center gap-1 text-xs font-bold text-amber-200 hover:text-[rgb(var(--c-ink))] bg-[rgb(var(--c-surface-2))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] px-2.5 py-1 rounded-xl shadow-sm transition"
             title="กลับไปหน้าห้องรอ"
           >
             <ArrowLeft className="w-4 h-4 text-amber-400" />
@@ -200,7 +200,7 @@ export default function PlayPage() {
           {isHost ? (
             <button
               onClick={handleCloseRoom}
-              className="text-xs font-bold text-rose-300 hover:text-white bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] px-2.5 py-1 rounded-xl shadow-sm transition"
+              className="text-xs font-bold text-rose-300 hover:text-[rgb(var(--c-ink))] bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] px-2.5 py-1 rounded-xl shadow-sm transition"
               title="ยุบห้องและจบเกมสำหรับทุกคน"
             >
               ยุบห้อง (Host)
@@ -208,7 +208,7 @@ export default function PlayPage() {
           ) : (
             <button
               onClick={handleExitGame}
-              className="text-xs font-bold text-amber-300/70 hover:text-rose-300 bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-2))] px-2 py-1 rounded-xl transition"
+              className="text-xs font-bold text-amber-300/85 hover:text-rose-300 bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-2))] px-2 py-1 rounded-xl transition"
               title="ออกจากเกม"
             >
               ออกเกม
@@ -221,7 +221,7 @@ export default function PlayPage() {
           <button
             type="button"
             onClick={() => setShowPlayersModal(true)}
-            className="flex items-center gap-1 text-xs font-bold text-amber-200 hover:text-white bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] px-2 py-1 rounded-xl shadow-sm transition active:scale-95"
+            className="flex items-center gap-1 text-xs font-bold text-amber-200 hover:text-[rgb(var(--c-ink))] bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] px-2 py-1 rounded-xl shadow-sm transition active:scale-95"
             title="ดูรายชื่อผู้เล่นในวง / จัดการคน"
           >
             <Users className="w-3.5 h-3.5 text-amber-400" />
@@ -241,7 +241,7 @@ export default function PlayPage() {
           >
             <BuffaloLogo className="w-4 h-4" />
             <span>BUFFY: {roomCode}</span>
-            <span className="text-[9px] text-amber-300/60">📋</span>
+            <span className="text-[9px] text-amber-300/80">📋</span>
           </button>
         </div>
       </div>
@@ -276,12 +276,12 @@ export default function PlayPage() {
                     <div className="flex items-center gap-1.5 font-black text-xs text-amber-100">
                       <span className="truncate max-w-[120px] drop-shadow">{p.display_name}</span>
                       {isMe && (
-                        <span className="text-[9px] bg-amber-500 text-[rgb(var(--c-surface))] font-black px-1.5 py-0.2 rounded-md shrink-0">
+                        <span className="text-[9px] bg-amber-500 text-[rgb(var(--c-on-accent))] font-black px-1.5 py-0.2 rounded-md shrink-0">
                           คุณ
                         </span>
                       )}
                       {isBot && (
-                        <span className="text-[9px] bg-[#3a1d6e] border border-purple-400/50 text-purple-200 font-black px-1.5 py-0.2 rounded-md shrink-0 flex items-center gap-0.5">
+                        <span className="text-[9px] bg-[rgb(var(--c-grape-soft))] border border-purple-400/50 text-purple-200 font-black px-1.5 py-0.2 rounded-md shrink-0 flex items-center gap-0.5">
                           <Bot className="w-2.5 h-2.5" /> บอท
                         </span>
                       )}

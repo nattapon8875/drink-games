@@ -38,7 +38,7 @@ export const DrinkCounter: React.FC<DrinkCounterProps> = ({
         <Wine className={clsx(iconSizes[size], 'text-rose-300')} />
       </div>
       <span className="rpg-text-gold font-extrabold">{count}</span>
-      <span className="text-[9px] text-amber-300/70 font-normal">ช็อต</span>
+      <span className="text-[9px] text-amber-300/85 font-normal">ช็อต</span>
     </div>
   );
 };

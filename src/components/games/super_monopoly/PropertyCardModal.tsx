@@ -222,7 +222,7 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
           className={`rounded-2xl px-3 py-2 flex items-center justify-between gap-2 border-2 shadow-inner ${
             isOwner
               ? 'bg-[rgb(var(--c-bg-deep))] border-[rgb(var(--c-surface-3))]'
-              : 'bg-[#07240f] border-emerald-700/70'
+              : 'bg-[rgb(var(--c-mint-soft))] border-emerald-700/70'
           }`}
         >
           <span className="text-[11px] font-black text-amber-300/80 shrink-0">
@@ -254,7 +254,7 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
         {/* Rent & Building Rates Table */}
         {tile.isUtility ? (
           tile.index === 5 || tile.index === 12 ? (
-            <div className="bg-[#102336] border-2 border-yellow-600/70 rounded-2xl p-3 text-xs space-y-2 shadow-inner">
+            <div className="bg-[rgb(var(--c-sky-soft))] border-2 border-yellow-600/70 rounded-2xl p-3 text-xs space-y-2 shadow-inner">
               <div className="flex items-center gap-2 pb-1 border-b border-yellow-700/60">
                 <span className="text-xl">{tile.icon || '⚡'}</span>
                 <div>
@@ -274,7 +274,7 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
               </div>
             </div>
           ) : (
-            <div className="bg-[#102336] border-2 border-cyan-700/60 rounded-2xl p-3 text-xs space-y-2 shadow-inner">
+            <div className="bg-[rgb(var(--c-sky-soft))] border-2 border-cyan-700/60 rounded-2xl p-3 text-xs space-y-2 shadow-inner">
               <div className="flex items-center gap-2 pb-1 border-b border-cyan-800">
                 <span className="text-xl">🏨</span>
                 <div>
@@ -411,7 +411,7 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
                 </span>
               </button>
             ) : tile.isUtility ? (
-              <div className="flex-1 py-2.5 text-center text-xs font-bold text-cyan-300 bg-[#0c2438] rounded-xl border border-cyan-700/60">
+              <div className="flex-1 py-2.5 text-center text-xs font-bold text-cyan-300 bg-[rgb(var(--c-sky-soft))] rounded-xl border border-cyan-700/60">
                 ⚡ คุณเป็นเจ้าของกิจการนี้แล้ว (ไม่สามารถสร้างบ้านได้)
               </div>
             ) : !hasHotel ? (

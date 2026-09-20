@@ -231,7 +231,7 @@ export const SpinBottleGame: React.FC<BaseGameProps> = ({
           size="lg"
           onClick={handleSpin}
           disabled={isSpinning || (!isMyTurn && !isHost)}
-          className="w-full py-4 text-base font-black bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 border border-amber-300 shadow-[0_0_25px_rgba(245,158,11,0.5)]"
+          className="w-full py-4 text-base font-black bg-mint border border-amber-300 shadow-[0_0_25px_rgba(245,158,11,0.5)]"
         >
           {isSpinning ? (
             <span className="flex items-center gap-2 animate-pulse">
@@ -257,7 +257,7 @@ export const SpinBottleGame: React.FC<BaseGameProps> = ({
       {/* Challenge / Truth or Dare Modal */}
       {activePrompt && targetPlayer && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
-          <div className="w-full max-w-sm rounded-3xl bg-gradient-to-b from-[rgb(var(--c-surface))] via-[rgb(var(--c-surface))] to-[#120702] border-2 border-amber-500/60 p-6 shadow-[0_0_50px_rgba(245,158,11,0.4)] text-center relative overflow-hidden">
+          <div className="w-full max-w-sm rounded-3xl bg-gradient-to-b from-[rgb(var(--c-surface))] via-[rgb(var(--c-surface))] to-[rgb(var(--c-surface-2))] border-2 border-amber-500/60 p-6 shadow-[0_0_50px_rgba(245,158,11,0.4)] text-center relative overflow-hidden">
             {/* Top Badge */}
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-black mb-3">
               <Sparkles className="w-3.5 h-3.5" />

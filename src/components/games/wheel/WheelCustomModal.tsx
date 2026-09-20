@@ -161,7 +161,7 @@ export const WheelCustomModal: React.FC<WheelCustomModalProps> = ({
           <button
             type="button"
             onClick={() => setShowAddForm(!showAddForm)}
-            className="flex items-center gap-1 text-xs font-black text-amber-950 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 px-2.5 py-1 rounded-xl shadow transition shrink-0"
+            className="flex items-center gap-1 text-xs font-black text-[rgb(var(--c-on-accent))] bg-mint hover:from-amber-300 hover:to-amber-400 px-2.5 py-1 rounded-xl shadow transition shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>{showAddForm ? 'ปิดแบบฟอร์ม' : 'เพิ่มข้อใหม่'}</span>
@@ -261,7 +261,7 @@ export const WheelCustomModal: React.FC<WheelCustomModalProps> = ({
             <button
               type="button"
               onClick={() => setShowAddForm(false)}
-              className="text-xs text-gray-400 hover:text-white px-3 py-1 font-bold"
+              className="text-xs text-gray-400 hover:text-[rgb(var(--c-ink))] px-3 py-1 font-bold"
             >
               ยกเลิก
             </button>

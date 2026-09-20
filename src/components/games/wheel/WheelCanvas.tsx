@@ -205,7 +205,7 @@ export const WheelCanvas: React.FC<WheelCanvasProps> = ({
       {/* 📍 Golden Arrow Needle at TOP (12 o'clock pointing down) */}
       <div className="absolute -top-3 z-30 flex flex-col items-center pointer-events-none drop-shadow-[0_8px_16px_rgba(0,0,0,0.8)]">
         {/* Needle Top Shield */}
-        <div className="w-10 h-10 rounded-full bg-gradient-to-b from-amber-300 via-amber-500 to-amber-800 border-2 border-yellow-100 flex items-center justify-center shadow-lg">
+        <div className="w-10 h-10 rounded-full bg-mint border-2 border-yellow-100 flex items-center justify-center shadow-lg">
           <div className="w-4 h-4 rounded-full bg-red-600 border border-amber-200 shadow-inner" />
         </div>
         {/* Downward pointing triangle arrow */}

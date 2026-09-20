@@ -38,16 +38,16 @@ export const Tile: React.FC<TileProps> = ({
     challenge: {
       icon: <HelpCircle className="w-3 h-3 text-purple-300 drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]" />,
       // Dark enchanted mystic wood
-      bg: 'from-[#672e7d] via-[#481c5a] to-[#2b0e37]',
+      bg: 'from-[rgb(var(--c-grape-soft))] via-[rgb(var(--c-grape-soft))] to-[rgb(var(--c-grape-soft))]',
       borderTop: 'border-t-[#d8b4fe]',
-      ribbon: 'bg-[#3b114d] text-purple-200 border-[#5e2079]',
+      ribbon: 'bg-[rgb(var(--c-grape-soft))] text-purple-200 border-[rgb(var(--c-grape-soft))]',
     },
     safe: {
       icon: <ShieldCheck className="w-3 h-3 text-emerald-300 drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]" />,
       // Forest moss wood
-      bg: 'from-[#256e3b] via-[#164e28] to-[#0c2f17]',
+      bg: 'from-[#256e3b] via-[rgb(var(--c-mint-soft))] to-[rgb(var(--c-mint-soft))]',
       borderTop: 'border-t-[#86efac]',
-      ribbon: 'bg-[#103a1d] text-emerald-200 border-[#1d6332]',
+      ribbon: 'bg-[rgb(var(--c-mint-soft))] text-emerald-200 border-[#1d6332]',
     },
   };
 

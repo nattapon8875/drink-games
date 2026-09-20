@@ -82,7 +82,7 @@ export const Board: React.FC<BoardProps> = ({
                 {rowIdx === 0 && (
                   <div className="col-span-6 row-span-6 flex flex-col items-center justify-center p-1.5 sm:p-4 rounded-xl sm:rounded-2xl wood-recessed relative overflow-hidden w-full h-full">
                     {/* Subtle wood grain lighting glow */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 via-transparent to-black/40 pointer-events-none" />
+                    <div className="absolute inset-0 bg-mint/5 via-transparent to-black/40 pointer-events-none" />
                     <div className="relative z-10 w-full h-full flex flex-col items-center justify-center">
                       {centerContent}
                     </div>

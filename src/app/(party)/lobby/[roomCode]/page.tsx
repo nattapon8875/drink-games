@@ -210,7 +210,7 @@ export default function LobbyPage() {
       <header className="flex items-center justify-between py-2 border-b border-[rgb(var(--c-surface-3))] mb-4">
         <button
           onClick={handleLeaveRoom}
-          className="flex items-center gap-1 text-xs font-bold text-amber-300 hover:text-white bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-3))] px-2.5 py-1 rounded-xl shadow-sm transition active:scale-95"
+          className="flex items-center gap-1 text-xs font-bold text-amber-300 hover:text-[rgb(var(--c-ink))] bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-3))] px-2.5 py-1 rounded-xl shadow-sm transition active:scale-95"
           title="ออกจากห้องนี้"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -261,7 +261,7 @@ export default function LobbyPage() {
           <h2 className="text-2xl sm:text-3xl font-black rpg-text-gold mt-2">
             ห้องรอเปิดศึก 🍻
           </h2>
-          <p className="text-xs text-amber-200/70 font-semibold mt-0.5">
+          <p className="text-xs text-amber-200/85 font-semibold mt-0.5">
             ส่งเทียบเชิญหรือรหัสห้องให้สหายร่วมวงเข้าสู่โรงเตี๊ยม
           </p>
         </div>
@@ -379,7 +379,7 @@ export default function LobbyPage() {
             </div>
             <button
               onClick={handleLeaveRoom}
-              className="w-full py-1.5 text-xs text-amber-300/60 hover:text-rose-400 font-bold transition text-center"
+              className="w-full py-1.5 text-xs text-amber-300/80 hover:text-rose-400 font-bold transition text-center"
             >
               ออกจากห้องนี้
             </button>

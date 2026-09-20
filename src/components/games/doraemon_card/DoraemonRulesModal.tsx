@@ -140,7 +140,7 @@ export const DoraemonRulesModal: React.FC<DoraemonRulesModalProps> = ({
           className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition ${
             activeTab === 'cards'
               ? 'bg-amber-600 text-stone-950 shadow'
-              : 'text-amber-300/70 hover:text-amber-200'
+              : 'text-amber-300/85 hover:text-amber-200'
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
@@ -152,7 +152,7 @@ export const DoraemonRulesModal: React.FC<DoraemonRulesModalProps> = ({
           className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition ${
             activeTab === 'king'
               ? 'bg-amber-600 text-stone-950 shadow'
-              : 'text-amber-300/70 hover:text-amber-200'
+              : 'text-amber-300/85 hover:text-amber-200'
           }`}
         >
           <Crown className="w-3.5 h-3.5" />

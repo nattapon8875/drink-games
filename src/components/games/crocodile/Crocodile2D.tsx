@@ -47,13 +47,13 @@ export const Crocodile2D: React.FC<Crocodile2DProps> = ({
           <div className="absolute -top-6 inset-x-0 flex justify-between px-2 z-10 pointer-events-none">
             {/* Left Curved Horn */}
             <div className="relative w-24 h-20 -rotate-12">
-              <div className="w-20 h-20 rounded-tl-[80px] rounded-br-[20px] border-t-8 border-l-8 border-[#0f172a] bg-gradient-to-br from-[#1e293b] to-[#334155] shadow-lg" />
+              <div className="w-20 h-20 rounded-tl-[80px] rounded-br-[20px] border-t-8 border-l-8 border-[rgb(var(--c-sky-soft))] bg-gradient-to-br from-[rgb(var(--c-sky-soft))] to-[rgb(var(--c-sky-soft))] shadow-lg" />
               {/* Golden Ring on Horn */}
               <div className="absolute top-5 left-7 w-3 h-5 border-2 border-yellow-400 bg-yellow-500/40 rounded-full rotate-45" />
             </div>
             {/* Right Curved Horn */}
             <div className="relative w-24 h-20 rotate-12 flex justify-end">
-              <div className="w-20 h-20 rounded-tr-[80px] rounded-bl-[20px] border-t-8 border-r-8 border-[#0f172a] bg-gradient-to-bl from-[#1e293b] to-[#334155] shadow-lg" />
+              <div className="w-20 h-20 rounded-tr-[80px] rounded-bl-[20px] border-t-8 border-r-8 border-[rgb(var(--c-sky-soft))] bg-gradient-to-bl from-[rgb(var(--c-sky-soft))] to-[rgb(var(--c-sky-soft))] shadow-lg" />
               {/* Golden Ring on Horn */}
               <div className="absolute top-5 right-7 w-3 h-5 border-2 border-yellow-400 bg-yellow-500/40 rounded-full -rotate-45" />
             </div>
@@ -62,33 +62,33 @@ export const Crocodile2D: React.FC<Crocodile2DProps> = ({
           {/* Top Head (Upper Jaw with cartoon Buffalo design) */}
           <div
             className={
-              'relative w-[250px] h-[225px] rounded-t-[100px] rounded-b-[45px] bg-gradient-to-b from-[#334155] via-[#1e293b] to-[#0f172a] border-4 border-[#0f172a] shadow-xl flex flex-col items-center pt-3 transition-all duration-300 z-20 ' +
+              'relative w-[250px] h-[225px] rounded-t-[100px] rounded-b-[45px] bg-gradient-to-b from-[rgb(var(--c-sky-soft))] via-[rgb(var(--c-sky-soft))] to-[rgb(var(--c-sky-soft))] border-4 border-[rgb(var(--c-sky-soft))] shadow-xl flex flex-col items-center pt-3 transition-all duration-300 z-20 ' +
               (isBitten ? 'translate-y-20 scale-y-95' : 'translate-y-0')
             }
           >
             {/* Cute Buffalo Ears on sides */}
-            <div className="absolute -left-7 top-14 w-10 h-7 rounded-[50%] bg-[#334155] border-2 border-[#0f172a] shadow -rotate-45 flex items-center justify-center">
+            <div className="absolute -left-7 top-14 w-10 h-7 rounded-[50%] bg-[rgb(var(--c-sky-soft))] border-2 border-[rgb(var(--c-sky-soft))] shadow -rotate-45 flex items-center justify-center">
               <div className="w-6 h-3 rounded-[50%] bg-[rgb(var(--c-butter))]" />
             </div>
-            <div className="absolute -right-7 top-14 w-10 h-7 rounded-[50%] bg-[#334155] border-2 border-[#0f172a] shadow rotate-45 flex items-center justify-center">
+            <div className="absolute -right-7 top-14 w-10 h-7 rounded-[50%] bg-[rgb(var(--c-sky-soft))] border-2 border-[rgb(var(--c-sky-soft))] shadow rotate-45 flex items-center justify-center">
               <div className="w-6 h-3 rounded-[50%] bg-[rgb(var(--c-butter))]" />
             </div>
 
             {/* Forehead Hair Fluff */}
             <div className="flex gap-1 -mt-2">
-              <div className="w-4 h-4 rounded-full bg-[#0f172a]" />
-              <div className="w-5 h-5 rounded-full bg-[#0f172a] -mt-1" />
-              <div className="w-4 h-4 rounded-full bg-[#0f172a]" />
+              <div className="w-4 h-4 rounded-full bg-[rgb(var(--c-sky-soft))]" />
+              <div className="w-5 h-5 rounded-full bg-[rgb(var(--c-sky-soft))] -mt-1" />
+              <div className="w-4 h-4 rounded-full bg-[rgb(var(--c-sky-soft))]" />
             </div>
 
             {/* Large Expressive Cartoon Eyes */}
             <div className="flex gap-6 items-center mt-2">
               {/* Left Eye */}
-              <div className="relative w-12 h-14 rounded-[50%] bg-white border-2 border-[#0f172a] shadow-md flex items-center justify-center overflow-hidden">
+              <div className="relative w-12 h-14 rounded-[50%] bg-white border-2 border-[rgb(var(--c-sky-soft))] shadow-md flex items-center justify-center overflow-hidden">
                 <div
                   className={
                     'w-7 h-9 rounded-[50%] flex items-center justify-center transition-colors relative ' +
-                    (isBitten ? 'bg-rose-600' : 'bg-[#0f172a]')
+                    (isBitten ? 'bg-rose-600' : 'bg-[rgb(var(--c-sky-soft))]')
                   }
                 >
                   {/* Catchlights */}
@@ -98,11 +98,11 @@ export const Crocodile2D: React.FC<Crocodile2DProps> = ({
               </div>
 
               {/* Right Eye */}
-              <div className="relative w-12 h-14 rounded-[50%] bg-white border-2 border-[#0f172a] shadow-md flex items-center justify-center overflow-hidden">
+              <div className="relative w-12 h-14 rounded-[50%] bg-white border-2 border-[rgb(var(--c-sky-soft))] shadow-md flex items-center justify-center overflow-hidden">
                 <div
                   className={
                     'w-7 h-9 rounded-[50%] flex items-center justify-center transition-colors relative ' +
-                    (isBitten ? 'bg-rose-600' : 'bg-[#0f172a]')
+                    (isBitten ? 'bg-rose-600' : 'bg-[rgb(var(--c-sky-soft))]')
                   }
                 >
                   {/* Catchlights */}
@@ -128,12 +128,12 @@ export const Crocodile2D: React.FC<Crocodile2DProps> = ({
           {/* Lower Jaw & Mouth Cavity (Buffalo Underbelly style) */}
           <div
             className={
-              'relative w-[270px] h-[230px] -mt-6 rounded-b-[100px] rounded-t-[40px] bg-[#334155] border-4 border-[#0f172a] shadow-2xl flex flex-col items-center justify-between p-3 pt-8 overflow-hidden transition-all duration-300 ' +
+              'relative w-[270px] h-[230px] -mt-6 rounded-b-[100px] rounded-t-[40px] bg-[rgb(var(--c-sky-soft))] border-4 border-[rgb(var(--c-sky-soft))] shadow-2xl flex flex-col items-center justify-between p-3 pt-8 overflow-hidden transition-all duration-300 ' +
               (isBitten ? 'border-rose-600 bg-stone-900' : '')
             }
           >
             {/* Deep Red Inside Mouth Throat & Tongue */}
-            <div className="w-[210px] h-[120px] rounded-[50px] bg-gradient-to-b from-[#4c0519] via-[#881337] to-[#be123c] shadow-inner flex items-center justify-center border-2 border-rose-950">
+            <div className="w-[210px] h-[120px] rounded-[50px] bg-gradient-to-b from-[rgb(var(--c-berry-soft))] via-[rgb(var(--c-berry-soft))] to-[rgb(var(--c-berry-soft))] shadow-inner flex items-center justify-center border-2 border-rose-950">
               {isBitten ? (
                 <span className="text-2xl font-black text-white animate-bounce">
                   💥 งับบบบ!

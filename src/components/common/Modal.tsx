@@ -65,7 +65,7 @@ export const Modal: React.FC<ModalProps> = ({
             {showCloseButton && onClose && (
               <button
                 onClick={onClose}
-                className="wood-btn-brown p-1.5 rounded-xl text-amber-200 hover:text-white transition shadow-sm ml-auto"
+                className="wood-btn-brown p-1.5 rounded-xl text-amber-200 hover:text-[rgb(var(--c-ink))] transition shadow-sm ml-auto"
                 title="ปิด"
               >
                 <X className="w-4 h-4" />
