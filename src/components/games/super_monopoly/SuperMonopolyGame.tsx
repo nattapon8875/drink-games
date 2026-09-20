@@ -46,6 +46,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     isRolling,
     isMoving,
     activeStepTileIndex,
+    activeStepPlayerId,
     isMyTurn,
     drawnCard,
     rentReceipt,
@@ -219,6 +220,12 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
   // through a moment where both are false - between revealing the dice and the
   // token starting to walk. Spectators saw the panel blink out and back twice a
   // turn. Latch it instead: once a roll starts it stays up until the turn moves.
+  // Never let someone else's walk freeze your own controls. If the walking
+  // flags are on but the walk belongs to another player, they are leftovers,
+  // not something this player has to wait for.
+  const walkIsMine = !activeStepPlayerId || activeStepPlayerId === currentPlayer?.id;
+  const controlsBusy = (isRolling || isMoving) && walkIsMine;
+
   const [diceShownForTurn, setDiceShownForTurn] = useState(false);
 
   useEffect(() => {
@@ -607,6 +614,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               players={players}
               currentTurnPlayerId={currentTurnPlayer?.id || null}
               activeStepTileIndex={activeStepTileIndex}
+              activeStepPlayerId={activeStepPlayerId}
               bankrupt={bankrupt}
               onTileClick={handleTileClick}
             />
@@ -617,6 +625,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               players={players}
               currentTurnPlayerId={currentTurnPlayer?.id || null}
               activeStepTileIndex={activeStepTileIndex}
+              activeStepPlayerId={activeStepPlayerId}
               bankrupt={bankrupt}
               onTileClick={handleTileClick}
             />
@@ -654,7 +663,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               {isCurrentPlayerBoarding ? (
                 <button
                   type="button"
-                  disabled={isRolling || isMoving}
+                  disabled={controlsBusy}
                   onClick={handleOpenFlightPicker}
                   className="pointer-events-auto px-7 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 bg-[#0b2b3d] border-2 border-sky-400 text-sky-100"
                 >
@@ -665,7 +674,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    disabled={isRolling || isMoving || myCash < jailBailCost}
+                    disabled={controlsBusy || myCash < jailBailCost}
                     onClick={handlePayJailBail}
                     title={myCash < jailBailCost ? `เงินไม่พอจ่ายค่าปรับ ${formatMoneyM(jailBailCost)}` : undefined}
                     className="pointer-events-auto px-5 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 wood-btn-gold border-2 border-yellow-300/70"
@@ -674,7 +683,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                   </button>
                   <button
                     type="button"
-                    disabled={isRolling || isMoving}
+                    disabled={controlsBusy}
                     onClick={handleServeJailTurn}
                     className={`pointer-events-auto px-5 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 ${isProxying ? 'bg-purple-800 hover:bg-purple-700 border-2 border-purple-300 text-purple-50' : 'bg-[#3d1806] border-2 border-[#7d320b] text-amber-200'}`}
                   >
@@ -684,7 +693,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               ) : isCurrentPlayerResting ? (
                 <button
                   type="button"
-                  disabled={isRolling || isMoving}
+                  disabled={controlsBusy}
                   onClick={handleServeRestTurn}
                   className={`pointer-events-auto px-7 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 ${isProxying ? 'bg-purple-800 hover:bg-purple-700 border-2 border-purple-300 text-purple-50' : 'wood-btn-gold border-2 border-yellow-300/70'}`}
                 >
@@ -693,16 +702,16 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               ) : !hasRolledThisTurn ? (
                 <button
                   type="button"
-                  disabled={isRolling || isMoving}
+                  disabled={controlsBusy}
                   onClick={rollDice}
                   className={`pointer-events-auto px-8 py-4 rounded-full font-black text-base shadow-2xl active:scale-95 disabled:opacity-50 ${isProxying ? 'bg-purple-800 hover:bg-purple-700 border-2 border-purple-300 text-purple-50' : 'wood-btn-gold border-2 border-yellow-300/70'}`}
                 >
-                  {isRolling ? 'กำลังทอย...' : isMoving ? 'กำลังเดิน...' : '🎲 ทอยลูกเต๋า'}
+                  {controlsBusy && isRolling ? 'กำลังทอย...' : controlsBusy && isMoving ? 'กำลังเดิน...' : '🎲 ทอยลูกเต๋า'}
                 </button>
               ) : (
                 <button
                   type="button"
-                  disabled={isRolling || isMoving}
+                  disabled={controlsBusy}
                   onClick={handleEndTurn}
                   className={`pointer-events-auto px-7 py-3.5 rounded-full font-black text-sm shadow-2xl active:scale-95 disabled:opacity-40 ${isProxying ? 'bg-purple-800 hover:bg-purple-700 border-2 border-purple-300 text-purple-50' : 'bg-[#3d1806] border-2 border-[#7d320b] text-amber-200'}`}
                 >

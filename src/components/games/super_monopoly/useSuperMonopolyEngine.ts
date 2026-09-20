@@ -138,6 +138,10 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   const isMoving = Boolean(rawState.isMoving);
   const serverDice: [number, number] = rawState.dice || [1, 1];
   const activeStepTileIndex: number | null = rawState.activeStepTileIndex ?? null;
+  // Who that stepping square belongs to. Without it the board drew whoever's
+  // turn it happened to be on the walker's square, so a turn that changed
+  // mid-walk dragged the wrong token along with it.
+  const activeStepPlayerId: string | null = (rawState.activeStepPlayerId as string | null) ?? null;
 
   // Local rapid tumbling animation while isRolling is true
   const [shuffleDice, setShuffleDice] = useState<[number, number]>([1, 1]);
@@ -189,6 +193,8 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   // refuses to start it again and the bot freezes with no watchdog left.
   const botTurnRunningRef = useRef<boolean>(false);
   const botWatchdogTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // When the running bot turn last wrote anything.
+  const botProgressAtRef = useRef<number>(0);
 
   // Ordered players based on initial roll order scores / database turn_order
   const orderedPlayers = useMemo<PlayerRecord[]>(() => {
@@ -387,6 +393,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
         await onUpdateGameState({
           positions: stepPositions,
           activeStepTileIndex: currentStepPos,
+          activeStepPlayerId: currentTurnPlayer.id,
           isRolling: false,
           isMoving: true,
           cash: { ...cash, [currentTurnPlayer.id]: playerCash },
@@ -1345,18 +1352,37 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
     let isMounted = true;
 
-    // Safety watchdog: If bot gets stuck for > 16s, force switch turn!
-    if (botWatchdogTimerRef.current) clearTimeout(botWatchdogTimerRef.current);
-    botWatchdogTimerRef.current = setTimeout(async () => {
-      console.warn('[Bot Watchdog] Bot took too long! Auto-passing turn...');
-      if (!isMounted) return;
-      const nextPlayer = nextActiveAfter(orderedPlayersRef.current, turnPlayerId, bankrupt);
-      if (nextPlayer) {
-        await onNextTurn(nextPlayer.id);
-      }
-    }, 16000);
+    // Safety watchdog for a bot that has genuinely stalled. It used to fire on a
+    // flat 16s, which a legitimate turn can exceed - a double rolls twice, and
+    // twelve steps take four seconds on their own - so it stole the turn from a
+    // bot that was still walking and left the walking flags on for the next
+    // player. It now only fires when the bot has made no progress for a while,
+    // and re-arms whenever it has.
+    const armWatchdog = () => {
+      if (botWatchdogTimerRef.current) clearTimeout(botWatchdogTimerRef.current);
+      botWatchdogTimerRef.current = setTimeout(async () => {
+        if (!isMounted) return;
+        if (Date.now() - botProgressAtRef.current < 9000) {
+          armWatchdog();
+          return;
+        }
+        console.warn('[Bot Watchdog] Bot made no progress! Auto-passing turn...');
+        const nextPlayer = nextActiveAfter(orderedPlayersRef.current, turnPlayerId, bankrupt);
+        if (nextPlayer) {
+          await onNextTurn(nextPlayer.id);
+        }
+      }, 9000);
+    };
+    botProgressAtRef.current = Date.now();
+    armWatchdog();
 
     const executeBotTurn = async () => {
+      // Every write the bot makes counts as progress, so the watchdog can tell a
+      // long-but-healthy turn from one that has actually stalled.
+      const botSync = async (partial: Record<string, any>) => {
+        botProgressAtRef.current = Date.now();
+        return onUpdateGameState(partial);
+      };
       try {
         let rollsThisTurn = 0;
         let shouldRollAgain = true;
@@ -1397,7 +1423,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               '#0ea5e9',
               botTurnLogs
             );
-            await onUpdateGameState({
+            await botSync({
               positions: { ...positions, [turnPlayerId]: dest },
               cash: { ...cash, [turnPlayerId]: botCash },
               pendingFlights: botFlightState,
@@ -1418,7 +1444,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               '#38bdf8',
               botTurnLogs
             );
-            await onUpdateGameState({
+            await botSync({
               restTurns: botRestState,
               gameLogs: botTurnLogs,
             });
@@ -1439,7 +1465,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                 '#f59e0b',
                 botTurnLogs
               );
-              await onUpdateGameState({
+              await botSync({
                 inJailTurns: botJailState,
                 cash: { ...cash, [turnPlayerId]: botCash },
                 gameLogs: botTurnLogs,
@@ -1452,7 +1478,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                 '#a855f7',
                 botTurnLogs
               );
-              await onUpdateGameState({
+              await botSync({
                 inJailTurns: botJailState,
                 gameLogs: botTurnLogs,
               });
@@ -1468,7 +1494,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
           const isDoubleRoll = d1 === d2;
 
           // Broadcast roll start to all players in the room immediately!
-          await onUpdateGameState({
+          await botSync({
             dice: [d1, d2],
             isRolling: true,
             isMoving: false,
@@ -1479,7 +1505,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
           if (!isMounted) return;
 
           // Reveal final dice numbers on all screens
-          await onUpdateGameState({
+          await botSync({
             dice: [d1, d2],
             isRolling: false,
             isMoving: false,
@@ -1504,9 +1530,10 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             }
 
             const botStepPositions = { ...positions, [turnPlayerId]: stepPos };
-            await onUpdateGameState({
+            await botSync({
               positions: botStepPositions,
               activeStepTileIndex: stepPos,
+              activeStepPlayerId: turnPlayerId,
               isRolling: false,
               isMoving: true,
               cash: { ...cash, [turnPlayerId]: botCash },
@@ -1797,7 +1824,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
           }
 
           // Single clean server state sync
-          await onUpdateGameState({
+          await botSync({
             positions: updatedPositions,
             cash: updatedCash,
             properties: botProperties,
@@ -1863,7 +1890,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
         if (!nextPlayer) return;
 
         botTurnLogs = addLog(`🎲 ส่งตาให้ [${nextPlayer.display_name}]`, '#93c5fd', botTurnLogs);
-        await onUpdateGameState({
+        await botSync({
           gameLogs: botTurnLogs,
           isRolling: false,
           isMoving: false,
@@ -1915,6 +1942,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     isRolling,
     isMoving,
     activeStepTileIndex,
+    activeStepPlayerId,
     isMyTurn,
     isBotTurn,
     isCurrentPlayerInJail,

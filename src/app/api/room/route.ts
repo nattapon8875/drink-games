@@ -280,10 +280,16 @@ export async function POST(req: Request) {
           const room = serverStore.rooms.get(roomCode);
           if (room) {
             room.current_turn_player_id = nextPlayerId;
+            // Clear the walking flags with the handover. They belong to whoever
+            // was moving, and if their turn ended while a write was still on its
+            // way, the flags stuck on and the next player's roll button sat
+            // disabled at "walking..." with nothing able to clear it.
             room.game_state = {
               ...room.game_state,
               activeActionModal: false,
               isRolling: false,
+              isMoving: false,
+              activeStepTileIndex: null,
             };
             serverStore.rooms.set(roomCode, room);
           }

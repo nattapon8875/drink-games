@@ -10,6 +10,7 @@ interface SuperBoardProps {
   players: PlayerRecord[];
   currentTurnPlayerId: string | null;
   activeStepTileIndex?: number | null;
+  activeStepPlayerId?: string | null;
   bankrupt?: Record<string, boolean>;
   onTileClick: (tile: SuperPropertyTile) => void;
 }
@@ -20,6 +21,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
   players,
   currentTurnPlayerId,
   activeStepTileIndex,
+  activeStepPlayerId,
   bankrupt,
   onTileClick,
 }) => {
@@ -92,9 +94,14 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
           // Players currently standing on this tile
           const playersHere = players.filter((p) => {
             if (bankrupt?.[p.id]) return false;
-            const isTurn = p.id === currentTurnPlayerId;
+            // The walking square belongs to whoever is walking, not to
+            // whoever's turn it is - those differ for a moment when a turn
+            // changes mid-walk.
+            const isWalker = activeStepPlayerId
+              ? p.id === activeStepPlayerId
+              : p.id === currentTurnPlayerId;
             const pPos =
-              isTurn && activeStepTileIndex !== null && activeStepTileIndex !== undefined
+              isWalker && activeStepTileIndex !== null && activeStepTileIndex !== undefined
                 ? activeStepTileIndex
                 : positions[p.id] ?? 0;
             return pPos === tile.index;

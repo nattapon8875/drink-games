@@ -14,6 +14,7 @@ interface SuperBoard3DProps {
   players: PlayerRecord[];
   currentTurnPlayerId: string | null;
   activeStepTileIndex?: number | null;
+  activeStepPlayerId?: string | null;
   // Players who are out of the game keep their colour and their row, but their
   // token comes off the board.
   bankrupt?: Record<string, boolean>;
@@ -960,6 +961,7 @@ const SuperBoard3DBase: React.FC<SuperBoard3DProps> = ({
   players,
   currentTurnPlayerId,
   activeStepTileIndex,
+  activeStepPlayerId,
   bankrupt,
   onTileClick,
 }) => {
@@ -1029,8 +1031,11 @@ const SuperBoard3DBase: React.FC<SuperBoard3DProps> = ({
           {players.map((p, idx) => {
             if (bankrupt?.[p.id]) return null;
             const isTurn = p.id === currentTurnPlayerId;
+            // The walking square belongs to whoever is walking, not to whoever's
+            // turn it is - those differ for a moment when a turn changes mid-walk.
+            const isWalker = activeStepPlayerId ? p.id === activeStepPlayerId : isTurn;
             const targetIndex =
-              isTurn && activeStepTileIndex !== null && activeStepTileIndex !== undefined
+              isWalker && activeStepTileIndex !== null && activeStepTileIndex !== undefined
                 ? activeStepTileIndex
                 : positions[p.id] ?? 0;
 
