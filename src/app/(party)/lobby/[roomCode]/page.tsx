@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { useParams, useRouter } from 'next/navigation';
 import { usePlatform } from '@/hooks/usePlatform';
 import { useRoomRealtime } from '@/hooks/useRoomRealtime';
@@ -217,6 +218,9 @@ export default function LobbyPage() {
           <span>ออกห้อง</span>
         </button>
 
+        <div className="flex items-center gap-2">
+        <ThemeToggle />
+
         {/* Profile Chip (Edit Name/Avatar) */}
         <div
           onClick={() => setShowEditProfileModal(true)}
@@ -236,6 +240,7 @@ export default function LobbyPage() {
             {user.displayName}
           </span>
           <Edit2 className="w-3 h-3 text-amber-400" />
+        </div>
         </div>
       </header>
 

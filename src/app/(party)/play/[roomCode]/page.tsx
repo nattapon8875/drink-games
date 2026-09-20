@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { useParams, useRouter } from 'next/navigation';
 import { usePlatform } from '@/hooks/usePlatform';
 import { useRoomRealtime } from '@/hooks/useRoomRealtime';
@@ -217,6 +218,8 @@ export default function PlayPage() {
         </div>
 
         <div className="flex items-center gap-1.5">
+          <ThemeToggle />
+
           {/* Players Roster & Kick Button */}
           <button
             type="button"
