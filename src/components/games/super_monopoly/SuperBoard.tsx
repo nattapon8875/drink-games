@@ -77,7 +77,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
     // Same height as the 3D board so switching modes does not resize the page.
     // The grid has to stay square - eleven columns of eleven - so the width
     // follows the height, centred in whatever space the column has.
-    <div className="printed-board relative mx-auto max-w-full w-full aspect-square sm:w-auto sm:h-[560px] lg:h-[640px] bg-gradient-to-b from-[rgb(var(--c-surface-2))] via-[rgb(var(--c-surface-2))] to-[rgb(var(--c-surface))] border-4 border-[rgb(var(--c-line))] rounded-3xl p-1.5 sm:p-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.85)] select-none">
+    <div className="relative mx-auto max-w-full w-full aspect-square sm:w-auto sm:h-[560px] lg:h-[640px] bg-gradient-to-b from-[rgb(var(--c-surface-2))] via-[rgb(var(--c-surface-2))] to-[rgb(var(--c-surface))] border-4 border-[rgb(var(--c-line))] rounded-3xl p-1.5 sm:p-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.85)] select-none">
       {/* 11x11 Grid Container */}
       <div className="grid grid-cols-11 grid-rows-11 w-full h-full gap-[1.5px] sm:gap-[2.5px] relative bg-[rgb(var(--c-bg-deep))] p-1 rounded-2xl border border-yellow-700/40">
         
@@ -116,28 +116,28 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
                 style={{ gridColumn: col, gridRow: row }}
                 className={`relative flex flex-col justify-between p-1 rounded-xl transition-all cursor-pointer overflow-hidden border-2 ${
                   isStepActive
-                    ? 'ring-4 ring-yellow-400 bg-yellow-200 z-30 scale-105 shadow-[0_0_20px_rgba(250,204,21,1)]'
+                    ? 'ring-4 ring-[rgb(var(--c-butter))] bg-[rgb(var(--c-butter-soft))] z-30 scale-105 shadow-lg'
                     : tile.index === 0
-                    ? 'bg-gradient-to-br from-[#e8f5e9] via-[#c8e6c9] to-[#a5d6a7] border-emerald-600 text-emerald-950 shadow-md'
+                    ? 'bg-[rgb(var(--c-mint-soft))] border-[rgb(var(--c-mint))] text-[rgb(var(--c-ink))] shadow-md'
                     : tile.index === 10
-                    ? 'bg-gradient-to-br from-[rgb(var(--c-butter-soft))] via-[rgb(var(--c-butter-soft))] to-[rgb(var(--c-butter))] border-amber-600 text-[rgb(var(--c-on-accent))] shadow-md'
+                    ? 'bg-[rgb(var(--c-butter-soft))] border-[rgb(var(--c-butter))] text-[rgb(var(--c-ink))] shadow-md'
                     : tile.index === 20
-                    ? 'bg-gradient-to-br from-[#e0f2fe] via-[#bae6fd] to-[#7dd3fc] border-sky-600 text-sky-950 shadow-md'
-                    : 'bg-gradient-to-br from-[rgb(var(--c-butter-soft))] via-[rgb(var(--c-butter))] to-[rgb(var(--c-butter))] border-rose-600 text-rose-950 shadow-md'
+                    ? 'bg-[rgb(var(--c-sky-soft))] border-[rgb(var(--c-sky))] text-[rgb(var(--c-ink))] shadow-md'
+                    : 'bg-[rgb(var(--c-sky-soft))] border-[rgb(var(--c-sky))] text-[rgb(var(--c-ink))] shadow-md'
                 } hover:scale-[1.04] hover:z-20`}
                 title={`${tile.name}: ${tile.description || ''}`}
               >
                 {/* Tile 0: จุดเริ่มต้น (START / GO) */}
                 {tile.index === 0 && (
                   <div className="flex flex-col items-center justify-between h-full text-center py-0.5">
-                    <span className="text-[7px] sm:text-[9px] font-black uppercase text-emerald-800 tracking-wider">
+                    <span className="text-[7px] sm:text-[9px] font-black uppercase text-[rgb(var(--c-mint-label))] tracking-wider">
                       รับเงินเดือน
                     </span>
                     <div className="flex items-center justify-center gap-0.5">
                       <span className="text-sm sm:text-xl">🏁</span>
-                      <span className="text-xs sm:text-base font-black text-rose-600 animate-pulse">➔</span>
+                      <span className="text-xs sm:text-base font-black text-[rgb(var(--c-berry-label))] animate-pulse">➔</span>
                     </div>
-                    <span className="text-[8px] sm:text-[10.5px] font-black text-emerald-950 leading-tight">
+                    <span className="text-[8px] sm:text-[10.5px] font-black text-[rgb(var(--c-ink))] leading-tight">
                       จุดเริ่มต้น
                     </span>
                     <span className="text-[7px] sm:text-[9px] font-mono font-black text-white bg-emerald-700 px-1 py-0.2 rounded-full shadow-sm">
@@ -149,16 +149,16 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
                 {/* Tile 10: ช่องเข้าคุก (JAIL & VISITING) */}
                 {tile.index === 10 && (
                   <div className="flex flex-col items-center justify-between h-full text-center py-0.5">
-                    <span className="text-[7px] sm:text-[8.5px] font-bold text-amber-900">
+                    <span className="text-[7px] sm:text-[8.5px] font-bold text-[rgb(var(--c-ink-soft))]">
                       แวะเยี่ยม
                     </span>
-                    <div className="w-full bg-[rgb(var(--c-surface-2))] rounded-lg p-0.5 sm:p-1 border border-amber-800 text-center shadow-inner">
+                    <div className="w-full bg-[rgb(var(--c-surface))] rounded-lg p-0.5 sm:p-1 border border-[rgb(var(--c-line))] text-center shadow-inner">
                       <span className="text-xs sm:text-base block">⛓️</span>
-                      <span className="text-[7px] sm:text-[9px] font-black text-amber-200">
+                      <span className="text-[7px] sm:text-[9px] font-black text-[rgb(var(--c-ink))]">
                         ห้องขัง
                       </span>
                     </div>
-                    <span className="text-[6.5px] sm:text-[8px] font-bold text-red-700">
+                    <span className="text-[6.5px] sm:text-[8px] font-bold text-[rgb(var(--c-berry-label))]">
                       หยุด 1 ตา / 0.5M
                     </span>
                   </div>
@@ -167,11 +167,11 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
                 {/* Tile 20: จุดพักผ่อน (FREE REST) */}
                 {tile.index === 20 && (
                   <div className="flex flex-col items-center justify-between h-full text-center py-0.5">
-                    <span className="text-[7px] sm:text-[9px] font-bold text-sky-800">
+                    <span className="text-[7px] sm:text-[9px] font-bold text-[rgb(var(--c-sky-label))]">
                       พักผ่อน
                     </span>
                     <span className="text-base sm:text-2xl drop-shadow">🏖️</span>
-                    <span className="text-[8px] sm:text-[10px] font-black text-sky-950 leading-tight">
+                    <span className="text-[8px] sm:text-[10px] font-black text-[rgb(var(--c-ink))] leading-tight">
                       จุดพัก
                     </span>
                     <span className="text-[6.5px] sm:text-[8px] font-black text-white bg-sky-600 px-1 py-0.2 rounded-full shadow-sm">
@@ -183,11 +183,11 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
                 {/* Tile 30: สนามบิน (AIRPORT) */}
                 {tile.index === 30 && (
                   <div className="flex flex-col items-center justify-between h-full text-center py-0.5">
-                    <span className="text-[7px] sm:text-[8.5px] font-black text-sky-700 uppercase">
+                    <span className="text-[7px] sm:text-[8.5px] font-black text-[rgb(var(--c-sky-label))] uppercase">
                       ออกเดินทาง
                     </span>
                     <span className="text-sm sm:text-2xl drop-shadow">✈️</span>
-                    <span className="text-[8px] sm:text-[10px] font-black text-sky-950 leading-tight">
+                    <span className="text-[8px] sm:text-[10px] font-black text-[rgb(var(--c-ink))] leading-tight">
                       สนามบิน
                     </span>
                     <span className="text-[6.5px] sm:text-[8px] font-mono font-black text-white bg-sky-600 px-1 py-0.2 rounded-full shadow-sm">
@@ -229,8 +229,8 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
               style={{ gridColumn: col, gridRow: row }}
               className={`relative flex flex-col justify-between rounded-lg transition-all cursor-pointer overflow-hidden border ${
                 isStepActive
-                  ? 'ring-4 ring-yellow-400 bg-yellow-100 z-30 scale-105 shadow-[0_0_20px_rgba(250,204,21,1)]'
-                  : 'bg-[#fffef7] hover:bg-[rgb(var(--c-butter-soft))] border-[rgb(var(--c-butter))] shadow-sm'
+                  ? 'ring-4 ring-[rgb(var(--c-butter))] bg-[rgb(var(--c-butter-soft))] z-30 scale-105 shadow-lg'
+                  : 'bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface-2))] border-[rgb(var(--c-line))] shadow-sm'
               } hover:scale-[1.04] hover:z-20`}
               title={`${tile.name}${tile.cost ? ` (${formatMoneyM(tile.cost)})` : ''}`}
             >
@@ -294,15 +294,15 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
                 </span>
 
                 {tile.cost ? (
-                  <span className="text-[6.5px] sm:text-[8px] font-mono font-black text-emerald-800 bg-emerald-100/90 px-1 py-0.2 rounded mt-0.5 shadow-inner">
+                  <span className="text-[6.5px] sm:text-[8px] font-mono font-black text-[rgb(var(--c-mint-label))] bg-[rgb(var(--c-mint-soft))] px-1 py-0.2 rounded mt-0.5 shadow-inner">
                     {formatMoneyM(tile.cost)}
                   </span>
                 ) : tile.type === 'tax' ? (
-                  <span className="text-[6px] sm:text-[7.5px] font-bold text-rose-700 mt-0.5">
+                  <span className="text-[6px] sm:text-[7.5px] font-bold text-[rgb(var(--c-berry-label))] mt-0.5">
                     จ่าย 1.0M
                   </span>
                 ) : (
-                  <span className="text-[6px] sm:text-[7.5px] font-bold text-amber-700 mt-0.5 opacity-80">
+                  <span className="text-[6px] sm:text-[7.5px] font-bold text-[rgb(var(--c-ink-faint))] mt-0.5">
                     พิเศษ
                   </span>
                 )}
@@ -363,7 +363,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
             gridColumn: '2 / 11',
             gridRow: '2 / 11',
           }}
-          className="relative bg-gradient-to-br from-[rgb(var(--c-butter-soft))] via-[rgb(var(--c-butter-soft))] to-[rgb(var(--c-butter-soft))] rounded-2xl border-2 border-[rgb(var(--c-butter-deep))] flex flex-col items-center justify-between p-3 sm:p-5 shadow-inner overflow-hidden m-[1px]"
+          className="relative bg-[rgb(var(--c-surface-2))] rounded-2xl border-2 border-[rgb(var(--c-line))] flex flex-col items-center justify-between p-3 sm:p-5 shadow-inner overflow-hidden m-[1px]"
         >
           {/* Subtle Decorative Golden Border Lines inside */}
           <div className="absolute inset-1.5 border border-[rgb(var(--c-butter-deep))]/40 rounded-xl pointer-events-none" />
@@ -371,7 +371,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
 
           {/* Top Logo & Title */}
           <div className="text-center z-10 pt-1 sm:pt-2">
-            <div className="inline-flex items-center justify-center gap-1.5 px-3 py-0.5 rounded-full bg-[rgb(var(--c-surface-2))]/50 border border-amber-400/40 text-[9px] sm:text-[11px] font-black text-amber-900 mb-1">
+            <div className="inline-flex items-center justify-center gap-1.5 px-3 py-0.5 rounded-full bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-line))] text-[9px] sm:text-[11px] font-black text-[rgb(var(--c-ink-soft))] mb-1">
               <span>★</span>
               <span>เกมเศรษฐีคลาสสิกของไทย</span>
               <span>★</span>
@@ -392,7 +392,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
             <span className="text-[9px] sm:text-[11.5px] font-black text-[rgb(var(--c-ink))] opacity-85">
               ★ สนุกสนาน เพลิดเพลิน ซื้อขายที่ดินทั่วสยาม ★
             </span>
-            <div className="flex flex-wrap items-center justify-center gap-1.5 text-[7px] sm:text-[9px] font-bold text-[rgb(var(--c-on-accent))]/80 bg-[rgb(var(--c-surface-2))]/70 border border-amber-300/60 px-2.5 py-0.5 rounded-full shadow-sm">
+            <div className="flex flex-wrap items-center justify-center gap-1.5 text-[7px] sm:text-[9px] font-bold text-[rgb(var(--c-ink-soft))] bg-[rgb(var(--c-surface))]/85 border border-[rgb(var(--c-line))] px-2.5 py-0.5 rounded-full shadow-sm">
               <span>🏁 ผ่านจุดเริ่มต้น รับ +2M</span>
               <span>•</span>
               <span>🏖️ จุดพัก หยุดพัก 1 ตา</span>

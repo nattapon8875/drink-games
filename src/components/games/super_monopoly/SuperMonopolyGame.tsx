@@ -287,8 +287,10 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
       </div>
 
       {/* Persistent Live Action Ticker (Always Visible on all devices!) */}
-      <div className="w-full bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-3))] rounded-2xl px-3 sm:px-4 py-2 mb-2.5 shadow-xl flex items-center justify-between gap-2 transition hover:border-amber-500/50">
-        <div className="flex items-center gap-2 min-w-0 flex-1">
+      {/* The ticker and its two buttons shared one line, which left the latest
+          move cut off mid-word on a phone. They stack there instead. */}
+      <div className="w-full bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-3))] rounded-2xl px-3 sm:px-4 py-2 mb-2.5 shadow-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2 transition hover:border-amber-500/50">
+        <div className="flex items-center gap-2 min-w-0 w-full sm:flex-1">
           <span className="flex h-2.5 w-2.5 relative shrink-0">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-yellow-500"></span>
@@ -312,7 +314,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
           {gameLogs[0]?.time && (
             <span className="text-[10px] font-mono text-amber-400/80 hidden md:inline">
               {gameLogs[0].time}
