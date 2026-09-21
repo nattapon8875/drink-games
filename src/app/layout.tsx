@@ -33,19 +33,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="th" className={chakraPetch.variable} suppressHydrationWarning>
-      <head>
-        {/* Set the theme before the first paint, so a light-mode visitor never
-            gets a dark flash on the way in (or the other way round). */}
+      <body
+        suppressHydrationWarning
+        className={`${chakraPetch.className} antialiased min-h-screen selection:bg-mint selection:text-white bg-bg text-ink`}
+      >
+        {/* Set the theme before anything paints, so a light-mode visitor never
+            gets a dark flash on the way in (or the other way round). This sits
+            at the top of the body rather than in a head tag, which the app
+            router does not render from a layout. */}
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('party_theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();`,
           }}
         />
-      </head>
-      <body
-        suppressHydrationWarning
-        className={`${chakraPetch.className} antialiased min-h-screen selection:bg-mint selection:text-white bg-bg text-ink`}
-      >
         {children}
       </body>
     </html>
