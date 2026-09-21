@@ -215,7 +215,7 @@ export default function LobbyPage() {
           title="ออกจากห้องนี้"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>ออกห้อง</span>
+          <span className="hidden sm:inline">ออกห้อง</span>
         </button>
 
         <div className="flex items-center gap-2">

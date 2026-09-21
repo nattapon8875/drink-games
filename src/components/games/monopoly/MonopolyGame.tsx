@@ -120,22 +120,24 @@ export const MonopolyGame: React.FC<BaseGameProps> = (props) => {
         </div>
       </div>
 
-      {/* Turn Announcement Ribbon Banner */}
+      {/* Whose turn it is. This used to wear the chunky button style, which
+          made people try to press a line of text; it is a status strip. */}
       <div
-        className={`w-full py-2.5 px-4 rounded-2xl mb-2 text-center text-sm sm:text-base font-black transition-all ${
+        role="status"
+        className={`w-full py-1.5 px-3 rounded-xl mb-2 text-center text-xs sm:text-sm font-black transition-all border ${
           canAct
-            ? 'wood-btn-gold border-b-4 border-[rgb(var(--c-surface))] shadow-lg animate-pulse'
-            : 'bg-[rgb(var(--c-surface))] border-2 border-[rgb(var(--c-surface-2))] text-amber-200/90 shadow-inner'
+            ? 'bg-[rgb(var(--c-mint-soft))] border-[rgb(var(--c-mint))] text-[rgb(var(--c-mint-label))]'
+            : 'bg-[rgb(var(--c-surface))] border-[rgb(var(--c-line))] text-[rgb(var(--c-ink-soft))]'
         }`}
       >
         {isRolling ? (
-          <span className="drop-shadow">🎲 กำลังทอยลูกเต๋า...</span>
+          <span>🎲 กำลังทอยลูกเต๋า...</span>
         ) : isMoving ? (
-          <span className="drop-shadow">🎲 ทอยได้แต้ม {diceResult}! กำลังเดินตัวละคร...</span>
+          <span>🎲 ทอยได้แต้ม {diceResult}! กำลังเดินตัวละคร...</span>
         ) : isMyTurn ? (
-          <span className="drop-shadow">🎲 ตาของคุณแล้ว! กดปุ่มทอยลูกเต๋าได้เลย!</span>
+          <span>🎲 ตาของคุณแล้ว! กดปุ่มทอยลูกเต๋าได้เลย!</span>
         ) : isBotTurn && isHost ? (
-          <span className="drop-shadow">🤖 ตาของบอท ({currentTurnPlayer?.display_name})! คุณในฐานะโฮสต์กดทอยแทนได้เลย</span>
+          <span>🤖 ตาของบอท ({currentTurnPlayer?.display_name})! คุณในฐานะโฮสต์กดทอยแทนได้เลย</span>
         ) : (
           <span>⏳ กำลังรอให้ <b>{currentTurnPlayer?.display_name}</b> ทอยลูกเต๋า...</span>
         )}

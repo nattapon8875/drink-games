@@ -195,7 +195,7 @@ export default function PlayPage() {
             title="กลับไปหน้าห้องรอ"
           >
             <ArrowLeft className="w-4 h-4 text-amber-400" />
-            <span>กลับห้องรอ {isHost && '(Host)'}</span>
+            <span className="hidden sm:inline">กลับห้องรอ {isHost && '(Host)'}</span>
           </button>
 
           {isHost ? (
@@ -204,7 +204,8 @@ export default function PlayPage() {
               className="text-xs font-bold text-rose-300 hover:text-[rgb(var(--c-ink))] bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] px-2.5 py-1 rounded-xl shadow-sm transition"
               title="ยุบห้องและจบเกมสำหรับทุกคน"
             >
-              ยุบห้อง (Host)
+              <span className="hidden sm:inline">ยุบห้อง (Host)</span>
+              <span className="sm:hidden" aria-hidden>✕</span>
             </button>
           ) : (
             <button
@@ -212,7 +213,8 @@ export default function PlayPage() {
               className="text-xs font-bold text-amber-300/85 hover:text-rose-300 bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-2))] px-2 py-1 rounded-xl transition"
               title="ออกจากเกม"
             >
-              ออกเกม
+              <span className="hidden sm:inline">ออกเกม</span>
+              <span className="sm:hidden" aria-hidden>✕</span>
             </button>
           )}
         </div>
