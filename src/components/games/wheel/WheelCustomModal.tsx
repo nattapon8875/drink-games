@@ -385,7 +385,7 @@ export const WheelCustomModal: React.FC<WheelCustomModalProps> = ({
                 className="px-5 py-2 font-black text-xs"
               >
                 {savedSuccess ? (
-                  <span className="flex items-center gap-1 text-emerald-950 font-black">
+                  <span className="flex items-center gap-1 text-[rgb(var(--c-mint-label))] font-black">
                     <Check className="w-4 h-4" /> บันทึกแล้ว
                   </span>
                 ) : saving ? (

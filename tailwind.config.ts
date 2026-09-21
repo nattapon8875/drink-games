@@ -52,8 +52,10 @@ const config: Config = {
         // The other named scales the app reaches for, pointed at tokens so they
         // stay legible in both themes instead of being tuned for a dark page.
         rose: {
-          100: "rgb(var(--c-berry-soft) / <alpha-value>)",
-          200: "rgb(var(--c-berry-soft) / <alpha-value>)",
+          // The light steps are labels here, not fills; they have to read
+          // against the dark chip that the 900/950 steps paint.
+          100: "rgb(var(--c-berry-label) / <alpha-value>)",
+          200: "rgb(var(--c-berry-label) / <alpha-value>)",
           300: "rgb(var(--c-berry-label) / <alpha-value>)",
           400: "rgb(var(--c-berry) / <alpha-value>)",
           500: "rgb(var(--c-berry) / <alpha-value>)",
@@ -63,8 +65,8 @@ const config: Config = {
           950: "rgb(var(--c-berry-soft) / <alpha-value>)",
         },
         emerald: {
-          100: "rgb(var(--c-mint-soft) / <alpha-value>)",
-          200: "rgb(var(--c-mint-soft) / <alpha-value>)",
+          100: "rgb(var(--c-mint-label) / <alpha-value>)",
+          200: "rgb(var(--c-mint-label) / <alpha-value>)",
           300: "rgb(var(--c-mint-label) / <alpha-value>)",
           400: "rgb(var(--c-mint) / <alpha-value>)",
           500: "rgb(var(--c-mint) / <alpha-value>)",

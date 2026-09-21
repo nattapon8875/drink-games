@@ -129,7 +129,7 @@ export const DiscordGuideModal: React.FC<DiscordGuideModalProps> = ({
             >
               {copiedLink ? (
                 <>
-                  <Check className="w-4 h-4 text-emerald-950" />
+                  <Check className="w-4 h-4 text-[rgb(var(--c-mint-label))]" />
                   <span>คัดลอกแล้ว</span>
                 </>
               ) : (
@@ -168,7 +168,7 @@ export const DiscordGuideModal: React.FC<DiscordGuideModalProps> = ({
 
             <div className="space-y-2 text-xs text-indigo-100">
               <div className="flex items-start gap-2 bg-[rgb(var(--c-surface-2))] p-2.5 rounded-xl border border-[#5865F2]/30">
-                <span className="font-black text-yellow-400 bg-yellow-400/20 px-2 py-0.5 rounded-md shrink-0">
+                <span className="font-black text-[rgb(var(--c-ink))] bg-[rgb(var(--c-butter-soft))] px-2 py-0.5 rounded-md shrink-0">
                   ขั้นที่ 1
                 </span>
                 <span>
@@ -177,7 +177,7 @@ export const DiscordGuideModal: React.FC<DiscordGuideModalProps> = ({
               </div>
 
               <div className="flex items-start gap-2 bg-[rgb(var(--c-surface-2))] p-2.5 rounded-xl border border-[#5865F2]/30">
-                <span className="font-black text-yellow-400 bg-yellow-400/20 px-2 py-0.5 rounded-md shrink-0">
+                <span className="font-black text-[rgb(var(--c-ink))] bg-[rgb(var(--c-butter-soft))] px-2 py-0.5 rounded-md shrink-0">
                   ขั้นที่ 2
                 </span>
                 <span>
@@ -186,7 +186,7 @@ export const DiscordGuideModal: React.FC<DiscordGuideModalProps> = ({
               </div>
 
               <div className="flex items-start gap-2 bg-[rgb(var(--c-surface-2))] p-2.5 rounded-xl border border-[#5865F2]/30">
-                <span className="font-black text-yellow-400 bg-yellow-400/20 px-2 py-0.5 rounded-md shrink-0">
+                <span className="font-black text-[rgb(var(--c-ink))] bg-[rgb(var(--c-butter-soft))] px-2 py-0.5 rounded-md shrink-0">
                   ขั้นที่ 3
                 </span>
                 <span>
@@ -195,7 +195,7 @@ export const DiscordGuideModal: React.FC<DiscordGuideModalProps> = ({
               </div>
 
               <div className="flex items-start gap-2 bg-[rgb(var(--c-surface-2))] p-2.5 rounded-xl border border-[#5865F2]/30">
-                <span className="font-black text-yellow-400 bg-yellow-400/20 px-2 py-0.5 rounded-md shrink-0">
+                <span className="font-black text-[rgb(var(--c-ink))] bg-[rgb(var(--c-butter-soft))] px-2 py-0.5 rounded-md shrink-0">
                   ขั้นที่ 4
                 </span>
                 <span>

@@ -364,19 +364,19 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
 
                 <div className="space-y-2 text-xs text-indigo-100">
                   <div className="flex items-start gap-2 bg-[rgb(var(--c-surface-2))] p-2.5 rounded-xl border border-[#5865F2]/30">
-                    <span className="font-black text-yellow-400 bg-yellow-400/20 px-2 py-0.5 rounded-md shrink-0">1</span>
+                    <span className="font-black text-[rgb(var(--c-ink))] bg-[rgb(var(--c-butter-soft))] px-2 py-0.5 rounded-md shrink-0">1</span>
                     <span>เข้าไปที่ห้องคุยเสียง (<strong>Voice Channel</strong>) บน Discord Server ที่กำลังคุยกับเพื่อนๆ</span>
                   </div>
                   <div className="flex items-start gap-2 bg-[rgb(var(--c-surface-2))] p-2.5 rounded-xl border border-[#5865F2]/30">
-                    <span className="font-black text-yellow-400 bg-yellow-400/20 px-2 py-0.5 rounded-md shrink-0">2</span>
+                    <span className="font-black text-[rgb(var(--c-ink))] bg-[rgb(var(--c-butter-soft))] px-2 py-0.5 rounded-md shrink-0">2</span>
                     <span>กดที่ปุ่มไอคอนรูปจรวด <strong>🚀 (Start an Activity / เริ่มกิจกรรม)</strong> ตรงแถบเมนูด้านล่างข้างปุ่มไมโครโฟน</span>
                   </div>
                   <div className="flex items-start gap-2 bg-[rgb(var(--c-surface-2))] p-2.5 rounded-xl border border-[#5865F2]/30">
-                    <span className="font-black text-yellow-400 bg-yellow-400/20 px-2 py-0.5 rounded-md shrink-0">3</span>
+                    <span className="font-black text-[rgb(var(--c-ink))] bg-[rgb(var(--c-butter-soft))] px-2 py-0.5 rounded-md shrink-0">3</span>
                     <span>ค้นหาและเลือกแอป <strong>"Party Games"</strong> หรือ <strong>"Drink Games"</strong></span>
                   </div>
                   <div className="flex items-start gap-2 bg-[rgb(var(--c-surface-2))] p-2.5 rounded-xl border border-[#5865F2]/30">
-                    <span className="font-black text-yellow-400 bg-yellow-400/20 px-2 py-0.5 rounded-md shrink-0">4</span>
+                    <span className="font-black text-[rgb(var(--c-ink))] bg-[rgb(var(--c-butter-soft))] px-2 py-0.5 rounded-md shrink-0">4</span>
                     <span>เลือก <strong>"ซุปเปอร์เศรษฐี"</strong> ➔ กดเข้าร่วมห้องแล้วใส่รหัสห้อง หรือหากมีเพื่อนเปิดกิจกรรมอยู่แล้ว สามารถกดปุ่ม <strong>"Join Activity"</strong> เพื่อเข้าร่วมเล่นได้ทันที!</span>
                   </div>
                 </div>

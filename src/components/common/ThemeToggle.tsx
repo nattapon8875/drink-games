@@ -13,6 +13,7 @@ function apply(theme: Theme) {
   else root.setAttribute('data-theme', theme);
 }
 
+// Dark unless the visitor has said otherwise: the games are played at night.
 export function readStoredTheme(): Theme {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -20,11 +21,11 @@ export function readStoredTheme(): Theme {
   } catch {
     // private windows and blocked storage both land here
   }
-  return 'system';
+  return 'dark';
 }
 
 export const ThemeToggle: React.FC<{ className?: string }> = ({ className = '' }) => {
-  const [theme, setTheme] = useState<Theme>('system');
+  const [theme, setTheme] = useState<Theme>('dark');
 
   useEffect(() => {
     const stored = readStoredTheme();
