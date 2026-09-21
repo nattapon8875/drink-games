@@ -256,7 +256,7 @@ export const SpinBottleGame: React.FC<BaseGameProps> = ({
 
       {/* Challenge / Truth or Dare Modal */}
       {activePrompt && targetPlayer && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+        <div className="fixed inset-0 z-50 bg-[rgb(var(--c-surface))]/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
           <div className="w-full max-w-sm rounded-3xl bg-gradient-to-b from-[rgb(var(--c-surface))] via-[rgb(var(--c-surface))] to-[rgb(var(--c-surface-2))] border-2 border-amber-500/60 p-6 shadow-[0_0_50px_rgba(245,158,11,0.4)] text-center relative overflow-hidden">
             {/* Top Badge */}
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-black mb-3">
@@ -291,7 +291,7 @@ export const SpinBottleGame: React.FC<BaseGameProps> = ({
 
             {/* Title & Description */}
             <h3 className="text-xl font-black text-white mb-2">{activePrompt.title}</h3>
-            <p className="text-sm text-gray-300 leading-relaxed mb-6 bg-black/40 p-3.5 rounded-2xl border border-white/5">
+            <p className="text-sm text-gray-300 leading-relaxed mb-6 bg-[rgb(var(--c-surface))]/40 p-3.5 rounded-2xl border border-white/5">
               {activePrompt.description}
             </p>
 

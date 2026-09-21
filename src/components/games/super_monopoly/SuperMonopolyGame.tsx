@@ -35,6 +35,33 @@ import {
   Zap,
 } from 'lucide-react';
 
+// The feed stores a colour with every line, and those were picked when the page
+// was always dark - on paper they wash out to nothing. The colour is carrying
+// meaning (money in, money out, a handover), so keep the meaning and swap the
+// shade for the theme's readable version of it.
+const LOG_INK: Record<string, string> = {
+  '#22c55e': '--c-mint-label',
+  '#10b981': '--c-mint-label',
+  '#06b6d4': '--c-sky-label',
+  '#38bdf8': '--c-sky-label',
+  '#0ea5e9': '--c-sky-label',
+  '#93c5fd': '--c-sky-label',
+  '#ef4444': '--c-berry-label',
+  '#dc2626': '--c-berry-label',
+  '#f59e0b': '--c-butter-label',
+  '#f97316': '--c-butter-label',
+  '#eab308': '--c-butter-label',
+  '#facc15': '--c-butter-label',
+  '#fef08a': '--c-butter-label',
+  '#a855f7': '--c-grape-deep',
+  '#9ca3af': '--c-ink-faint',
+};
+
+function logColor(c?: string): string {
+  const token = LOG_INK[(c || '').toLowerCase()];
+  return token ? `rgb(var(${token}))` : 'rgb(var(--c-ink))';
+}
+
 export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
   const { room, players, currentPlayer, isHost } = props;
 
@@ -303,7 +330,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           {gameLogs.length > 0 ? (
             <span
               className="text-xs font-bold truncate cursor-pointer hover:underline text-left"
-              style={{ color: gameLogs[0]?.color || '#fef3c7' }}
+              style={{ color: logColor(gameLogs[0]?.color) }}
               onClick={() => setShowHistoryModal(true)}
               title="คลิกเพื่อเปิดดูประวัติการเดินทั้งหมด"
             >
@@ -664,8 +691,8 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               <span
                 className={`pointer-events-none px-2 py-0.5 rounded-full border text-[10px] font-black shadow ${
                   isProxying
-                    ? 'bg-purple-950 border-purple-400 text-purple-100'
-                    : 'bg-black/70 border-amber-600/50 text-amber-200'
+                    ? 'bg-[rgb(var(--c-grape-soft))] border-[rgb(var(--c-grape))] text-[rgb(var(--c-ink))]'
+                    : 'bg-[rgb(var(--c-surface))] border-[rgb(var(--c-line))] text-[rgb(var(--c-ink))]'
                 }`}
               >
                 {isProxying && currentTurnPlayer
@@ -744,7 +771,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           <div className="bg-[rgb(var(--c-surface))] border-2 border-[rgb(var(--c-surface-3))] rounded-2xl p-3 shadow-xl">
             {/* Host standing in for an absent player */}
             {isProxying && currentTurnPlayer && (
-              <div className="mb-2 px-3 py-2 rounded-2xl bg-purple-950/80 border-2 border-purple-500 text-purple-100 font-black text-xs flex items-center justify-center gap-2 shadow-lg">
+              <div className="mb-2 px-3 py-2 rounded-2xl bg-[rgb(var(--c-grape-soft))] border-2 border-[rgb(var(--c-grape))] text-[rgb(var(--c-ink))] font-black text-xs flex items-center justify-center gap-2 shadow-lg">
                 <span>👑</span>
                 <span>กำลังเล่นแทน [{currentTurnPlayer.display_name}]</span>
               </div>
@@ -813,7 +840,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                     key={lI}
                     className="p-2 rounded-xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))] text-left leading-relaxed flex items-start justify-between gap-1.5 shadow-sm"
                   >
-                    <span style={{ color: log.color || '#fef3c7' }} className="break-words">
+                    <span style={{ color: logColor(log.color) }} className="break-words">
                       {log.text}
                     </span>
                     <span className="text-[9px] text-amber-400/80 shrink-0 font-mono pt-0.5">
@@ -1039,7 +1066,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                   </span>
                   <span
                     className="text-xs font-bold leading-relaxed break-words"
-                    style={{ color: log.color || '#fef3c7' }}
+                    style={{ color: logColor(log.color) }}
                   >
                     {log.text}
                   </span>

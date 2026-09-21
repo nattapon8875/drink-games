@@ -302,7 +302,7 @@ export const DoraemonActionModal: React.FC<DoraemonActionModalProps> = ({
               : 'รับทราบคำสั่งและดำเนินการต่อ! 🍻'}
           </Button>
         ) : (
-          <div className="p-3 bg-black/40 rounded-2xl border border-amber-900/40 text-xs text-amber-200/85 font-semibold">
+          <div className="p-3 bg-[rgb(var(--c-surface))]/40 rounded-2xl border border-amber-900/40 text-xs text-amber-200/85 font-semibold">
             ⏳ กำลังรอให้ <b>{drawerPlayer.display_name}</b> กดดำเนินการ...
           </div>
         )}

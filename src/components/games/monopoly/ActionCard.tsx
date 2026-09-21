@@ -574,7 +574,7 @@ export const ActionCard: React.FC<ActionCardProps> = ({
   const effectiveDrinks = minigameDrinks !== null ? minigameDrinks : meta.suggestedDrinks;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgb(var(--c-surface))]/85 backdrop-blur-sm animate-fadeIn">
       {/* Wooden Quest Window */}
       <div className="wood-panel rounded-3xl p-5 sm:p-6 w-full max-w-sm relative text-center shadow-[0_16px_36px_rgba(0,0,0,0.9)] max-h-[92vh] overflow-y-auto scrollbar-none">
         {/* 4 Corner Brass Rivets */}

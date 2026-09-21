@@ -297,7 +297,7 @@ export const WheelCustomModal: React.FC<WheelCustomModalProps> = ({
                 <div className="text-xs sm:text-sm font-black text-white truncate flex items-center gap-1.5">
                   <span>{item.text}</span>
                   {!item.enabled && (
-                    <span className="text-[10px] text-gray-400 font-bold bg-black/40 px-1.5 py-0.2 rounded">
+                    <span className="text-[10px] text-gray-400 font-bold bg-[rgb(var(--c-surface))]/40 px-1.5 py-0.2 rounded">
                       (ปิดใช้งาน)
                     </span>
                   )}

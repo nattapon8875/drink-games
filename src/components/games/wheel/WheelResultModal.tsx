@@ -171,7 +171,7 @@ export const WheelResultModal: React.FC<WheelResultModalProps> = ({
             {submitting ? 'กำลังบันทึก...' : 'รับทราบคำสั่งและส่งต่อเทิร์น! 🍻'}
           </Button>
         ) : (
-          <div className="p-3 bg-black/40 rounded-2xl border border-amber-900/40 text-xs text-amber-200/85 font-semibold">
+          <div className="p-3 bg-[rgb(var(--c-surface))]/40 rounded-2xl border border-amber-900/40 text-xs text-amber-200/85 font-semibold">
             ⏳ กำลังรอให้ <b>{spinnerPlayer.display_name}</b> กดยืนยัน...
           </div>
         )}

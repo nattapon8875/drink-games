@@ -524,7 +524,7 @@ export const Crocodile3D: React.FC<Crocodile3DProps> = ({
           type="button"
           onClick={handleZoomIn}
           title="ซูมเข้า (+)"
-          className="w-8 h-8 rounded-xl bg-black/70 hover:bg-black/90 active:scale-90 border border-amber-600/50 text-amber-300 flex items-center justify-center text-base font-black shadow-lg backdrop-blur-sm transition"
+          className="w-8 h-8 rounded-xl bg-[rgb(var(--c-surface))]/70 hover:bg-[rgb(var(--c-surface))]/90 active:scale-90 border border-amber-600/50 text-amber-300 flex items-center justify-center text-base font-black shadow-lg backdrop-blur-sm transition"
         >
           +
         </button>
@@ -532,7 +532,7 @@ export const Crocodile3D: React.FC<Crocodile3DProps> = ({
           type="button"
           onClick={handleZoomOut}
           title="ซูมออก (-)"
-          className="w-8 h-8 rounded-xl bg-black/70 hover:bg-black/90 active:scale-90 border border-amber-600/50 text-amber-300 flex items-center justify-center text-base font-black shadow-lg backdrop-blur-sm transition"
+          className="w-8 h-8 rounded-xl bg-[rgb(var(--c-surface))]/70 hover:bg-[rgb(var(--c-surface))]/90 active:scale-90 border border-amber-600/50 text-amber-300 flex items-center justify-center text-base font-black shadow-lg backdrop-blur-sm transition"
         >
           −
         </button>
@@ -540,7 +540,7 @@ export const Crocodile3D: React.FC<Crocodile3DProps> = ({
           type="button"
           onClick={handleResetCamera}
           title="รีเซ็ตมุมกล้อง"
-          className="w-8 h-8 rounded-xl bg-black/70 hover:bg-black/90 active:scale-90 border border-amber-600/50 text-amber-300 flex items-center justify-center text-[10px] font-black shadow-lg backdrop-blur-sm transition"
+          className="w-8 h-8 rounded-xl bg-[rgb(var(--c-surface))]/70 hover:bg-[rgb(var(--c-surface))]/90 active:scale-90 border border-amber-600/50 text-amber-300 flex items-center justify-center text-[10px] font-black shadow-lg backdrop-blur-sm transition"
         >
           ↺
         </button>
@@ -548,7 +548,7 @@ export const Crocodile3D: React.FC<Crocodile3DProps> = ({
 
       {/* Control Instruction Overlay */}
       <div className="absolute bottom-2.5 inset-x-0 flex justify-center pointer-events-none">
-        <span className="text-[11px] font-black text-amber-200/90 bg-black/60 px-3.5 py-1 rounded-full border border-amber-600/40 backdrop-blur-sm shadow">
+        <span className="text-[11px] font-black text-amber-200/90 bg-[rgb(var(--c-surface))]/60 px-3.5 py-1 rounded-full border border-amber-600/40 backdrop-blur-sm shadow">
           {isBitten
             ? '💥 น้องควายงับมือแล้ว! แตะเริ่มรอบใหม่'
             : canInteract

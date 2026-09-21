@@ -167,7 +167,7 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
             className={`p-4 rounded-2xl text-white shadow-xl border-2 bg-gradient-to-br ${config.bgGradient} flex flex-col items-center justify-center relative`}
           >
             <span className="text-4xl drop-shadow mb-1">{tile.icon || '⭐'}</span>
-            <span className="text-[10px] font-black uppercase tracking-wider bg-black/40 px-2.5 py-0.5 rounded-full mb-1">
+            <span className="text-[10px] font-black uppercase tracking-wider bg-[rgb(var(--c-surface))]/40 px-2.5 py-0.5 rounded-full mb-1">
               {config.badge}
             </span>
             <h3 className="text-lg font-black tracking-wide drop-shadow uppercase">{config.title}</h3>
@@ -212,7 +212,7 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
         >
           <span className="text-2xl drop-shadow mb-0.5">{tile.icon || '🏛️'}</span>
           <h3 className="text-lg font-black tracking-wide drop-shadow uppercase">{tile.name}</h3>
-          <span className="text-[11px] font-bold text-white/90 bg-black/30 px-2.5 py-0.5 rounded-full mt-1">
+          <span className="text-[11px] font-bold text-white/90 bg-[rgb(var(--c-surface))]/30 px-2.5 py-0.5 rounded-full mt-1">
             ราคาที่ดิน: {tile.cost ? formatMoneyM(tile.cost) : '-'}
           </span>
         </div>

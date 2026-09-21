@@ -32,10 +32,10 @@ export const Crocodile2D: React.FC<Crocodile2DProps> = ({
 
       {/* Header Info */}
       <div className="relative z-10 w-full flex justify-between items-center px-2 pt-1 text-xs font-bold text-amber-200">
-        <span className="bg-black/60 px-3 py-1 rounded-full border border-amber-800/40">
+        <span className="bg-[rgb(var(--c-surface))]/60 px-3 py-1 rounded-full border border-amber-800/40">
           🐃 น้องควายงับนิ้ว
         </span>
-        <span className="bg-black/60 px-3 py-1 rounded-full border border-amber-800/40">
+        <span className="bg-[rgb(var(--c-surface))]/60 px-3 py-1 rounded-full border border-amber-800/40">
           กดแล้ว: {pressedTeeth.length} / {totalTeeth} ซี่
         </span>
       </div>

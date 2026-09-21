@@ -41,7 +41,7 @@ export const CrocodileBiteModal: React.FC<CrocodileBiteModalProps> = ({
         {/* Animated Buffalo Chomp Badge */}
         <div className="relative w-24 h-24 rounded-3xl bg-mint via-stone-800 to-stone-950 border-2 border-amber-500 shadow-[0_0_35px_rgba(245,158,11,0.5)] flex items-center justify-center animate-bounce">
           <span className="text-5xl select-none">🐃💥</span>
-          <div className="absolute -bottom-2 px-2.5 py-0.5 rounded-full bg-black/80 border border-amber-400 text-[10px] font-black text-amber-300 uppercase tracking-wider">
+          <div className="absolute -bottom-2 px-2.5 py-0.5 rounded-full bg-[rgb(var(--c-surface))]/80 border border-amber-400 text-[10px] font-black text-amber-300 uppercase tracking-wider">
             น้องควายงับคาปาก!
           </div>
         </div>
@@ -94,7 +94,7 @@ export const CrocodileBiteModal: React.FC<CrocodileBiteModalProps> = ({
               <span>เริ่มรอบใหม่ (สุ่มฟันใหม่)</span>
             </Button>
           ) : (
-            <div className="text-xs text-gray-400 font-medium py-2 bg-black/40 rounded-xl border border-stone-800">
+            <div className="text-xs text-gray-400 font-medium py-2 bg-[rgb(var(--c-surface))]/40 rounded-xl border border-stone-800">
               รอหัวหน้าห้อง (Host) เริ่มรอบใหม่...
             </div>
           )}

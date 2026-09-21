@@ -41,7 +41,7 @@ export const Button: React.FC<ButtonProps> = ({
     'neon-purple': 'wood-btn-brown',
     'neon-yellow': 'wood-btn-gold',
     'neon-green': 'wood-btn-green',
-    ghost: 'bg-transparent text-amber-200/80 hover:text-[rgb(var(--c-ink))] hover:bg-black/30 border border-transparent',
+    ghost: 'bg-transparent text-amber-200/80 hover:text-[rgb(var(--c-ink))] hover:bg-[rgb(var(--c-surface))]/30 border border-transparent',
     glass: 'bg-[rgb(var(--c-surface))]/80 backdrop-blur-md text-amber-100 border border-[rgb(var(--c-surface-3))] hover:border-[rgb(var(--c-line))] shadow-sm',
   };
 

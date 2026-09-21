@@ -96,7 +96,7 @@ export const Bottle2D: React.FC<Bottle2DProps> = ({
             </div>
 
             {/* Player Name */}
-            <div className="mt-1 px-2 py-0.5 rounded-md bg-black/75 border border-amber-500/30 text-[10px] md:text-xs font-bold text-gray-200 truncate max-w-[70px] text-center shadow">
+            <div className="mt-1 px-2 py-0.5 rounded-md bg-[rgb(var(--c-surface))]/75 border border-amber-500/30 text-[10px] md:text-xs font-bold text-gray-200 truncate max-w-[70px] text-center shadow">
               {player.display_name}
             </div>
           </div>

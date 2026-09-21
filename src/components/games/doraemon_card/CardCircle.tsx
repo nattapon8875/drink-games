@@ -96,20 +96,20 @@ export const CardCircle: React.FC<CardCircleProps> = ({
                 Doraemon
               </div>
 
-              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-black/40 border border-amber-400/50 flex flex-col items-center justify-center shadow-inner">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[rgb(var(--c-surface))]/40 border border-amber-400/50 flex flex-col items-center justify-center shadow-inner">
                 <span className="text-2xl sm:text-3xl">🃏</span>
                 <span className="text-[10px] text-amber-300 font-bold mt-0.5">
                   {totalCards} ใบ
                 </span>
               </div>
 
-              <div className="text-[10px] sm:text-xs font-black text-amber-200 bg-black/50 px-2 py-0.5 rounded-full border border-amber-400/30">
+              <div className="text-[10px] sm:text-xs font-black text-amber-200 bg-[rgb(var(--c-surface))]/50 px-2 py-0.5 rounded-full border border-amber-400/30">
                 {canDraw ? 'แตะจั่วไพ่!' : 'รอก่อน...'}
               </div>
             </div>
           </button>
         ) : (
-          <div className="w-28 h-40 rounded-2xl border-2 border-dashed border-amber-600/50 flex flex-col items-center justify-center text-center p-3 bg-black/40">
+          <div className="w-28 h-40 rounded-2xl border-2 border-dashed border-amber-600/50 flex flex-col items-center justify-center text-center p-3 bg-[rgb(var(--c-surface))]/40">
             <span className="text-2xl mb-1">🎉</span>
             <span className="text-xs font-black text-amber-200">ไพ่หมดสำรับ!</span>
           </div>
