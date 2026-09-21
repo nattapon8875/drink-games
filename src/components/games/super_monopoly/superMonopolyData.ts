@@ -786,3 +786,89 @@ export function dealStartingProperties(
 function costOf(tileIndex: number): number {
   return SUPER_MONOPOLY_TILES[tileIndex]?.cost || 0;
 }
+
+// ---------------------------------------------------------------------------
+// The row bonus: holding one side of the board
+// ---------------------------------------------------------------------------
+
+// The four sides of the ring, in the order the token walks them.
+export const ROW_RANGES: Array<[number, number]> = [
+  [0, 10],
+  [11, 20],
+  [21, 30],
+  [31, 39],
+];
+
+export const ROW_NAMES = ['แถวล่าง', 'แถวซ้าย', 'แถวบน', 'แถวขวา'];
+
+export function rowOfTile(tileIndex: number): number {
+  return ROW_RANGES.findIndex(([lo, hi]) => tileIndex >= lo && tileIndex <= hi);
+}
+
+// Every buyable square on a side. Hotels and utilities are counted towards the
+// claim even though the bonus never lands on them.
+const ROW_TILE_INDICES: number[][] = ROW_RANGES.map(([lo, hi]) =>
+  SUPER_MONOPOLY_TILES.filter((t) => t.type === 'property' && t.index >= lo && t.index <= hi).map(
+    (t) => t.index
+  )
+);
+
+export interface RowBonus {
+  row: number;
+  ownerId: string;
+  count: number;
+}
+
+export function rowHoldingOf(
+  row: number,
+  ownerId: string,
+  properties: Record<number, { ownerId: string }>
+): number {
+  if (row < 0) return 0;
+  return (ROW_TILE_INDICES[row] || []).filter((i) => properties[i]?.ownerId === ownerId).length;
+}
+
+// Three squares on one side is worth x2, and every square after that adds one.
+export const ROW_BONUS_THRESHOLD = 3;
+export function rowMultiplierFor(count: number): number {
+  return count >= ROW_BONUS_THRESHOLD ? count - 1 : 1;
+}
+
+// Only one side of the board pays this bonus at a time, and it belongs to
+// whoever completed a side most recently - so a rival taking three squares on
+// another side switches it off, wherever it was.
+export function recomputeRowBonus(
+  properties: Record<number, { ownerId: string }>,
+  previous: RowBonus | null | undefined,
+  justClaimed?: { tileIndex: number; ownerId: string } | null
+): RowBonus | null {
+  if (justClaimed) {
+    const row = rowOfTile(justClaimed.tileIndex);
+    const count = rowHoldingOf(row, justClaimed.ownerId, properties);
+    if (count >= ROW_BONUS_THRESHOLD) {
+      return { row, ownerId: justClaimed.ownerId, count };
+    }
+  }
+
+  if (previous) {
+    const count = rowHoldingOf(previous.row, previous.ownerId, properties);
+    if (count >= ROW_BONUS_THRESHOLD) return { ...previous, count };
+  }
+
+  // The holder was broken up - hand it to the strongest side still standing
+  // rather than leaving a board where somebody plainly owns a side get nothing.
+  let best: RowBonus | null = null;
+  ROW_TILE_INDICES.forEach((indices, row) => {
+    const tally: Record<string, number> = {};
+    indices.forEach((i) => {
+      const owner = properties[i]?.ownerId;
+      if (owner) tally[owner] = (tally[owner] || 0) + 1;
+    });
+    Object.entries(tally).forEach(([ownerId, count]) => {
+      if (count >= ROW_BONUS_THRESHOLD && (!best || count > best.count)) {
+        best = { row, ownerId, count };
+      }
+    });
+  });
+  return best;
+}

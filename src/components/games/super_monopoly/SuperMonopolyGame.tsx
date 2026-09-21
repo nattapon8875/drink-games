@@ -102,6 +102,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     rollDice,
     handleServeJailTurn,
     bankrupt,
+    rowBonus,
     winnerId,
     debtDecision,
     handleMortgageAndPay,
@@ -656,6 +657,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               activeStepTileIndex={activeStepTileIndex}
               activeStepPlayerId={activeStepPlayerId}
               bankrupt={bankrupt}
+              rowBonus={rowBonus}
               onTileClick={handleTileClick}
             />
           ) : (
@@ -667,6 +669,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               activeStepTileIndex={activeStepTileIndex}
               activeStepPlayerId={activeStepPlayerId}
               bankrupt={bankrupt}
+              rowBonus={rowBonus}
               onTileClick={handleTileClick}
             />
           )}
@@ -870,6 +873,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           shownTileOwner ? PLAYER_3D_COLORS[players.indexOf(shownTileOwner) % PLAYER_3D_COLORS.length] : null
         }
         isOwnedByMe={Boolean(shownTileOwner && currentPlayer && shownTileOwner.id === currentPlayer.id)}
+        rowBonus={rowBonus}
         onClose={() => {
           if (activePropertyModal) {
             handleCloseActiveModal();
@@ -1006,6 +1010,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
         properties={properties}
         players={players}
         myId={currentPlayer?.id || null}
+        rowBonus={rowBonus}
         onChoose={handleChooseFlight}
         onClose={closeFlightPicker}
       />

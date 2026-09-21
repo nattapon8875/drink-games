@@ -6,7 +6,14 @@ import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { SuperPropertyTile, PropertyOwnership, PlayerRecord } from '@/types/database';
-import { SUPER_MONOPOLY_TILES, formatMoneyM, visitMultiplier } from './superMonopolyData';
+import {
+  SUPER_MONOPOLY_TILES,
+  formatMoneyM,
+  visitMultiplier,
+  rowMultiplierFor,
+  rowOfTile,
+  RowBonus,
+} from './superMonopolyData';
 
 interface SuperBoard3DProps {
   positions: Record<string, number>;
@@ -18,6 +25,7 @@ interface SuperBoard3DProps {
   // Players who are out of the game keep their colour and their row, but their
   // token comes off the board.
   bankrupt?: Record<string, boolean>;
+  rowBonus?: RowBonus | null;
   onTileClick: (tile: SuperPropertyTile) => void;
 }
 
@@ -598,9 +606,10 @@ const Tile3D: React.FC<{
   tile: SuperPropertyTile;
   ownership: PropertyOwnership | null;
   ownerColor: string | null;
+  rowBonus?: RowBonus | null;
   isStepActive?: boolean;
   onClick: () => void;
-}> = ({ tile, ownership, ownerColor, isStepActive, onClick }) => {
+}> = ({ tile, ownership, ownerColor, rowBonus, isStepActive, onClick }) => {
   const [hovered, setHovered] = useState(false);
   const [x, y, z] = getSuperTile3DPosition(tile.index);
   const rot = getSuperTile3DRotation(tile.index);
@@ -626,9 +635,16 @@ const Tile3D: React.FC<{
 
   // A hotel or a utility its owner keeps visiting charges a multiple of its
   // rent, which nothing on the board used to show. Heat the tile instead.
-  const boost = tile.isUtility && ownership ? visitMultiplier(ownership.visits) : 1;
+  const boost = !ownership
+    ? 1
+    : tile.isUtility
+    ? visitMultiplier(ownership.visits)
+    : rowBonus && rowBonus.ownerId === ownership.ownerId && rowBonus.row === rowOfTile(tile.index)
+    ? rowMultiplierFor(rowBonus.count)
+    : 1;
   const boostTint = boost >= 4 ? '#f87171' : boost === 3 ? '#fca5a5' : boost === 2 ? '#fde68a' : null;
   const boostGlow = boost >= 4 ? '#dc2626' : boost === 3 ? '#ef4444' : boost === 2 ? '#f59e0b' : null;
+  const glowStrength = Math.min(4, boost);
 
   return (
     <group position={[x, y, z]} rotation={rot}>
@@ -658,7 +674,7 @@ const Tile3D: React.FC<{
             isStepActive ? '#eab308' : hovered ? '#fde047' : boostGlow || '#000000'
           }
           emissiveIntensity={
-            isStepActive ? 0.7 : hovered ? 0.3 : boostGlow ? 0.18 * boost : 0
+            isStepActive ? 0.7 : hovered ? 0.3 : boostGlow ? 0.18 * glowStrength : 0
           }
         />
       </mesh>
@@ -1012,6 +1028,7 @@ const SuperBoard3DBase: React.FC<SuperBoard3DProps> = ({
   activeStepTileIndex,
   activeStepPlayerId,
   bankrupt,
+  rowBonus,
   onTileClick,
 }) => {
   return (
@@ -1070,6 +1087,7 @@ const SuperBoard3DBase: React.FC<SuperBoard3DProps> = ({
                 tile={tile}
                 ownership={ownership}
                 ownerColor={ownerColor}
+                rowBonus={rowBonus}
                 isStepActive={activeStepTileIndex === tile.index}
                 onClick={() => onTileClick(tile)}
               />

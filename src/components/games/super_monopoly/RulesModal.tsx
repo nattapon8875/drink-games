@@ -249,6 +249,32 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                 </div>
               </div>
 
+              {/* Holding a side of the board */}
+              <div className="p-3 rounded-2xl bg-[rgb(var(--c-surface))] border-2 border-[rgb(var(--c-grape))] shadow-sm">
+                <h4 className="text-sm font-black text-[rgb(var(--c-grape))] flex items-center gap-2 mb-1.5">
+                  <Sparkles className="w-4 h-4" />
+                  <span>โบนัสแถว (ครองหนึ่งด้านของกระดาน)</span>
+                </h4>
+                <p className="text-xs text-amber-100 font-medium leading-relaxed">
+                  กระดานมี 4 แถว (ล่าง · ซ้าย · บน · ขวา) ถ้าคนเดียวถือที่ดินในแถวเดียวกันครบ{' '}
+                  <strong className="text-yellow-300">3 ช่อง</strong> ค่าผ่านทาง{' '}
+                  <strong className="text-[rgb(var(--c-grape))]">จังหวัด</strong> ในแถวนั้นของเขาจะคูณ{' '}
+                  <strong className="text-yellow-300">x2</strong> · ถือ 4 ช่อง{' '}
+                  <strong className="text-yellow-300">x3</strong> · ถือ 5 ช่อง{' '}
+                  <strong className="text-yellow-300">x4</strong> ไล่ขึ้นไปเรื่อยๆ
+                </p>
+                <ul className="mt-1.5 space-y-1 text-[11px] text-amber-200/85 font-medium leading-relaxed">
+                  <li>
+                    ⚡ <strong className="text-rose-300">มีได้แถวเดียวทั้งกระดาน</strong> — พอมีคนอื่น (หรือตัวเอง) ครองแถวอื่นครบ 3 ช่อง โบนัสจะ<strong className="text-rose-300">ย้าย</strong>ไปแถวนั้นทันที แถวเดิมหมดสิทธิ์
+                  </li>
+                  <li>🧮 นับ<strong className="text-cyan-300">รวมโรงแรม ประปา ไฟฟ้า</strong> ในแถวด้วย</li>
+                  <li>
+                    🚫 แต่<strong className="text-rose-300">คูณเฉพาะช่องจังหวัด</strong> — โรงแรม ประปา ไฟฟ้า ไม่ถูกคูณด้วยโบนัสแถว (มีตัวคูณของตัวเองอยู่แล้ว)
+                  </li>
+                  <li>👤 คูณให้เฉพาะที่ดินของ<strong className="text-cyan-300">คนที่ครองแถวนั้น</strong> คนอื่นในแถวเดียวกันไม่ได้อะไร</li>
+                </ul>
+              </div>
+
               {/* Hotels & utilities grow by being visited, not by being built on */}
               <div className="p-3 rounded-2xl bg-[rgb(var(--c-surface))] border-2 border-rose-700/60 shadow-sm">
                 <h4 className="text-sm font-black text-rose-300 flex items-center gap-2 mb-1.5">

@@ -1,6 +1,14 @@
 import React from 'react';
 import { Modal } from '@/components/common/Modal';
-import { SUPER_MONOPOLY_TILES, formatMoneyM, visitMultiplier } from './superMonopolyData';
+import {
+  SUPER_MONOPOLY_TILES,
+  formatMoneyM,
+  visitMultiplier,
+  rowMultiplierFor,
+  rowOfTile,
+  ROW_NAMES,
+  RowBonus,
+} from './superMonopolyData';
 import { PropertyOwnership, PlayerRecord } from '@/types/database';
 import { PLAYER_3D_COLORS } from './SuperBoard3D';
 
@@ -10,6 +18,7 @@ interface FlightPickerModalProps {
   properties: Record<number, PropertyOwnership>;
   players: PlayerRecord[];
   myId: string | null;
+  rowBonus?: RowBonus | null;
   onChoose: (destIndex: number) => void;
   onClose: () => void;
 }
@@ -34,6 +43,7 @@ export const FlightPickerModal: React.FC<FlightPickerModalProps> = ({
   properties,
   players,
   myId,
+  rowBonus,
   onChoose,
 }) => {
   if (!isOpen) return null;
@@ -66,7 +76,15 @@ export const FlightPickerModal: React.FC<FlightPickerModalProps> = ({
             const ownerSeat = owner ? players.indexOf(owner) + 1 : null;
             // Worth knowing before you book the seat: this square charges a
             // multiple of its rent.
-            const boost = tile.isUtility && owned ? visitMultiplier(owned.visits) : 1;
+            const boost = !owned
+              ? 1
+              : tile.isUtility
+              ? visitMultiplier(owned.visits)
+              : rowBonus &&
+                rowBonus.ownerId === owned.ownerId &&
+                rowBonus.row === rowOfTile(tile.index)
+              ? rowMultiplierFor(rowBonus.count)
+              : 1;
 
             return (
               <button
@@ -183,6 +201,11 @@ export const FlightPickerModal: React.FC<FlightPickerModalProps> = ({
             <span className="text-[8px] font-bold text-[rgb(var(--c-ink-faint))]">
               🏁 = บินผ่านจุดเริ่มต้น รับ {formatMoneyM(2)} · ช่องสีเหลือง/แดง = ค่าผ่านทางถูกคูณ
             </span>
+            {rowBonus && (
+              <span className="text-[8px] font-black text-[rgb(var(--c-grape))]">
+                🎏 โบนัสแถว: [{ROW_NAMES[rowBonus.row]}] คูณ x{rowMultiplierFor(rowBonus.count)}
+              </span>
+            )}
           </div>
         </div>
       </div>

@@ -20,6 +20,11 @@ import {
   visitMultiplier,
   MAX_VISIT_MULTIPLIER,
   INITIAL_CASH_M,
+  RowBonus,
+  rowOfTile,
+  rowMultiplierFor,
+  recomputeRowBonus,
+  ROW_NAMES,
 } from './superMonopolyData';
 import { sfx } from '@/lib/sound';
 import confetti from 'canvas-confetti';
@@ -99,10 +104,25 @@ function nextActiveAfter(
   return null;
 }
 
+// How much a province's rent is multiplied by its owner holding a side of the
+// board. Hotels and utilities count towards that holding but are never
+// multiplied by it - they have their own multiplier.
+export function rowBonusFor(
+  tile: SuperPropertyTile,
+  ownership: Pick<PropertyOwnership, 'ownerId'>,
+  rowBonus: RowBonus | null | undefined
+): number {
+  if (!rowBonus || tile.isUtility || tile.type !== 'property') return 1;
+  if (rowBonus.ownerId !== ownership.ownerId) return 1;
+  if (rowBonus.row !== rowOfTile(tile.index)) return 1;
+  return rowMultiplierFor(rowBonus.count);
+}
+
 function computeRent(
   tile: SuperPropertyTile,
   ownership: PropertyOwnership,
-  allProperties: Record<number, PropertyOwnership>
+  allProperties: Record<number, PropertyOwnership>,
+  rowBonus?: RowBonus | null
 ): number {
   if (tile.isUtility) {
     // A hotel or a utility cannot be built on, so it earns its keep a different
@@ -120,11 +140,12 @@ function computeRent(
     ).length;
     return (tile.baseRent || 0.4) * Math.max(1, hotels) * boost;
   }
-  if (ownership.houses === 1) return tile.rent1House || 0.5;
-  if (ownership.houses === 2) return tile.rent2House || 1.2;
-  if (ownership.houses === 3) return tile.rent3House || 2.5;
-  if (ownership.houses === 4) return tile.rentHotel || 5.0;
-  return tile.baseRent || 0.2;
+  const row = rowBonusFor(tile, ownership, rowBonus);
+  if (ownership.houses === 1) return (tile.rent1House || 0.5) * row;
+  if (ownership.houses === 2) return (tile.rent2House || 1.2) * row;
+  if (ownership.houses === 3) return (tile.rent3House || 2.5) * row;
+  if (ownership.houses === 4) return (tile.rentHotel || 5.0) * row;
+  return (tile.baseRent || 0.2) * row;
 }
 
 export function useSuperMonopolyEngine(props: BaseGameProps) {
@@ -140,6 +161,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   // Who is holding a boarding pass: landing on the airport without a double
   // books the flight for their next turn instead of taking it right away.
   const pendingFlights: Record<string, boolean> = rawState.pendingFlights || {};
+  // Which side of the board is paying its holder a bonus right now. Only ever
+  // one, and it moves to whoever completed a side most recently.
+  const rowBonus: RowBonus | null = rawState.rowBonus || null;
   // Out of the game: no token, no turn, and their land is back on the market.
   const bankrupt: Record<string, boolean> = rawState.bankrupt || {};
   const winnerId: string | null = (rawState.winnerId as string | null) || null;
@@ -352,6 +376,39 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     []
   );
 
+  // Says out loud when a side of the board changes hands, gains a square, or
+  // is broken up. Without it the rent simply changes and nobody knows why.
+  const rowBonusAnnouncement = (
+    before: RowBonus | null | undefined,
+    after: RowBonus | null,
+    logs: Array<{ text: string; time: string; color?: string }>
+  ) => {
+    const same =
+      (!before && !after) ||
+      (before &&
+        after &&
+        before.row === after.row &&
+        before.ownerId === after.ownerId &&
+        before.count === after.count);
+    if (same) return logs;
+
+    const nameOf = (id: string) =>
+      orderedPlayersRef.current.find((p) => p.id === id)?.display_name || 'ผู้เล่น';
+
+    if (!after) {
+      return addLog('🎏 ไม่มีใครครองแถวไหนครบ 3 ช่องแล้ว โบนัสแถวถูกปิด', '#9ca3af', logs);
+    }
+
+    const moved = !before || before.row !== after.row || before.ownerId !== after.ownerId;
+    return addLog(
+      `🎏 ${moved ? 'โบนัสแถวย้ายไป' : 'โบนัสแถวแรงขึ้น'} [${ROW_NAMES[after.row]}] ของ ${nameOf(
+        after.ownerId
+      )} — ถือ ${after.count} ช่อง ค่าผ่านทางจังหวัดในแถวนี้คูณ x${rowMultiplierFor(after.count)}`,
+      '#a855f7',
+      logs
+    );
+  };
+
   // End Turn & Pass to Next Player
   const handleEndTurn = useCallback(async () => {
     const endingTurnId = currentTurnPlayer?.id;
@@ -516,7 +573,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               } else if (ownership.ownerId !== currentTurnPlayer.id) {
                 // Pay Rent
                 const owner = players.find((p) => p.id === ownership.ownerId);
-                const rentAmount = computeRent(targetTile, ownership, properties);
+                const rentAmount = computeRent(targetTile, ownership, properties, rowBonus);
 
                 if (playerCash < rentAmount) {
                   // Cannot cover it in cash: offer the sale, or the exit.
@@ -955,14 +1012,23 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     confetti({ particleCount: 30, spread: 50, origin: { y: 0.6 } });
 
     const remainingMoney = currentMoney - cost;
-    const newLogs = addLog(
+    let newLogs = addLog(
       `🏡 ${currentTurnPlayer.display_name} ตกลง [ซื้อที่ดิน] [${activePropertyModal.name}] (${formatMoneyM(cost)}) ➔ เงินคงเหลือ ${formatMoneyM(remainingMoney)}`,
       '#10b981'
     );
 
+    // Buying can complete a side of the board, which takes the bonus off
+    // whoever held it before.
+    const nextRowBonus = recomputeRowBonus(updatedProperties, rowBonus, {
+      tileIndex: tileIdx,
+      ownerId: currentTurnPlayer.id,
+    });
+    newLogs = rowBonusAnnouncement(rowBonus, nextRowBonus, newLogs);
+
     await onUpdateGameState({
       cash: updatedCash,
       properties: updatedProperties,
+      rowBonus: nextRowBonus,
       gameLogs: newLogs,
     });
 
@@ -1116,14 +1182,18 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     }
 
     sfx.playDrinkPenalty();
-    const logs = addLog(
+    let logs = addLog(
       `🏦 ${currentTurnPlayer.display_name} จำนอง [${soldNames.join(', ')}] ได้ ${formatMoneyM(raised)} ➜ จ่าย ${formatMoneyM(debtDecision.amount)} (เงินเหลือ ${formatMoneyM(remaining)})`,
       '#f59e0b'
     );
 
+    const afterSaleRow = recomputeRowBonus(nextProps, rowBonus);
+    logs = rowBonusAnnouncement(rowBonus, afterSaleRow, logs);
+
     await onUpdateGameState({
       cash: nextCash,
       properties: nextProps,
+      rowBonus: afterSaleRow,
       gameLogs: logs,
       rentReceipt: debtDecision.creditorId
         ? {
@@ -1175,9 +1245,13 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       logs = addLog(`🏆 ${winner.display_name} เป็นผู้ชนะ!`, '#facc15', logs);
     }
 
+    const afterBustRow = recomputeRowBonus(nextProps, rowBonus);
+    logs = rowBonusAnnouncement(rowBonus, afterBustRow, logs);
+
     await onUpdateGameState({
       cash: nextCash,
       properties: nextProps,
+      rowBonus: afterBustRow,
       bankrupt: nextBankrupt,
       winnerId: winner ? winner.id : null,
       gameLogs: logs,
@@ -1222,7 +1296,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
     const owner = players.find((p) => p.id === destOwnership.ownerId);
     const myCashNow = cash[currentTurnPlayer.id] ?? INITIAL_CASH_M;
-    const rent = computeRent(destTile, destOwnership, properties);
+    const rent = computeRent(destTile, destOwnership, properties, rowBonus);
 
     if (myCashNow < rent) {
       const raisable = raisableFor(currentTurnPlayer.id, properties);
@@ -1509,6 +1583,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
         let botJailState = { ...inJailTurns };
         let botRestState = { ...restTurns };
         let botFlightState = { ...pendingFlights };
+        let botRowBonus: RowBonus | null = rowBonus;
         let botBankrupted = false;
 
         type BotLogs = Array<{ text: string; time: string; color?: string }>;
@@ -1522,6 +1597,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             if (own.ownerId !== turnPlayerId) freed[Number(idx)] = own;
           });
           const left = orderedPlayersRef.current.filter((pl) => !nextBankrupt[pl.id]);
+          botRowBonus = recomputeRowBonus(freed, botRowBonus);
           let nextLogs = addLog(
             `💀 🤖 ${currentTurnPlayer.display_name} ล้มละลาย! ออกจากเกม`,
             '#ef4444',
@@ -1534,6 +1610,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             patch: {
               bankrupt: nextBankrupt,
               properties: freed,
+              rowBonus: botRowBonus,
               winnerId: left.length === 1 ? left[0].id : null,
             },
             logs: nextLogs,
@@ -1565,6 +1642,10 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             if (tile.cost && botCash > tile.cost * 1.3) {
               botCash -= tile.cost;
               botProperties[destIndex] = { ownerId: turnPlayerId, houses: 0, visits: 1 };
+              botRowBonus = recomputeRowBonus(botProperties, botRowBonus, {
+                tileIndex: destIndex,
+                ownerId: turnPlayerId,
+              });
               nextLogs = addLog(
                 `🏡 🤖 ${currentTurnPlayer.display_name} ${how}มาแล้วซื้อที่ดิน [${tile.name}] (${formatMoneyM(
                   tile.cost
@@ -1597,13 +1678,14 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
           }
 
           const owner = players.find((pl) => pl.id === held.ownerId);
-          const rent = computeRent(tile, held, botProperties);
+          const rent = computeRent(tile, held, botProperties, botRowBonus);
           let broke = false;
           if (botCash < rent) {
             const sale = mortgageUntil(turnPlayerId, botProperties, rent - botCash);
             if (botCash + sale.raised >= rent) {
               botProperties = sale.props;
               botCash += sale.raised;
+              botRowBonus = recomputeRowBonus(botProperties, botRowBonus);
               nextLogs = addLog(
                 `🏦 🤖 ${currentTurnPlayer.display_name} จำนอง [${sale.soldNames.join(
                   ', '
@@ -1713,10 +1795,13 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             const bust = botBankrupted ? botBankruptPatch(botTurnLogs) : null;
             if (bust) botTurnLogs = bust.logs;
 
+            botTurnLogs = rowBonusAnnouncement(rowBonus, botRowBonus, botTurnLogs);
+
             await botSync({
               positions: { ...positions, [turnPlayerId]: dest },
               cash: flightCash,
               properties: botProperties,
+              rowBonus: botRowBonus,
               pendingFlights: botFlightState,
               rentReceipt:
                 arrival.receipt && arrival.ownerPay
@@ -1875,6 +1960,10 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               botCash -= targetTile.cost;
               updatedCash[turnPlayerId] = botCash;
               botProperties[finalPos] = { ownerId: turnPlayerId, houses: 0, visits: 1 };
+              botRowBonus = recomputeRowBonus(botProperties, botRowBonus, {
+                tileIndex: finalPos,
+                ownerId: turnPlayerId,
+              });
               botTurnLogs = addLog(
                 `🏡 🤖 ${currentTurnPlayer.display_name} ตกลง [ซื้อที่ดิน] [${targetTile.name}] (${formatMoneyM(targetTile.cost)}) ➔ เงินเหลือ ${formatMoneyM(botCash)}`,
                 '#10b981',
@@ -1914,7 +2003,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             } else if (ownership && ownership.ownerId !== turnPlayerId) {
               // Bot pays rent
               const owner = players.find((p) => p.id === ownership.ownerId);
-              const rent = computeRent(targetTile, ownership, botProperties);
+              const rent = computeRent(targetTile, ownership, botProperties, botRowBonus);
 
               if (botCash < rent) {
                 // Same choice a player gets, taken without asking: sell what it
@@ -1924,6 +2013,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                 if (botCash + sale.raised >= rent) {
                   botProperties = sale.props;
                   botCash = botCash + sale.raised;
+                  botRowBonus = recomputeRowBonus(botProperties, botRowBonus);
                   botTurnLogs = addLog(
                     `🏦 🤖 ${currentTurnPlayer.display_name} จำนอง [${sale.soldNames.join(', ')}] ได้ ${formatMoneyM(sale.raised)} มาจ่ายค่าผ่านทาง`,
                     '#f59e0b',
@@ -2013,6 +2103,10 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                   botCash -= destTile.cost;
                   updatedCash[turnPlayerId] = botCash;
                   botProperties[card.teleportToIndex] = { ownerId: turnPlayerId, houses: 0, visits: 1 };
+                  botRowBonus = recomputeRowBonus(botProperties, botRowBonus, {
+                    tileIndex: card.teleportToIndex,
+                    ownerId: turnPlayerId,
+                  });
                   botTurnLogs = addLog(
                     `🏡 🤖 ${currentTurnPlayer.display_name} วาร์ปมาแล้วซื้อที่ดิน [${destTile.name}] (${formatMoneyM(destTile.cost)}) \u279c เงินเหลือ ${formatMoneyM(botCash)}`,
                     '#22c55e',
@@ -2037,7 +2131,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                   }
                 } else if (destOwnership && destOwnership.ownerId !== turnPlayerId) {
                   const destOwner = players.find((pl) => pl.id === destOwnership.ownerId);
-                  const rent = computeRent(destTile, destOwnership, botProperties);
+                  const rent = computeRent(destTile, destOwnership, botProperties, botRowBonus);
                   const paid = Math.min(botCash, rent);
                   botCash = Math.max(0, botCash - rent);
                   updatedCash[turnPlayerId] = botCash;
@@ -2144,11 +2238,14 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             botTurnLogs = addLog(`🏁 🤖 ${currentTurnPlayer.display_name} ถึงจุดเริ่มต้น`, '#22c55e', botTurnLogs);
           }
 
+          botTurnLogs = rowBonusAnnouncement(rowBonus, botRowBonus, botTurnLogs);
+
           // Single clean server state sync
           await botSync({
             positions: updatedPositions,
             cash: updatedCash,
             properties: botProperties,
+            rowBonus: botRowBonus,
             inJailTurns: botJailState,
             restTurns: botRestState,
             pendingFlights: botFlightState,
@@ -2252,6 +2349,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     restTurns,
     handleServeJailTurn,
     bankrupt,
+    rowBonus,
     winnerId,
     debtDecision,
     handleMortgageAndPay,

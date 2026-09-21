@@ -5,6 +5,10 @@ import {
   maxHousesForVisits,
   visitMultiplier,
   MAX_VISIT_MULTIPLIER,
+  rowMultiplierFor,
+  rowOfTile,
+  ROW_NAMES,
+  RowBonus,
 } from './superMonopolyData';
 import { Modal } from '@/components/common/Modal';
 import { Home, Building2, Shield, Check, X, Wallet, Coins } from 'lucide-react';
@@ -18,6 +22,7 @@ interface PropertyCardModalProps {
   ownerName?: string | null;
   ownerColor?: string | null;
   isOwnedByMe?: boolean;
+  rowBonus?: RowBonus | null;
   onClose: () => void;
   onBuyLand: () => Promise<void>;
   onBuildHouse: () => Promise<void>;
@@ -32,6 +37,7 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
   ownerName,
   ownerColor,
   isOwnedByMe,
+  rowBonus,
   onClose,
   onBuyLand,
   onBuildHouse,
@@ -50,6 +56,16 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
   const buildCap = maxHousesForVisits(visits || 1);
   const atVisitCap = Boolean(isOwner) && !hasHotel && houses >= buildCap;
   const boost = visitMultiplier(visits);
+
+  // A province is multiplied by whoever holds its side of the board.
+  const rowMult =
+    !tile.isUtility &&
+    rowBonus &&
+    ownership &&
+    rowBonus.ownerId === ownership.ownerId &&
+    rowBonus.row === rowOfTile(tile.index)
+      ? rowMultiplierFor(rowBonus.count)
+      : 1;
 
   // Buying and building close the card themselves and decide what happens to
   // the turn. Calling onClose as well ran the skip branch on top of the
@@ -262,6 +278,18 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
             </span>
           )}
         </div>
+
+        {rowMult > 1 && (
+          <div className="rounded-2xl border-2 border-[rgb(var(--c-grape))] bg-[rgb(var(--c-grape-soft))] px-3 py-2 text-center">
+            <span className="block text-[11px] font-black text-[rgb(var(--c-grape))]">
+              🎏 โบนัสแถว [{ROW_NAMES[rowBonus!.row]}] — ถือ {rowBonus!.count} ช่อง
+            </span>
+            <span className="block text-[10px] font-bold text-[rgb(var(--c-ink-soft))] mt-0.5">
+              ค่าผ่านทางของที่ดินนี้คูณ{' '}
+              <strong className="text-[rgb(var(--c-grape))]">x{rowMult}</strong> จนกว่าจะมีคนครองแถวอื่นครบ 3 ช่อง
+            </span>
+          </div>
+        )}
 
         {/* Rent & Building Rates Table */}
         {tile.isUtility ? (

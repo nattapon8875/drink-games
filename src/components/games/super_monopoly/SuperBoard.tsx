@@ -1,6 +1,13 @@
 import React from 'react';
 import { SuperPropertyTile, PropertyOwnership, PlayerRecord } from '@/types/database';
-import { SUPER_MONOPOLY_TILES, formatMoneyM, visitMultiplier } from './superMonopolyData';
+import {
+  SUPER_MONOPOLY_TILES,
+  formatMoneyM,
+  visitMultiplier,
+  rowMultiplierFor,
+  rowOfTile,
+  RowBonus,
+} from './superMonopolyData';
 import { Home, Building2, Sparkles, Shield, Zap, Droplets } from 'lucide-react';
 
 interface SuperBoardProps {
@@ -11,15 +18,29 @@ interface SuperBoardProps {
   activeStepTileIndex?: number | null;
   activeStepPlayerId?: string | null;
   bankrupt?: Record<string, boolean>;
+  rowBonus?: RowBonus | null;
   onTileClick: (tile: SuperPropertyTile) => void;
 }
 
 // A hotel or a utility that its owner keeps landing on charges a multiple of
 // its rent. That is invisible on a board that only draws houses, so the square
 // itself heats up: yellow at x2, red at x3, and red and pulsing at x4.
-function boostOf(tile: SuperPropertyTile, ownership?: PropertyOwnership | null): number {
-  if (!tile.isUtility || !ownership) return 1;
-  return visitMultiplier(ownership.visits);
+function boostOf(
+  tile: SuperPropertyTile,
+  ownership?: PropertyOwnership | null,
+  rowBonus?: RowBonus | null
+): number {
+  if (!ownership) return 1;
+  if (tile.isUtility) return visitMultiplier(ownership.visits);
+  // A province is multiplied instead by its owner holding the side it sits on.
+  if (
+    rowBonus &&
+    rowBonus.ownerId === ownership.ownerId &&
+    rowBonus.row === rowOfTile(tile.index)
+  ) {
+    return rowMultiplierFor(rowBonus.count);
+  }
+  return 1;
 }
 
 // The soft tokens alone are too muted to pick out at tile size in the dark
@@ -36,6 +57,9 @@ const BOOST_BANNER: Record<number, string> = {
   3: '#ef4444',
   4: '#dc2626',
 };
+
+const skinFor = (boost: number) => BOOST_SKIN[Math.min(4, boost)] || BOOST_SKIN[4];
+const bannerFor = (boost: number) => BOOST_BANNER[Math.min(4, boost)];
 
 // The pawn used to stuff a fixed 32px <Avatar> inside a 14px circle, so all you
 // ever saw was the white ring clipping a grey blob. A pawn is now drawn at its
@@ -77,6 +101,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
   activeStepTileIndex,
   activeStepPlayerId,
   bankrupt,
+  rowBonus,
   onTileClick,
 }) => {
   // 40 Tiles Perimeter Mapping on 11x11 Grid
@@ -142,7 +167,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
           const ownerPlayer = ownership ? players.find((p) => p.id === ownership.ownerId) : null;
           const ownerIdx = ownerPlayer ? players.indexOf(ownerPlayer) : -1;
           const ownerColor = ownerIdx >= 0 ? getPlayerColor(ownerIdx) : '#f59e0b';
-          const boost = boostOf(tile, ownership);
+          const boost = boostOf(tile, ownership, rowBonus);
           const isCorner = tile.index === 0 || tile.index === 10 || tile.index === 20 || tile.index === 30;
           const isStepActive = activeStepTileIndex === tile.index;
 
@@ -280,7 +305,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
                 isStepActive
                   ? 'ring-4 ring-[rgb(var(--c-butter))] bg-[rgb(var(--c-butter-soft))] z-30 scale-105 shadow-lg'
                   : boost > 1
-                  ? BOOST_SKIN[boost]
+                  ? skinFor(boost)
                   : 'bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface-2))] border-[rgb(var(--c-line))] shadow-sm'
               } hover:scale-[1.04] hover:z-20`}
               title={`${tile.name}${tile.cost ? ` (${formatMoneyM(tile.cost)})` : ''}${
@@ -293,7 +318,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
                   className={`w-full flex items-center justify-center px-0.5 relative shadow-sm ${
                     boost > 1 ? 'h-3.5 sm:h-[18px]' : 'h-2.5 sm:h-3.5'
                   }`}
-                  style={{ backgroundColor: BOOST_BANNER[boost] || tile.color || '#0284c7' }}
+                  style={{ backgroundColor: bannerFor(boost) || tile.color || '#0284c7' }}
                 >
                   {boost > 1 && (
                     <span

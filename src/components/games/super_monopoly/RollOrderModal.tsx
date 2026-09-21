@@ -9,6 +9,9 @@ import { Dices, Crown, Sparkles, Trophy, ArrowRight, Zap, CheckCircle2 } from 'l
 import {
   dealStartingProperties,
   formatMoneyM,
+  recomputeRowBonus,
+  rowMultiplierFor,
+  ROW_NAMES,
   INITIAL_CASH_M,
   SUPER_MONOPOLY_TILES,
 } from './superMonopolyData';
@@ -281,7 +284,24 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
       })
       .filter(Boolean) as Array<{ text: string; time: string; color: string }>;
 
+    // The opening hand can already hand somebody a side of the board.
+    const openingRowBonus = recomputeRowBonus(dealtProperties, null);
+    const rowLog = openingRowBonus
+      ? [
+          {
+            text: `🎏 [${
+              sortedPlayers.find((p) => p.id === openingRowBonus.ownerId)?.display_name || 'ผู้เล่น'
+            }] ได้ที่ดินตั้งต้นใน [${ROW_NAMES[openingRowBonus.row]}] ถึง ${
+              openingRowBonus.count
+            } ช่อง ➜ ค่าผ่านทางจังหวัดในแถวนี้คูณ x${rowMultiplierFor(openingRowBonus.count)}`,
+            time: timeStr,
+            color: '#a855f7',
+          },
+        ]
+      : [];
+
     const newLogs = [
+      ...rowLog,
       {
         text: `👑 ผลทอยเต๋าตัดสินลำดับ: [${firstPlayer.display_name}] ได้แต้มสูงสุด (${rolls[firstPlayer.id]?.total} แต้ม) เริ่มเดินคนแรก!`,
         time: timeStr,
@@ -305,6 +325,7 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
         roll_order_done: true,
         roll_order_scores: scoreMap,
         properties: dealtProperties,
+        rowBonus: openingRowBonus,
         cash: startingCash,
         gameLogs: newLogs,
         isRolling: false,
