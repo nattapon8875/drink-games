@@ -10,8 +10,16 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 // Presence tuning. A client refreshes its own row every HEARTBEAT_INTERVAL_MS;
 // the host removes anyone whose row has not been touched for STALE_AFTER_MS.
 const HEARTBEAT_INTERVAL_MS = 15000;
-const STALE_AFTER_MS = 45000;
+// A phone that has been put down is the normal state of a drinking game, and a
+// backgrounded tab has its timers throttled to a minute or frozen outright. At
+// 45s everyone who glanced away was declared stale and thrown out of the room,
+// so the window is now long enough to survive a locked screen.
+const STALE_AFTER_MS = 180000;
 const REAP_INTERVAL_MS = 20000;
+// If this client's own reaper was frozen, every heartbeat looks stale the
+// moment it wakes - through no fault of the players. Sit out a round whenever
+// our own clock skipped, and let the beats land first.
+const REAP_OVERSLEEP_MS = REAP_INTERVAL_MS * 3;
 
 // The poll runs every 400ms and previously replaced room/players state with fresh
 // object identities every single time, re-rendering the whole game and tearing
@@ -962,9 +970,22 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
     beat();
     const timer = setInterval(beat, HEARTBEAT_INTERVAL_MS);
 
+    // Coming back to the tab has to refresh us immediately: the interval may
+    // not have run for minutes, and the next scheduled beat could be too late
+    // to stop somebody else reaping us.
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') beat();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onVisible);
+    window.addEventListener('pageshow', onVisible);
+
     return () => {
       cancelled = true;
       clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onVisible);
+      window.removeEventListener('pageshow', onVisible);
     };
   }, [roomCode, currentUser?.id]);
 
@@ -982,9 +1003,18 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
     if (!roomCode || !myId) return;
 
     let cancelled = false;
+    let lastTickAt = Date.now();
 
     const reap = async () => {
       if (cancelled) return;
+
+      // A hidden tab keeps bad time and should not be deciding who is still
+      // here, and a tab that has just woken has to let the others check in.
+      const now = Date.now();
+      const overslept = now - lastTickAt > REAP_OVERSLEEP_MS;
+      lastTickAt = now;
+      if (overslept) return;
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
 
       const cutoff = Date.now() - STALE_AFTER_MS;
       const roster = playersRef.current;

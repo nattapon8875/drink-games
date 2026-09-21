@@ -46,16 +46,18 @@ export default function PlayPage() {
     if (!user || user.id === 'guest-init' || !roomCode) return;
 
     const handleBeforeUnload = () => {
+      // Only a real unload. `pagehide` also fires when a phone simply puts the
+      // page in the back/forward cache - switching to LINE, locking the screen,
+      // changing tab - and leaving on that threw players out of the room for
+      // glancing away. A genuine disconnect is caught by the heartbeat instead.
       if (room && room.host_id !== user.id) {
         leaveRoom();
       }
     };
 
-    window.addEventListener('pagehide', handleBeforeUnload);
     window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
-      window.removeEventListener('pagehide', handleBeforeUnload);
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [user, roomCode, room, leaveRoom]);

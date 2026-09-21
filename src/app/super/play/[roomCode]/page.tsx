@@ -60,17 +60,19 @@ export default function SuperPlayPage() {
     if (!user || user.id === 'guest-init' || !roomCode) return;
 
     const handleLeaveOnClose = () => {
+      // Only a real unload. `pagehide` also fires when a phone simply puts the
+      // page in the back/forward cache - switching to LINE, locking the screen,
+      // changing tab - and leaving on that threw players out of the room for
+      // glancing away. A genuine disconnect is caught by the heartbeat instead.
       // Host is kept so a quick refresh does not orphan the room
       if (room && room.host_id !== user.id) {
         leaveRoom();
       }
     };
 
-    window.addEventListener('pagehide', handleLeaveOnClose);
     window.addEventListener('beforeunload', handleLeaveOnClose);
 
     return () => {
-      window.removeEventListener('pagehide', handleLeaveOnClose);
       window.removeEventListener('beforeunload', handleLeaveOnClose);
     };
   }, [user, roomCode, room, leaveRoom]);
