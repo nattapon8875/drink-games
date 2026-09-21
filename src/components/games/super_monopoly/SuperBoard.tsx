@@ -2,7 +2,6 @@ import React from 'react';
 import { SuperPropertyTile, PropertyOwnership, PlayerRecord } from '@/types/database';
 import { SUPER_MONOPOLY_TILES, formatMoneyM } from './superMonopolyData';
 import { Home, Building2, Sparkles, Shield, Zap, Droplets } from 'lucide-react';
-import { Avatar } from '@/components/common/Avatar';
 
 interface SuperBoardProps {
   positions: Record<string, number>;
@@ -14,6 +13,38 @@ interface SuperBoardProps {
   bankrupt?: Record<string, boolean>;
   onTileClick: (tile: SuperPropertyTile) => void;
 }
+
+// The pawn used to stuff a fixed 32px <Avatar> inside a 14px circle, so all you
+// ever saw was the white ring clipping a grey blob. A pawn is now drawn at its
+// own size: the player's picture full-bleed, or their seat number on their colour.
+const Pawn: React.FC<{
+  player: PlayerRecord;
+  seat: number;
+  color: string;
+  isTurn: boolean;
+  size: 'tile' | 'corner';
+}> = ({ player, seat, color, isTurn, size }) => (
+  <span
+    title={player.display_name}
+    style={{ backgroundColor: color }}
+    className={`relative inline-flex items-center justify-center rounded-full border border-white shadow-lg overflow-hidden ${
+      size === 'corner' ? 'w-5 h-5 sm:w-6 sm:h-6' : 'w-4 h-4 sm:w-6 sm:h-6'
+    } ${isTurn ? 'ring-2 ring-yellow-400 animate-bounce scale-110 z-30' : ''}`}
+  >
+    {player.avatar_url ? (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={player.avatar_url}
+        alt={player.display_name}
+        className="w-full h-full object-cover"
+      />
+    ) : (
+      <span className="text-[7px] sm:text-[9px] font-black leading-none text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.9)]">
+        {seat + 1}
+      </span>
+    )}
+  </span>
+);
 
 const SuperBoardBase: React.FC<SuperBoardProps> = ({
   positions,
@@ -199,22 +230,16 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
                 {/* Players Floating on Corner */}
                 {playersHere.length > 0 && (
                   <div className="absolute bottom-0.5 left-0 right-0 flex items-center justify-center -space-x-1 z-20 pointer-events-none">
-                    {playersHere.map((p) => {
-                      const isTurn = p.id === currentTurnPlayerId;
-                      const pColor = getPlayerColor(players.indexOf(p));
-                      return (
-                        <div
-                          key={p.id}
-                          className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 border-white shadow-lg overflow-hidden ${
-                            isTurn ? 'ring-2 ring-yellow-400 animate-bounce scale-110 z-30' : ''
-                          }`}
-                          style={{ backgroundColor: pColor }}
-                          title={p.display_name}
-                        >
-                          <Avatar src={p.avatar_url} name={p.display_name} size="sm" />
-                        </div>
-                      );
-                    })}
+                    {playersHere.map((p) => (
+                      <Pawn
+                        key={p.id}
+                        player={p}
+                        seat={players.indexOf(p)}
+                        color={getPlayerColor(players.indexOf(p))}
+                        isTurn={p.id === currentTurnPlayerId}
+                        size="corner"
+                      />
+                    ))}
                   </div>
                 )}
               </div>
@@ -335,22 +360,16 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
               {/* Player Pawns Floating on Tile */}
               {playersHere.length > 0 && (
                 <div className="absolute inset-x-0 bottom-1 flex items-center justify-center -space-x-1 z-20 pointer-events-none">
-                  {playersHere.map((p) => {
-                    const isTurn = p.id === currentTurnPlayerId;
-                    const pColor = getPlayerColor(players.indexOf(p));
-                    return (
-                      <div
-                        key={p.id}
-                        className={`w-3.5 h-3.5 sm:w-5 sm:h-5 rounded-full border-2 border-white shadow-lg overflow-hidden ${
-                          isTurn ? 'ring-2 ring-yellow-400 animate-bounce scale-110 z-30' : ''
-                        }`}
-                        style={{ backgroundColor: pColor }}
-                        title={p.display_name}
-                      >
-                        <Avatar src={p.avatar_url} name={p.display_name} size="sm" />
-                      </div>
-                    );
-                  })}
+                  {playersHere.map((p) => (
+                    <Pawn
+                      key={p.id}
+                      player={p}
+                      seat={players.indexOf(p)}
+                      color={getPlayerColor(players.indexOf(p))}
+                      isTurn={p.id === currentTurnPlayerId}
+                      size="tile"
+                    />
+                  ))}
                 </div>
               )}
             </div>

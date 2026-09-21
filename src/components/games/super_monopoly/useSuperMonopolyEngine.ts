@@ -1265,6 +1265,28 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     }, 1200);
   };
 
+  // A booked flight is the whole turn - there is nothing else to do with it, so
+  // the map opens by itself rather than making the traveller press a button
+  // first. It waits for anything else on screen to be dealt with.
+  useEffect(() => {
+    if (!isCurrentPlayerBoarding || !canActThisTurn) return;
+    if (isRolling || isMoving) return;
+    if (activePropertyModal || activeCard || activePenaltyModal) return;
+    if (jailNotice || restNotice || debtDecision) return;
+    setShowFlightPicker(true);
+  }, [
+    isCurrentPlayerBoarding,
+    canActThisTurn,
+    isRolling,
+    isMoving,
+    activePropertyModal,
+    activeCard,
+    activePenaltyModal,
+    jailNotice,
+    restNotice,
+    debtDecision,
+  ]);
+
   const handleOpenFlightPicker = () => {
     if (!canActThisTurn || isRolling || isMoving) return;
     setShowFlightPicker(true);

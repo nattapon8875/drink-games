@@ -35,18 +35,26 @@ export const FlightPickerModal: React.FC<FlightPickerModalProps> = ({
   players,
   myId,
   onChoose,
-  onClose,
 }) => {
   if (!isOpen) return null;
 
+  const colourOf = (p: PlayerRecord) =>
+    PLAYER_3D_COLORS[players.indexOf(p) % PLAYER_3D_COLORS.length];
+
+  // Who actually holds land, so the key only lists people worth avoiding.
+  const landlords = players.filter((p) =>
+    Object.values(properties).some((own) => own.ownerId === p.id)
+  );
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="✈️ เลือกจุดหมายปลายทาง">
+    // The flight is the whole turn, so there is nothing to close back to.
+    <Modal isOpen={isOpen} title="✈️ เลือกจุดหมายปลายทาง" showCloseButton={false}>
       <div className="flex flex-col gap-2">
-        <p className="text-[11px] font-bold text-sky-200/90 text-center">
+        <p className="text-[11px] font-bold text-[rgb(var(--c-sky-label))] text-center">
           แตะช่องที่ต้องการบินไป · บินผ่านจุดเริ่มต้นรับเงินเดือนตามปกติ
         </p>
 
-        <div className="w-full aspect-square max-w-[min(78vh,520px)] mx-auto grid grid-cols-11 grid-rows-11 gap-[2px] p-1.5 rounded-2xl bg-[rgb(var(--c-bg-deep))] border-2 border-yellow-700/40">
+        <div className="w-full aspect-square max-w-[min(78vh,520px)] mx-auto grid grid-cols-11 grid-rows-11 gap-[2px] p-1.5 rounded-2xl bg-[rgb(var(--c-bg-deep))] border-2 border-[rgb(var(--c-line))]">
           {SUPER_MONOPOLY_TILES.map((tile) => {
             const { col, row } = getGridPosition(tile.index);
             const owned = properties[tile.index];
@@ -54,9 +62,8 @@ export const FlightPickerModal: React.FC<FlightPickerModalProps> = ({
             const isMine = Boolean(owned && myId && owned.ownerId === myId);
             const isHere = tile.index === fromIndex;
             const salary = passesStart(fromIndex, tile.index);
-            const ownerColor = owner
-              ? PLAYER_3D_COLORS[players.indexOf(owner) % PLAYER_3D_COLORS.length]
-              : null;
+            const ownerColor = owner ? colourOf(owner) : null;
+            const ownerSeat = owner ? players.indexOf(owner) + 1 : null;
 
             return (
               <button
@@ -64,33 +71,52 @@ export const FlightPickerModal: React.FC<FlightPickerModalProps> = ({
                 type="button"
                 disabled={isHere}
                 onClick={() => onChoose(tile.index)}
-                style={{ gridColumn: col, gridRow: row }}
-                title={`${tile.name}${owner ? ` · ของ ${owner.display_name}` : ''}`}
-                className={`relative flex flex-col items-center justify-center rounded-md border overflow-hidden transition active:scale-90 ${
+                style={{
+                  gridColumn: col,
+                  gridRow: row,
+                  // Someone else's square is ringed in their colour, so the map
+                  // reads as who you would be landing on.
+                  ...(owner && !isMine && ownerColor ? { borderColor: ownerColor } : {}),
+                }}
+                title={
+                  owner
+                    ? `${tile.name} · ที่ดินของ ${owner.display_name}${
+                        owned && owned.houses > 0 ? ` (สิ่งปลูกสร้าง ${owned.houses})` : ''
+                      }`
+                    : `${tile.name}${tile.cost ? ` · ว่าง ${formatMoneyM(tile.cost)}` : ''}`
+                }
+                className={`relative flex flex-col items-center justify-center rounded-md border-2 overflow-hidden transition active:scale-90 ${
                   isHere
-                    ? 'bg-[rgb(var(--c-surface-2))] border-amber-500 opacity-60 cursor-default'
+                    ? 'bg-[rgb(var(--c-surface-2))] border-[rgb(var(--c-line-strong))] opacity-60 cursor-default'
                     : isMine
-                    ? 'bg-[rgb(var(--c-mint-soft))] border-emerald-500 hover:border-emerald-300'
+                    ? 'bg-[rgb(var(--c-mint-soft))] border-[rgb(var(--c-mint))]'
                     : owner
-                    ? 'bg-[rgb(var(--c-surface))] border-[rgb(var(--c-surface-3))] hover:border-amber-400'
-                    : 'bg-[rgb(var(--c-butter-soft))] border-[rgb(var(--c-butter-deep))] hover:border-sky-400'
+                    ? 'bg-[rgb(var(--c-surface-2))] hover:brightness-110'
+                    : 'bg-[rgb(var(--c-surface))] border-[rgb(var(--c-line))] hover:border-[rgb(var(--c-sky))]'
                 }`}
               >
                 {ownerColor && (
                   <span
-                    className="absolute top-0 left-0 right-0 h-[3px]"
+                    className="absolute inset-x-0 top-0 h-[4px]"
                     style={{ backgroundColor: ownerColor }}
                   />
                 )}
 
-                <span className="text-[9px] sm:text-xs leading-none">{tile.icon || '🏠'}</span>
-                <span
-                  className={`text-[5px] sm:text-[7px] font-black leading-tight text-center px-[1px] truncate w-full ${
-                    isHere || isMine || owner ? 'text-amber-100' : 'text-[rgb(var(--c-ink))]'
-                  }`}
-                >
+                <span className="text-[9px] sm:text-xs leading-none mt-[2px]">
+                  {tile.icon || '🏠'}
+                </span>
+                <span className="text-[5px] sm:text-[7px] font-black leading-tight text-center px-[1px] truncate w-full text-[rgb(var(--c-ink))]">
                   {isHere ? 'อยู่ตรงนี้' : tile.name}
                 </span>
+
+                {owner && (
+                  <span
+                    className="absolute top-[5px] left-[2px] w-[9px] h-[9px] sm:w-3 sm:h-3 rounded-full border border-white flex items-center justify-center text-[6px] sm:text-[8px] font-black leading-none text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.9)]"
+                    style={{ backgroundColor: ownerColor || undefined }}
+                  >
+                    {ownerSeat}
+                  </span>
+                )}
 
                 {salary && !isHere && (
                   <span className="absolute bottom-0 right-0 text-[5px] sm:text-[7px]">🏁</span>
@@ -99,17 +125,51 @@ export const FlightPickerModal: React.FC<FlightPickerModalProps> = ({
             );
           })}
 
-          {/* Middle of the board: the legend, where the play mat would be */}
+          {/* Middle of the board: who owns what, and what the marks mean */}
           <div
             style={{ gridColumn: '2 / 11', gridRow: '2 / 11' }}
-            className="flex flex-col items-center justify-center gap-1.5 rounded-xl bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-2))] px-3 text-center"
+            className="flex flex-col items-center justify-center gap-2 rounded-xl bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-line))] px-3 py-2 text-center overflow-auto"
           >
-            <span className="text-2xl">✈️</span>
-            <span className="text-[11px] font-black text-sky-200">เลือกช่องที่จะบินไป</span>
-            <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 text-[8px] font-bold text-amber-200/85">
-              <span>🏁 = ผ่านจุดเริ่มต้น รับ {formatMoneyM(2)}</span>
-              <span>· ขอบสี = เจ้าของที่ดิน</span>
-            </div>
+            <span className="text-2xl leading-none">✈️</span>
+            <span className="text-[11px] font-black text-[rgb(var(--c-sky-label))]">
+              เลือกช่องที่จะบินไป
+            </span>
+
+            {landlords.length > 0 && (
+              <div className="w-full">
+                <span className="block text-[8px] font-black text-[rgb(var(--c-ink-faint))] mb-1">
+                  เจ้าของที่ดิน (เลขในช่อง = เจ้าของ)
+                </span>
+                <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1.5">
+                  {landlords.map((p) => {
+                    const held = Object.values(properties).filter(
+                      (own) => own.ownerId === p.id
+                    ).length;
+                    return (
+                      <span
+                        key={p.id}
+                        className="flex items-center gap-1 text-[9px] sm:text-[11px] font-black text-[rgb(var(--c-ink))]"
+                      >
+                        <span
+                          className="w-4 h-4 rounded-full border border-white flex items-center justify-center text-[8px] font-black text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.9)]"
+                          style={{ backgroundColor: colourOf(p) }}
+                        >
+                          {players.indexOf(p) + 1}
+                        </span>
+                        <span className="truncate max-w-[84px]">
+                          {p.id === myId ? 'คุณ' : p.display_name}
+                        </span>
+                        <span className="text-[rgb(var(--c-ink-faint))]">×{held}</span>
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <span className="text-[8px] font-bold text-[rgb(var(--c-ink-faint))]">
+              🏁 = บินผ่านจุดเริ่มต้น รับ {formatMoneyM(2)}
+            </span>
           </div>
         </div>
       </div>
