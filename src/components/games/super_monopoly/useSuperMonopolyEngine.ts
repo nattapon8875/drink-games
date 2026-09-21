@@ -818,6 +818,8 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   // Jail Option 1: Serve 1 Turn in Jail (หยุดรับโทษ 1 ตา)
   const handleServeJailTurn = useCallback(async () => {
     if (!currentTurnPlayer || !canActThisTurn || !isCurrentPlayerInJail || isRolling || isMoving) return;
+    setIsEndingTurn(true);
+    setHasRolledThisTurn(true);
 
     const updatedJail = { ...inJailTurns, [currentTurnPlayer.id]: 0 };
     sfx.playDrinkPenalty();
@@ -879,6 +881,8 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   // Rest Option: Serve 1 Turn of Rest at Parking (หยุดทอย 1 ตา)
   const handleServeRestTurn = useCallback(async () => {
     if (!currentTurnPlayer || !canActThisTurn || !isCurrentPlayerResting || isRolling || isMoving) return;
+    setIsEndingTurn(true);
+    setHasRolledThisTurn(true);
 
     const updatedRest = { ...restTurns, [currentTurnPlayer.id]: 0 };
     sfx.playSuccess();
@@ -1223,6 +1227,11 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     if (destIndex === fromIndex) return;
 
     setShowFlightPicker(false);
+    // The flight is the whole turn, so nothing else may be offered until the
+    // turn actually moves on - and it counts as this turn's move, which is what
+    // stops a stray tap on the dice from walking again.
+    setIsEndingTurn(true);
+    setHasRolledThisTurn(true);
 
     const destTile = SUPER_MONOPOLY_TILES[destIndex];
     const passedStart = destIndex <= fromIndex;
@@ -1247,9 +1256,10 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       isRolling: false,
     });
 
+    // If the square needs a decision, the modal that opens takes it from here
+    // and its close handler ends the turn.
     if (await resolveArrivalAt(destIndex, 'บิน')) return;
 
-    // Nothing to decide where we landed - the flight was the whole turn.
     setTimeout(() => {
       handleEndTurn();
     }, 1200);
