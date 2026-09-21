@@ -1511,6 +1511,139 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
         let botFlightState = { ...pendingFlights };
         let botBankrupted = false;
 
+        type BotLogs = Array<{ text: string; time: string; color?: string }>;
+
+        // Going out of the game looks the same whether it happened on foot or
+        // on arrival, so both paths send the one patch.
+        const botBankruptPatch = (logs: BotLogs): { patch: Record<string, unknown>; logs: BotLogs } => {
+          const nextBankrupt = { ...bankrupt, [turnPlayerId]: true };
+          const freed: Record<number, PropertyOwnership> = {};
+          Object.entries(botProperties).forEach(([idx, own]) => {
+            if (own.ownerId !== turnPlayerId) freed[Number(idx)] = own;
+          });
+          const left = orderedPlayersRef.current.filter((pl) => !nextBankrupt[pl.id]);
+          let nextLogs = addLog(
+            `💀 🤖 ${currentTurnPlayer.display_name} ล้มละลาย! ออกจากเกม`,
+            '#ef4444',
+            logs
+          );
+          if (left.length === 1) {
+            nextLogs = addLog(`🏆 ${left[0].display_name} เป็นผู้ชนะ!`, '#facc15', nextLogs);
+          }
+          return {
+            patch: {
+              bankrupt: nextBankrupt,
+              properties: freed,
+              winnerId: left.length === 1 ? left[0].id : null,
+            },
+            logs: nextLogs,
+          };
+        };
+
+        // What a bot owes the board for arriving somewhere by air or by card.
+        // Walking has its own long block below; a flight used to move the token
+        // and nothing else, so a bot could sit on someone's hotel rent-free.
+        const botResolveArrival = (
+          destIndex: number,
+          how: string,
+          logs: BotLogs
+        ): {
+          logs: BotLogs;
+          ownerPay: { id: string; amount: number } | null;
+          receipt: RentReceipt | null;
+          wentBankrupt: boolean;
+        } => {
+          const tile = SUPER_MONOPOLY_TILES[destIndex];
+          let nextLogs = logs;
+          if (!tile || tile.type !== 'property') {
+            return { logs: nextLogs, ownerPay: null, receipt: null, wentBankrupt: false };
+          }
+
+          const held = botProperties[destIndex];
+
+          if (!held) {
+            if (tile.cost && botCash > tile.cost * 1.3) {
+              botCash -= tile.cost;
+              botProperties[destIndex] = { ownerId: turnPlayerId, houses: 0, visits: 1 };
+              nextLogs = addLog(
+                `🏡 🤖 ${currentTurnPlayer.display_name} ${how}มาแล้วซื้อที่ดิน [${tile.name}] (${formatMoneyM(
+                  tile.cost
+                )}) ➔ เงินเหลือ ${formatMoneyM(botCash)}`,
+                '#22c55e',
+                nextLogs
+              );
+              const built = botBuildUpTo(destIndex, tile, 1);
+              if (built.log) nextLogs = addLog(built.log, '#06b6d4', nextLogs);
+            }
+            return { logs: nextLogs, ownerPay: null, receipt: null, wentBankrupt: false };
+          }
+
+          if (held.ownerId === turnPlayerId) {
+            const visits = (held.visits || 0) + 1;
+            botProperties[destIndex] = { ...held, visits };
+            if (tile.isUtility) {
+              nextLogs = addLog(
+                `🏨 🤖 ${currentTurnPlayer.display_name} ${how}มาถึงกิจการของตัวเอง [${tile.name}] ➜ ค่าผ่านทางคูณ x${visitMultiplier(
+                  visits
+                )}`,
+                '#06b6d4',
+                nextLogs
+              );
+            } else {
+              const built = botBuildUpTo(destIndex, tile, visits);
+              if (built.log) nextLogs = addLog(built.log, '#06b6d4', nextLogs);
+            }
+            return { logs: nextLogs, ownerPay: null, receipt: null, wentBankrupt: false };
+          }
+
+          const owner = players.find((pl) => pl.id === held.ownerId);
+          const rent = computeRent(tile, held, botProperties);
+          let broke = false;
+          if (botCash < rent) {
+            const sale = mortgageUntil(turnPlayerId, botProperties, rent - botCash);
+            if (botCash + sale.raised >= rent) {
+              botProperties = sale.props;
+              botCash += sale.raised;
+              nextLogs = addLog(
+                `🏦 🤖 ${currentTurnPlayer.display_name} จำนอง [${sale.soldNames.join(
+                  ', '
+                )}] ได้ ${formatMoneyM(sale.raised)} มาจ่ายค่าผ่านทาง`,
+                '#f59e0b',
+                nextLogs
+              );
+            } else {
+              broke = true;
+            }
+          }
+
+          const paid = broke ? botCash : rent;
+          botCash = Math.max(0, botCash - paid);
+          nextLogs = addLog(
+            `💸 🤖 ${currentTurnPlayer.display_name} ${how}มาตกที่ดินของ ${
+              owner?.display_name || 'เจ้าของ'
+            } จ่ายค่าผ่านทาง ${formatMoneyM(paid)} (เงินเหลือ ${formatMoneyM(botCash)})`,
+            '#ef4444',
+            nextLogs
+          );
+
+          return {
+            logs: nextLogs,
+            ownerPay: owner ? { id: owner.id, amount: paid } : null,
+            receipt: owner
+              ? {
+                  ownerId: owner.id,
+                  payerName: currentTurnPlayer.display_name,
+                  tileName: tile.name,
+                  tileIcon: tile.icon || '🏨',
+                  amount: paid,
+                  ownerCashAfter: (cash[owner.id] ?? INITIAL_CASH_M) + paid,
+                  at: Date.now(),
+                }
+              : null,
+            wentBankrupt: broke,
+          };
+        };
+
         // Puts up as much as this visit allows and the wallet can stand, and
         // reports it as one line so the feed does not get three in a row.
         const botBuildUpTo = (
@@ -1566,10 +1699,30 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               '#0ea5e9',
               botTurnLogs
             );
+            // Landing by air is landing: buy it, build on it, or pay for it.
+            const arrival = botResolveArrival(dest, 'บิน', botTurnLogs);
+            botTurnLogs = arrival.logs;
+            if (arrival.wentBankrupt) botBankrupted = true;
+
+            const flightCash = { ...cash, [turnPlayerId]: botCash };
+            if (arrival.ownerPay) {
+              flightCash[arrival.ownerPay.id] =
+                (cash[arrival.ownerPay.id] ?? INITIAL_CASH_M) + arrival.ownerPay.amount;
+            }
+
+            const bust = botBankrupted ? botBankruptPatch(botTurnLogs) : null;
+            if (bust) botTurnLogs = bust.logs;
+
             await botSync({
               positions: { ...positions, [turnPlayerId]: dest },
-              cash: { ...cash, [turnPlayerId]: botCash },
+              cash: flightCash,
+              properties: botProperties,
               pendingFlights: botFlightState,
+              rentReceipt:
+                arrival.receipt && arrival.ownerPay
+                  ? { ...arrival.receipt, ownerCashAfter: flightCash[arrival.ownerPay.id] }
+                  : arrival.receipt,
+              ...(bust ? bust.patch : {}),
               gameLogs: botTurnLogs,
               activeStepTileIndex: null,
               isMoving: false,
@@ -1948,6 +2101,22 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                 '#0ea5e9',
                 botTurnLogs
               );
+
+              // The square it flew to still has to be settled.
+              const arrival = botResolveArrival(dest, 'บิน', botTurnLogs);
+              botTurnLogs = arrival.logs;
+              updatedCash[turnPlayerId] = botCash;
+              if (arrival.ownerPay) {
+                updatedCash[arrival.ownerPay.id] =
+                  (updatedCash[arrival.ownerPay.id] ?? INITIAL_CASH_M) + arrival.ownerPay.amount;
+              }
+              if (arrival.receipt && arrival.ownerPay) {
+                botRentReceipt = {
+                  ...arrival.receipt,
+                  ownerCashAfter: updatedCash[arrival.ownerPay.id],
+                };
+              }
+              if (arrival.wentBankrupt) botBankrupted = true;
             } else {
               botFlightState[turnPlayerId] = true;
               botTurnLogs = addLog(
@@ -1985,29 +2154,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             pendingFlights: botFlightState,
             ...(botBankrupted
               ? (() => {
-                  const nextBankrupt = { ...bankrupt, [turnPlayerId]: true };
-                  const freed: Record<number, PropertyOwnership> = {};
-                  Object.entries(botProperties).forEach(([idx, own]) => {
-                    if (own.ownerId !== turnPlayerId) freed[Number(idx)] = own;
-                  });
-                  const left = orderedPlayersRef.current.filter((pl) => !nextBankrupt[pl.id]);
-                  botTurnLogs = addLog(
-                    `💀 🤖 ${currentTurnPlayer.display_name} ล้มละลาย! ออกจากเกม`,
-                    '#ef4444',
-                    botTurnLogs
-                  );
-                  if (left.length === 1) {
-                    botTurnLogs = addLog(
-                      `🏆 ${left[0].display_name} เป็นผู้ชนะ!`,
-                      '#facc15',
-                      botTurnLogs
-                    );
-                  }
-                  return {
-                    bankrupt: nextBankrupt,
-                    properties: freed,
-                    winnerId: left.length === 1 ? left[0].id : null,
-                  };
+                  const bust = botBankruptPatch(botTurnLogs);
+                  botTurnLogs = bust.logs;
+                  return bust.patch;
                 })()
               : {}),
             gameLogs: botTurnLogs,
