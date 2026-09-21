@@ -1,6 +1,6 @@
 import React from 'react';
 import { SuperPropertyTile, PropertyOwnership, PlayerRecord } from '@/types/database';
-import { SUPER_MONOPOLY_TILES, formatMoneyM } from './superMonopolyData';
+import { SUPER_MONOPOLY_TILES, formatMoneyM, visitMultiplier } from './superMonopolyData';
 import { Home, Building2, Sparkles, Shield, Zap, Droplets } from 'lucide-react';
 
 interface SuperBoardProps {
@@ -13,6 +13,29 @@ interface SuperBoardProps {
   bankrupt?: Record<string, boolean>;
   onTileClick: (tile: SuperPropertyTile) => void;
 }
+
+// A hotel or a utility that its owner keeps landing on charges a multiple of
+// its rent. That is invisible on a board that only draws houses, so the square
+// itself heats up: yellow at x2, red at x3, and red and pulsing at x4.
+function boostOf(tile: SuperPropertyTile, ownership?: PropertyOwnership | null): number {
+  if (!tile.isUtility || !ownership) return 1;
+  return visitMultiplier(ownership.visits);
+}
+
+// The soft tokens alone are too muted to pick out at tile size in the dark
+// theme, so the heat also repaints the colour band across the top of the square
+// - a solid bar that carries no text and reads the same in both themes.
+const BOOST_SKIN: Record<number, string> = {
+  2: 'bg-[rgb(var(--c-butter-soft))] border-[rgb(var(--c-butter))] shadow-md',
+  3: 'bg-[rgb(var(--c-berry-soft))] border-[rgb(var(--c-berry))] shadow-md',
+  4: 'bg-[rgb(var(--c-berry-soft))] border-[rgb(var(--c-berry))] ring-2 ring-[rgb(var(--c-berry))] shadow-lg animate-pulse',
+};
+
+const BOOST_BANNER: Record<number, string> = {
+  2: '#f59e0b',
+  3: '#ef4444',
+  4: '#dc2626',
+};
 
 // The pawn used to stuff a fixed 32px <Avatar> inside a 14px circle, so all you
 // ever saw was the white ring clipping a grey blob. A pawn is now drawn at its
@@ -119,6 +142,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
           const ownerPlayer = ownership ? players.find((p) => p.id === ownership.ownerId) : null;
           const ownerIdx = ownerPlayer ? players.indexOf(ownerPlayer) : -1;
           const ownerColor = ownerIdx >= 0 ? getPlayerColor(ownerIdx) : '#f59e0b';
+          const boost = boostOf(tile, ownership);
           const isCorner = tile.index === 0 || tile.index === 10 || tile.index === 20 || tile.index === 30;
           const isStepActive = activeStepTileIndex === tile.index;
 
@@ -255,16 +279,31 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
               className={`relative flex flex-col justify-between rounded-lg transition-all cursor-pointer overflow-hidden border ${
                 isStepActive
                   ? 'ring-4 ring-[rgb(var(--c-butter))] bg-[rgb(var(--c-butter-soft))] z-30 scale-105 shadow-lg'
+                  : boost > 1
+                  ? BOOST_SKIN[boost]
                   : 'bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface-2))] border-[rgb(var(--c-line))] shadow-sm'
               } hover:scale-[1.04] hover:z-20`}
-              title={`${tile.name}${tile.cost ? ` (${formatMoneyM(tile.cost)})` : ''}`}
+              title={`${tile.name}${tile.cost ? ` (${formatMoneyM(tile.cost)})` : ''}${
+                boost > 1 ? ` · ค่าผ่านทางคูณ x${boost}` : ''
+              }`}
             >
               {/* Top Color Banner (Authentic Monopoly Property Bar) */}
               {tile.type === 'property' && (
                 <div
-                  className="w-full h-2.5 sm:h-3.5 flex items-center justify-center px-0.5 relative shadow-sm"
-                  style={{ backgroundColor: tile.color || '#0284c7' }}
+                  className={`w-full flex items-center justify-center px-0.5 relative shadow-sm ${
+                    boost > 1 ? 'h-3.5 sm:h-[18px]' : 'h-2.5 sm:h-3.5'
+                  }`}
+                  style={{ backgroundColor: BOOST_BANNER[boost] || tile.color || '#0284c7' }}
                 >
+                  {boost > 1 && (
+                    <span
+                      className="absolute left-0.5 top-1/2 -translate-y-1/2 px-[3px] rounded-[3px] bg-black/80 border border-white text-[6px] sm:text-[9px] font-black text-white leading-tight shadow"
+                      title={`ค่าผ่านทางคูณ x${boost}`}
+                    >
+                      x{boost}
+                    </span>
+                  )}
+
                   {/* Houses / Hotel Indicators */}
                   {ownership && ownership.houses > 0 && (
                     <div className="flex items-center gap-0.5">

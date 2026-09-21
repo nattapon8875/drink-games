@@ -6,7 +6,7 @@ import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { SuperPropertyTile, PropertyOwnership, PlayerRecord } from '@/types/database';
-import { SUPER_MONOPOLY_TILES, formatMoneyM } from './superMonopolyData';
+import { SUPER_MONOPOLY_TILES, formatMoneyM, visitMultiplier } from './superMonopolyData';
 
 interface SuperBoard3DProps {
   positions: Record<string, number>;
@@ -624,6 +624,12 @@ const Tile3D: React.FC<{
   const houses = ownership?.houses || 0;
   const hasHotel = houses === 4;
 
+  // A hotel or a utility its owner keeps visiting charges a multiple of its
+  // rent, which nothing on the board used to show. Heat the tile instead.
+  const boost = tile.isUtility && ownership ? visitMultiplier(ownership.visits) : 1;
+  const boostTint = boost >= 4 ? '#f87171' : boost === 3 ? '#fca5a5' : boost === 2 ? '#fde68a' : null;
+  const boostGlow = boost >= 4 ? '#dc2626' : boost === 3 ? '#ef4444' : boost === 2 ? '#f59e0b' : null;
+
   return (
     <group position={[x, y, z]} rotation={rot}>
       {/* 3D Tile Block */}
@@ -645,9 +651,15 @@ const Tile3D: React.FC<{
           map={topTexture || undefined}
           roughness={0.25}
           metalness={0.05}
-          color={isStepActive ? '#fef08a' : hovered ? '#ffffff' : '#fcfcfc'}
-          emissive={isStepActive ? '#eab308' : hovered ? '#fde047' : '#000000'}
-          emissiveIntensity={isStepActive ? 0.7 : hovered ? 0.3 : 0}
+          color={
+            isStepActive ? '#fef08a' : hovered ? '#ffffff' : boostTint || '#fcfcfc'
+          }
+          emissive={
+            isStepActive ? '#eab308' : hovered ? '#fde047' : boostGlow || '#000000'
+          }
+          emissiveIntensity={
+            isStepActive ? 0.7 : hovered ? 0.3 : boostGlow ? 0.18 * boost : 0
+          }
         />
       </mesh>
 

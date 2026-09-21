@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal } from '@/components/common/Modal';
-import { SUPER_MONOPOLY_TILES, formatMoneyM } from './superMonopolyData';
+import { SUPER_MONOPOLY_TILES, formatMoneyM, visitMultiplier } from './superMonopolyData';
 import { PropertyOwnership, PlayerRecord } from '@/types/database';
 import { PLAYER_3D_COLORS } from './SuperBoard3D';
 
@@ -64,6 +64,9 @@ export const FlightPickerModal: React.FC<FlightPickerModalProps> = ({
             const salary = passesStart(fromIndex, tile.index);
             const ownerColor = owner ? colourOf(owner) : null;
             const ownerSeat = owner ? players.indexOf(owner) + 1 : null;
+            // Worth knowing before you book the seat: this square charges a
+            // multiple of its rent.
+            const boost = tile.isUtility && owned ? visitMultiplier(owned.visits) : 1;
 
             return (
               <button
@@ -82,12 +85,16 @@ export const FlightPickerModal: React.FC<FlightPickerModalProps> = ({
                   owner
                     ? `${tile.name} · ที่ดินของ ${owner.display_name}${
                         owned && owned.houses > 0 ? ` (สิ่งปลูกสร้าง ${owned.houses})` : ''
-                      }`
+                      }${boost > 1 ? ` · ค่าผ่านทางคูณ x${boost}` : ''}`
                     : `${tile.name}${tile.cost ? ` · ว่าง ${formatMoneyM(tile.cost)}` : ''}`
                 }
                 className={`relative flex flex-col items-center justify-center rounded-md border-2 overflow-hidden transition active:scale-90 ${
                   isHere
                     ? 'bg-[rgb(var(--c-surface-2))] border-[rgb(var(--c-line-strong))] opacity-60 cursor-default'
+                    : boost >= 3
+                    ? 'bg-[rgb(var(--c-berry-soft))] hover:brightness-110'
+                    : boost === 2
+                    ? 'bg-[rgb(var(--c-butter-soft))] hover:brightness-110'
                     : isMine
                     ? 'bg-[rgb(var(--c-mint-soft))] border-[rgb(var(--c-mint))]'
                     : owner
@@ -115,6 +122,12 @@ export const FlightPickerModal: React.FC<FlightPickerModalProps> = ({
                     style={{ backgroundColor: ownerColor || undefined }}
                   >
                     {ownerSeat}
+                  </span>
+                )}
+
+                {boost > 1 && (
+                  <span className="absolute bottom-0 left-0 px-[2px] rounded-tr-[3px] bg-black/70 text-[5px] sm:text-[7px] font-black text-white leading-none">
+                    x{boost}
                   </span>
                 )}
 
@@ -168,7 +181,7 @@ export const FlightPickerModal: React.FC<FlightPickerModalProps> = ({
             )}
 
             <span className="text-[8px] font-bold text-[rgb(var(--c-ink-faint))]">
-              🏁 = บินผ่านจุดเริ่มต้น รับ {formatMoneyM(2)}
+              🏁 = บินผ่านจุดเริ่มต้น รับ {formatMoneyM(2)} · ช่องสีเหลือง/แดง = ค่าผ่านทางถูกคูณ
             </span>
           </div>
         </div>
