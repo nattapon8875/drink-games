@@ -14,6 +14,12 @@ import {
   CHANCE_CARDS,
   drawFromDeck,
   formatMoneyM,
+  HOTEL_TILE_INDICES,
+  UTILITY_TILE_INDICES,
+  maxHousesForVisits,
+  visitMultiplier,
+  MAX_VISIT_MULTIPLIER,
+  INITIAL_CASH_M,
 } from './superMonopolyData';
 import { sfx } from '@/lib/sound';
 import confetti from 'canvas-confetti';
@@ -21,7 +27,6 @@ import { showToast } from '@/lib/alerts';
 import { PenaltyNotice } from './PenaltyModal';
 import { RentReceipt } from './RentReceiptModal';
 
-const INITIAL_CASH_M = 15.0; // 15M starting cash
 // Buying your way out of jail costs a turn's worth of nothing if it is free, and
 // a fortune if it is steep. Half a million is roughly two bare-land rents.
 const JAIL_BAIL_M = 0.5;
@@ -100,12 +105,20 @@ function computeRent(
   allProperties: Record<number, PropertyOwnership>
 ): number {
   if (tile.isUtility) {
-    if (tile.index === 5 || tile.index === 12) {
-      const owned = [5, 12].filter((i) => allProperties[i]?.ownerId === ownership.ownerId).length;
-      return owned >= 2 ? 1.2 : 0.5;
+    // A hotel or a utility cannot be built on, so it earns its keep a different
+    // way: every time the owner lands on it the rent multiplier goes up one,
+    // to a ceiling of x4, and that rides on top of the chain bonus.
+    const boost = visitMultiplier(ownership.visits);
+    if (UTILITY_TILE_INDICES.includes(tile.index)) {
+      const owned = UTILITY_TILE_INDICES.filter(
+        (i) => allProperties[i]?.ownerId === ownership.ownerId
+      ).length;
+      return (owned >= 2 ? 1.2 : 0.5) * boost;
     }
-    const hotels = [4, 15, 25, 26, 35].filter((i) => allProperties[i]?.ownerId === ownership.ownerId).length;
-    return (tile.baseRent || 0.4) * Math.max(1, hotels);
+    const hotels = HOTEL_TILE_INDICES.filter(
+      (i) => allProperties[i]?.ownerId === ownership.ownerId
+    ).length;
+    return (tile.baseRent || 0.4) * Math.max(1, hotels) * boost;
   }
   if (ownership.houses === 1) return tile.rent1House || 0.5;
   if (ownership.houses === 2) return tile.rent2House || 1.2;
@@ -324,6 +337,11 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   const gameLogsRef = useRef(gameLogs);
   gameLogsRef.current = gameLogs;
 
+  // Closing the card has to judge ownership on the live board: a purchase made
+  // moments earlier must not be reported as a refusal.
+  const propertiesRef = useRef(properties);
+  propertiesRef.current = properties;
+
   const addLog = useCallback(
     (text: string, color?: string, currentLogs?: Array<{ text: string; time: string; color?: string }>) => {
       const time = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
@@ -430,6 +448,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
           const updatedJail = { ...inJailTurns, [currentTurnPlayer.id]: 0 };
           const updatedRest = { ...restTurns, [currentTurnPlayer.id]: 0 };
           const updatedFlights = { ...pendingFlights, [currentTurnPlayer.id]: false };
+          // Only set when the landing changed the land itself - a visit counted
+          // or, later, a purchase.
+          let updatedProperties: Record<number, PropertyOwnership> | null = null;
           let updatedChestDeck: string[] | undefined;
           let updatedChanceDeck: string[] | undefined;
           // Everyone should see what was drawn, not just the person who drew it
@@ -461,39 +482,41 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                 setActivePropertyModal(targetTile);
                 requiresUserModalAction = true;
               } else if (ownership.ownerId === currentTurnPlayer.id) {
-                // OWN PROPERTY -> SHOW BUILD MODAL. Bots have always upgraded on
-                // landing; humans had no branch here at all, so they could never
-                // build a house anywhere in the game.
+                // Landing on your own land is what unlocks building: the first
+                // visit puts up two houses at once, the second adds the third,
+                // the third buys the hotel. A hotel or a utility cannot be built
+                // on, so the visit raises its rent multiplier instead.
+                const visits = (ownership.visits || 0) + 1;
+                updatedProperties = {
+                  ...properties,
+                  [finalPos]: { ...ownership, visits },
+                };
                 sfx.playSuccess();
-                newLogs = addLog(
-                  `🏡 ${currentTurnPlayer.display_name} เดินมาตกที่ดินของตัวเอง [${targetTile.name}] ➜ สามารถพัฒนาต่อได้`,
-                  '#06b6d4',
-                  newLogs
-                );
+                if (targetTile.isUtility) {
+                  const boost = visitMultiplier(visits);
+                  newLogs = addLog(
+                    `🏨 ${currentTurnPlayer.display_name} แวะกิจการของตัวเอง [${targetTile.name}] ➜ ค่าผ่านทางคูณ x${boost}${
+                      boost >= MAX_VISIT_MULTIPLIER ? ' (สูงสุดแล้ว)' : ''
+                    }`,
+                    '#06b6d4',
+                    newLogs
+                  );
+                } else {
+                  const cap = maxHousesForVisits(visits);
+                  newLogs = addLog(
+                    `🏡 ${currentTurnPlayer.display_name} เดินมาตกที่ดินของตัวเอง [${targetTile.name}] (ครั้งที่ ${visits}) ➜ พัฒนาได้ถึง${
+                      cap >= 4 ? 'โรงแรม' : `บ้าน ${cap} หลัง`
+                    }`,
+                    '#06b6d4',
+                    newLogs
+                  );
+                }
                 setActivePropertyModal(targetTile);
                 requiresUserModalAction = true;
               } else if (ownership.ownerId !== currentTurnPlayer.id) {
                 // Pay Rent
                 const owner = players.find((p) => p.id === ownership.ownerId);
-                let rentAmount = targetTile.baseRent || 0.2;
-                if (targetTile.isUtility) {
-                  if (finalPos === 5 || finalPos === 12) {
-                    // Utility: การประปานครหลวง (5) & โรงไฟฟ้านครหลวง (12)
-                    const utilityIndices = [5, 12];
-                    const ownedUtilCount = utilityIndices.filter((uIdx) => properties[uIdx]?.ownerId === ownership.ownerId).length;
-                    rentAmount = ownedUtilCount >= 2 ? 1.2 : 0.5;
-                  } else {
-                    // Hotel chain bonus: count how many hotels (4, 15, 25, 26, 35) this owner owns
-                    const hotelIndices = [4, 15, 25, 26, 35];
-                    const ownedHotelsCount = hotelIndices.filter((hIdx) => properties[hIdx]?.ownerId === ownership.ownerId).length;
-                    rentAmount = (targetTile.baseRent || 0.4) * Math.max(1, ownedHotelsCount);
-                  }
-                } else {
-                  if (ownership.houses === 1) rentAmount = targetTile.rent1House || 0.5;
-                  if (ownership.houses === 2) rentAmount = targetTile.rent2House || 1.2;
-                  if (ownership.houses === 3) rentAmount = targetTile.rent3House || 2.5;
-                  if (ownership.houses === 4) rentAmount = targetTile.rentHotel || 5.0;
-                }
+                const rentAmount = computeRent(targetTile, ownership, properties);
 
                 if (playerCash < rentAmount) {
                   // Cannot cover it in cash: offer the sale, or the exit.
@@ -729,6 +752,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               restTurns: updatedRest,
               pendingFlights: updatedFlights,
               gameLogs: newLogs,
+              ...(updatedProperties ? { properties: updatedProperties } : {}),
               ...(updatedChestDeck ? { chestDeck: updatedChestDeck } : {}),
               ...(updatedChanceDeck ? { chanceDeck: updatedChanceDeck } : {}),
               drawnCard: drawnCardBroadcast,
@@ -920,9 +944,11 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     }
 
     const updatedCash = { ...cash, [currentTurnPlayer.id]: currentMoney - cost };
+    // Buying it is the first visit, which is what lets two houses go up on the
+    // spot instead of waiting for the next lap.
     const updatedProperties = {
       ...properties,
-      [tileIdx]: { ownerId: currentTurnPlayer.id, houses: 0 },
+      [tileIdx]: { ownerId: currentTurnPlayer.id, houses: 0, visits: 1 },
     };
 
     sfx.playSuccess();
@@ -934,13 +960,22 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       '#10b981'
     );
 
-    setActivePropertyModal(null);
-
     await onUpdateGameState({
       cash: updatedCash,
       properties: updatedProperties,
       gameLogs: newLogs,
     });
+
+    // The card stays open on a province: you have just earned the right to put
+    // up two houses, and closing it would make you wait a whole lap for them.
+    const canBuildNow =
+      !activePropertyModal.isUtility && remainingMoney >= (activePropertyModal.houseCost || 0.8);
+    if (canBuildNow) {
+      showToast('ซื้อที่ดินแล้ว — สร้างบ้านได้ทันทีสูงสุด 2 หลัง', 'success');
+      return;
+    }
+
+    setActivePropertyModal(null);
 
     if (isDouble && !isCurrentPlayerInJail && !isCurrentPlayerResting) {
       showToast('🎉 ได้แต้มคู่! คุณมีสิทธิ์ทอยเต๋าต่ออีกรอบ', 'success');
@@ -964,6 +999,19 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     if (!ownership || ownership.ownerId !== currentTurnPlayer.id) return;
 
     const currentHouses = ownership.houses;
+    // How far this visit is allowed to take the land. Two houses on the first
+    // landing, the third on the second, the hotel on the third.
+    const cap = maxHousesForVisits(ownership.visits || 1);
+    if (currentHouses >= cap) {
+      showToast(
+        cap >= 4
+          ? 'ที่ดินนี้พัฒนาถึงขั้นสูงสุดแล้ว'
+          : `รอบนี้สร้างได้ถึง ${cap} หลัง ต้องเดินมาตกที่ดินนี้อีกครั้งจึงจะสร้างต่อได้`,
+        'warning'
+      );
+      return;
+    }
+
     const isUpgradingToHotel = currentHouses === 3;
     const cost = isUpgradingToHotel
       ? activePropertyModal.hotelCost || 2.0
@@ -994,13 +1042,22 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       '#06b6d4'
     );
 
-    setActivePropertyModal(null);
-
     await onUpdateGameState({
       cash: updatedCash,
       properties: updatedProperties,
       gameLogs: newLogs,
     });
+
+    // A first landing is worth two houses, so the card has to survive the first
+    // one. It closes when the visit has nothing left to offer.
+    const nextHouses = currentHouses + 1;
+    const nextCost =
+      nextHouses === 3 ? activePropertyModal.hotelCost || 2.0 : activePropertyModal.houseCost || 0.8;
+    if (nextHouses < cap && remainingMoney >= nextCost) {
+      return;
+    }
+
+    setActivePropertyModal(null);
 
     // Building has to settle the turn the way buying does. The card used to
     // close itself afterwards and the close handler did this - so once the card
@@ -1143,7 +1200,22 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     const destOwnership = properties[destIndex];
     if (!destTile || destTile.type !== 'property') return false;
 
-    if (!destOwnership || destOwnership.ownerId === currentTurnPlayer.id) {
+    // Arriving by air or by card is still arriving: the visit counts the same
+    // as walking here, or flying to your own hotel would be free of charge.
+    if (destOwnership && destOwnership.ownerId === currentTurnPlayer.id) {
+      const visits = (destOwnership.visits || 0) + 1;
+      const bumped = { ...properties, [destIndex]: { ...destOwnership, visits } };
+      const arriveLog = destTile.isUtility
+        ? `🏨 ${currentTurnPlayer.display_name} ${how}มาถึงกิจการของตัวเอง [${destTile.name}] ➜ ค่าผ่านทางคูณ x${visitMultiplier(
+            visits
+          )}`
+        : `🏡 ${currentTurnPlayer.display_name} ${how}มาถึงที่ดินของตัวเอง [${destTile.name}] (ครั้งที่ ${visits})`;
+      await onUpdateGameState({ properties: bumped, gameLogs: addLog(arriveLog, '#06b6d4') });
+      setActivePropertyModal(destTile);
+      return true;
+    }
+
+    if (!destOwnership) {
       setActivePropertyModal(destTile);
       return true;
     }
@@ -1294,7 +1366,13 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
   // Close Active Modal and Auto Advance Turn
   const handleCloseActiveModal = async () => {
-    if (activePropertyModal && canActThisTurn) {
+    // The card now stays open after a purchase so the two houses a first visit
+    // is worth can go up. Closing it is therefore not always a refusal - only
+    // log the skip when the land really is not ours.
+    const alreadyMine =
+      activePropertyModal &&
+      propertiesRef.current[activePropertyModal.index]?.ownerId === currentTurnPlayer?.id;
+    if (activePropertyModal && canActThisTurn && !alreadyMine) {
       const pCash = cash[currentTurnPlayer.id] ?? 0;
       const skipLog = addLog(
         `⏭️ ${currentTurnPlayer.display_name} เลือก [ไม่ซื้อ / ข้ามที่ดิน] [${activePropertyModal.name}] (เงินคงเหลือ ${formatMoneyM(pCash)})`,
@@ -1432,6 +1510,39 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
         let botRestState = { ...restTurns };
         let botFlightState = { ...pendingFlights };
         let botBankrupted = false;
+
+        // Puts up as much as this visit allows and the wallet can stand, and
+        // reports it as one line so the feed does not get three in a row.
+        const botBuildUpTo = (
+          tileIndex: number,
+          tile: SuperPropertyTile,
+          visits: number
+        ): { log: string | null } => {
+          // A hotel or a utility is never built on - it earns its multiplier by
+          // being visited instead.
+          if (tile.isUtility) return { log: null };
+          const cap = maxHousesForVisits(visits);
+          let built = 0;
+          let spent = 0;
+          for (;;) {
+            const held = botProperties[tileIndex];
+            if (!held || held.houses >= cap) break;
+            const cost = held.houses === 3 ? tile.hotelCost || 2.0 : tile.houseCost || 0.8;
+            if (botCash <= cost * 1.5) break;
+            botCash -= cost;
+            spent += cost;
+            built++;
+            botProperties[tileIndex] = { ...held, houses: held.houses + 1 };
+          }
+          if (!built) return { log: null };
+          const houses = botProperties[tileIndex].houses;
+          const what = houses === 4 ? 'โรงแรมหรู' : `บ้านรวม ${houses} หลัง`;
+          return {
+            log: `🏨 🤖 ${currentTurnPlayer.display_name} สร้าง${what} บน [${tile.name}] (${formatMoneyM(
+              spent
+            )}) ➔ เงินเหลือ ${formatMoneyM(botCash)}`,
+          };
+        };
 
         while (shouldRollAgain && rollsThisTurn < 2 && isMounted) {
           rollsThisTurn++;
@@ -1610,12 +1721,17 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               // Bot buys property
               botCash -= targetTile.cost;
               updatedCash[turnPlayerId] = botCash;
-              botProperties[finalPos] = { ownerId: turnPlayerId, houses: 0 };
+              botProperties[finalPos] = { ownerId: turnPlayerId, houses: 0, visits: 1 };
               botTurnLogs = addLog(
                 `🏡 🤖 ${currentTurnPlayer.display_name} ตกลง [ซื้อที่ดิน] [${targetTile.name}] (${formatMoneyM(targetTile.cost)}) ➔ เงินเหลือ ${formatMoneyM(botCash)}`,
                 '#10b981',
                 botTurnLogs
               );
+              // Buying it counts as the first visit, so the bot may raise two
+              // houses right away, the same as a player.
+              const built = botBuildUpTo(finalPos, targetTile, 1);
+              if (built.log) botTurnLogs = addLog(built.log, '#06b6d4', botTurnLogs);
+              updatedCash[turnPlayerId] = botCash;
             } else if (!ownership && targetTile.cost) {
               // Bot skips buying!
               botTurnLogs = addLog(
@@ -1623,42 +1739,29 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                 '#9ca3af',
                 botTurnLogs
               );
-            } else if (ownership && ownership.ownerId === turnPlayerId && !targetTile.isUtility && ownership.houses < 4) {
-              // Bot upgrades house
-              const cost = ownership.houses === 3 ? (targetTile.hotelCost || 2.0) : (targetTile.houseCost || 0.8);
-              if (botCash > cost * 1.5) {
-                botCash -= cost;
-                updatedCash[turnPlayerId] = botCash;
-                botProperties[finalPos] = { ...ownership, houses: ownership.houses + 1 };
-                const upgName = ownership.houses === 3 ? 'โรงแรมหรู' : `บ้านหลังที่ ${ownership.houses + 1}`;
+            } else if (ownership && ownership.ownerId === turnPlayerId) {
+              // The bot plays the visit rules a player does: the landing counts,
+              // and it buys as much as this visit and its wallet allow.
+              const visits = (ownership.visits || 0) + 1;
+              botProperties[finalPos] = { ...ownership, visits };
+              if (targetTile.isUtility) {
+                const boost = visitMultiplier(visits);
                 botTurnLogs = addLog(
-                  `🏨 🤖 ${currentTurnPlayer.display_name} สร้าง${upgName} บน [${targetTile.name}] (${formatMoneyM(cost)}) ➔ เงินเหลือ ${formatMoneyM(botCash)}`,
+                  `🏨 🤖 ${currentTurnPlayer.display_name} แวะกิจการของตัวเอง [${targetTile.name}] ➜ ค่าผ่านทางคูณ x${boost}${
+                    boost >= MAX_VISIT_MULTIPLIER ? ' (สูงสุดแล้ว)' : ''
+                  }`,
                   '#06b6d4',
                   botTurnLogs
                 );
+              } else {
+                const built = botBuildUpTo(finalPos, targetTile, visits);
+                if (built.log) botTurnLogs = addLog(built.log, '#06b6d4', botTurnLogs);
+                updatedCash[turnPlayerId] = botCash;
               }
             } else if (ownership && ownership.ownerId !== turnPlayerId) {
               // Bot pays rent
               const owner = players.find((p) => p.id === ownership.ownerId);
-              let rent = targetTile.baseRent || 0.2;
-              if (targetTile.isUtility) {
-                if (finalPos === 5 || finalPos === 12) {
-                  // Utility: การประปานครหลวง (5) & โรงไฟฟ้านครหลวง (12)
-                  const utilityIndices = [5, 12];
-                  const ownedUtilCount = utilityIndices.filter((uIdx) => botProperties[uIdx]?.ownerId === ownership.ownerId).length;
-                  rent = ownedUtilCount >= 2 ? 1.2 : 0.5;
-                } else {
-                  // Hotel chain bonus: count how many hotels (4, 15, 25, 26, 35) this owner owns
-                  const hotelIndices = [4, 15, 25, 26, 35];
-                  const ownedHotelsCount = hotelIndices.filter((hIdx) => botProperties[hIdx]?.ownerId === ownership.ownerId).length;
-                  rent = (targetTile.baseRent || 0.4) * Math.max(1, ownedHotelsCount);
-                }
-              } else {
-                if (ownership.houses === 1) rent = targetTile.rent1House || 0.5;
-                if (ownership.houses === 2) rent = targetTile.rent2House || 1.2;
-                if (ownership.houses === 3) rent = targetTile.rent3House || 2.5;
-                if (ownership.houses === 4) rent = targetTile.rentHotel || 5.0;
-              }
+              const rent = computeRent(targetTile, ownership, botProperties);
 
               if (botCash < rent) {
                 // Same choice a player gets, taken without asking: sell what it
@@ -1756,12 +1859,29 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                 if (!destOwnership && destTile.cost && botCash > destTile.cost * 1.3) {
                   botCash -= destTile.cost;
                   updatedCash[turnPlayerId] = botCash;
-                  botProperties[card.teleportToIndex] = { ownerId: turnPlayerId, houses: 0 };
+                  botProperties[card.teleportToIndex] = { ownerId: turnPlayerId, houses: 0, visits: 1 };
                   botTurnLogs = addLog(
                     `🏡 🤖 ${currentTurnPlayer.display_name} วาร์ปมาแล้วซื้อที่ดิน [${destTile.name}] (${formatMoneyM(destTile.cost)}) \u279c เงินเหลือ ${formatMoneyM(botCash)}`,
                     '#22c55e',
                     botTurnLogs
                   );
+                } else if (destOwnership && destOwnership.ownerId === turnPlayerId) {
+                  // Warping onto its own land counts as a visit too.
+                  const visits = (destOwnership.visits || 0) + 1;
+                  botProperties[card.teleportToIndex] = { ...destOwnership, visits };
+                  if (destTile.isUtility) {
+                    botTurnLogs = addLog(
+                      `🏨 🤖 ${currentTurnPlayer.display_name} วาร์ปมาถึงกิจการของตัวเอง [${destTile.name}] ➜ ค่าผ่านทางคูณ x${visitMultiplier(
+                        visits
+                      )}`,
+                      '#06b6d4',
+                      botTurnLogs
+                    );
+                  } else {
+                    const built = botBuildUpTo(card.teleportToIndex, destTile, visits);
+                    if (built.log) botTurnLogs = addLog(built.log, '#06b6d4', botTurnLogs);
+                    updatedCash[turnPlayerId] = botCash;
+                  }
                 } else if (destOwnership && destOwnership.ownerId !== turnPlayerId) {
                   const destOwner = players.find((pl) => pl.id === destOwnership.ownerId);
                   const rent = computeRent(destTile, destOwnership, botProperties);

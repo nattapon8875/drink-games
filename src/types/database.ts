@@ -78,6 +78,11 @@ export interface SuperPropertyTile {
 export interface PropertyOwnership {
   ownerId: string;
   houses: number; // 0 = empty land, 1-3 = houses, 4 = hotel
+  // How many times the owner has landed on this square. It drives both house
+  // rules: how far an ordinary province may be built up on this visit, and the
+  // rent multiplier a hotel or a utility has earned. Resets when the land
+  // changes hands.
+  visits?: number;
 }
 
 export interface CardAction {

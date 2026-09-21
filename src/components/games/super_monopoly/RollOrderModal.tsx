@@ -6,6 +6,12 @@ import { Avatar } from '@/components/common/Avatar';
 import { sfx } from '@/lib/sound';
 import confetti from 'canvas-confetti';
 import { Dices, Crown, Sparkles, Trophy, ArrowRight, Zap, CheckCircle2 } from 'lucide-react';
+import {
+  dealStartingProperties,
+  formatMoneyM,
+  INITIAL_CASH_M,
+  SUPER_MONOPOLY_TILES,
+} from './superMonopolyData';
 
 interface RollOrderModalProps {
   isOpen: boolean;
@@ -248,12 +254,40 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
     });
 
     const timeStr = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+
+    // Nobody owns anything for the first few laps, which is most of why a game
+    // used to run long. Everyone starts holding land instead, paid for out of
+    // their opening cash, so there is rent on the board from turn one.
+    const { properties: dealtProperties, spend } = dealStartingProperties(orderedIds);
+    const startingCash: Record<string, number> = { ...(roomGameState?.cash || {}) };
+    orderedIds.forEach((id) => {
+      startingCash[id] = (startingCash[id] ?? INITIAL_CASH_M) - (spend[id] || 0);
+    });
+
+    const dealLogs = sortedPlayers
+      .map((p) => {
+        const mine = Object.entries(dealtProperties)
+          .filter(([, own]) => own.ownerId === p.id)
+          .map(([idx]) => SUPER_MONOPOLY_TILES[Number(idx)]?.name)
+          .filter(Boolean);
+        if (mine.length === 0) return null;
+        return {
+          text: `🎴 [${p.display_name}] ได้ที่ดินตั้งต้น ${mine.join(', ')} (จ่าย ${formatMoneyM(
+            spend[p.id] || 0
+          )} ➔ เงินเหลือ ${formatMoneyM(startingCash[p.id] ?? INITIAL_CASH_M)})`,
+          time: timeStr,
+          color: '#10b981',
+        };
+      })
+      .filter(Boolean) as Array<{ text: string; time: string; color: string }>;
+
     const newLogs = [
       {
         text: `👑 ผลทอยเต๋าตัดสินลำดับ: [${firstPlayer.display_name}] ได้แต้มสูงสุด (${rolls[firstPlayer.id]?.total} แต้ม) เริ่มเดินคนแรก!`,
         time: timeStr,
         color: '#fbbf24',
       },
+      ...dealLogs.reverse(),
       ...(roomGameState?.gameLogs || []),
     ];
 
@@ -270,6 +304,8 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
       await onUpdateGameState({
         roll_order_done: true,
         roll_order_scores: scoreMap,
+        properties: dealtProperties,
+        cash: startingCash,
         gameLogs: newLogs,
         isRolling: false,
         isMoving: false,

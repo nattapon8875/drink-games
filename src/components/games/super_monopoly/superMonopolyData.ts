@@ -704,3 +704,85 @@ export function drawFromDeck(
   const card = cards.find((c) => c.id === drawnId) || cards[0];
   return { card, nextDeck: rest };
 }
+
+// ---------------------------------------------------------------------------
+// House rules that several places have to agree on
+// ---------------------------------------------------------------------------
+
+// The two halves of the ค่าผ่านทาง bonus: the five named hotels chain together,
+// and the waterworks pairs with the power plant.
+export const HOTEL_TILE_INDICES = [4, 15, 25, 26, 35];
+export const UTILITY_TILE_INDICES = [5, 12];
+
+// Ordinary provinces: everything you can actually build a house on.
+export const PROVINCE_TILE_INDICES = SUPER_MONOPOLY_TILES.filter(
+  (t) => t.type === 'property' && !t.isUtility
+).map((t) => t.index);
+
+export const INITIAL_CASH_M = 15.0; // 15M starting cash
+export const STARTING_PROPERTIES_PER_PLAYER = 3;
+export const MAX_VISIT_MULTIPLIER = 4;
+
+// How far a province may be built up on a given visit. Landing on your own land
+// the first time lets you put up two houses at once; the third house waits for
+// your next visit, and the hotel for the one after that.
+export function maxHousesForVisits(visits: number): number {
+  if (visits >= 3) return 4;
+  if (visits >= 2) return 3;
+  return 2;
+}
+
+// A hotel or a utility earns a multiplier instead of houses: x1 the first time
+// its owner lands on it, and one more each visit after, up to x4.
+export function visitMultiplier(visits: number | undefined): number {
+  return Math.min(MAX_VISIT_MULTIPLIER, Math.max(1, visits || 1));
+}
+
+// Every player starts holding land, paid for out of their opening cash, so the
+// board is not a blank sheet for the first three laps. Pure chance made the
+// draws wildly unfair - one player could be handed 11.5M of the 15M they had -
+// so the picks are random but dealt out to keep the bills close together.
+export function dealStartingProperties(
+  playerIds: string[],
+  perPlayer: number = STARTING_PROPERTIES_PER_PLAYER
+): { properties: Record<number, { ownerId: string; houses: number; visits: number }>; spend: Record<string, number> } {
+  const properties: Record<number, { ownerId: string; houses: number; visits: number }> = {};
+  const spend: Record<string, number> = {};
+  playerIds.forEach((id) => {
+    spend[id] = 0;
+  });
+
+  // A big table can run the board out of provinces. Everyone gets the same
+  // number rather than the last seats being dealt nothing.
+  const each = Math.max(
+    0,
+    Math.min(perPlayer, Math.floor(PROVINCE_TILE_INDICES.length / Math.max(1, playerIds.length)))
+  );
+  const needed = playerIds.length * each;
+  const pool = [...PROVINCE_TILE_INDICES];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+
+  // Deal the dearest land first, alternating direction each round, so whoever
+  // took the most expensive square this round picks last in the next one.
+  const picked = pool
+    .slice(0, Math.min(needed, pool.length))
+    .sort((a, b) => (costOf(b) || 0) - (costOf(a) || 0));
+
+  picked.forEach((tileIndex, i) => {
+    const round = Math.floor(i / playerIds.length);
+    const slot = i % playerIds.length;
+    const seat = round % 2 === 0 ? slot : playerIds.length - 1 - slot;
+    const ownerId = playerIds[seat];
+    properties[tileIndex] = { ownerId, houses: 0, visits: 0 };
+    spend[ownerId] += costOf(tileIndex);
+  });
+
+  return { properties, spend };
+}
+
+function costOf(tileIndex: number): number {
+  return SUPER_MONOPOLY_TILES[tileIndex]?.cost || 0;
+}

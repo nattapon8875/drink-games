@@ -219,11 +219,11 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="text-emerald-400 font-bold">2.</span>
-                    <p><strong>สร้างบ้าน:</strong> เมื่อเดินมาตกที่ดินของตนเอง สามารถจ่ายเงินสร้างบ้านเพิ่มได้ (สูงสุด 3 หลัง 🏠🏠🏠) เพื่อเพิ่มค่าเช่า</p>
+                    <p><strong>สร้างได้ตามจำนวนครั้งที่มาตก:</strong> ตกครั้งแรก (รวมตอนซื้อ) สร้างได้เลยสูงสุด <strong className="text-yellow-300">2 หลัง</strong> 🏠🏠 · ตกครั้งที่ 2 สร้างหลังที่ <strong className="text-yellow-300">3</strong> · ตกครั้งที่ 3 อัปเกรดเป็น <strong className="text-rose-300">โรงแรม</strong> 🏨</p>
                   </div>
                   <div className="flex items-start gap-2">
                     <span className="text-emerald-400 font-bold">3.</span>
-                    <p><strong>อัปเกรดเป็นโรงแรม:</strong> เมื่อมีบ้านครบ 3 หลัง และเดินมาตกอีกครั้ง สามารถอัปเกรดเป็นโรงแรมหรู 🏨 เพื่อคิดค่าเช่าสูงสุดในระดับมหาเศรษฐี!</p>
+                    <p><strong>ที่ดินตั้งต้น:</strong> เริ่มเกมทุกคนได้ที่ดินสุ่มคนละ <strong className="text-yellow-300">3 แปลง</strong> และถูกหักเงินตามราคาที่ดินนั้นทันที (แจกแบบคุมให้มูลค่าใกล้เคียงกัน)</p>
                   </div>
                 </div>
               </div>
@@ -247,6 +247,21 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                     <span className="text-sm font-black text-emerald-400">ค่าเช่า 1.2M ทันที!</span>
                   </div>
                 </div>
+              </div>
+
+              {/* Hotels & utilities grow by being visited, not by being built on */}
+              <div className="p-3 rounded-2xl bg-[rgb(var(--c-surface))] border-2 border-rose-700/60 shadow-sm">
+                <h4 className="text-sm font-black text-rose-300 flex items-center gap-2 mb-1.5">
+                  <Building2 className="w-4 h-4 text-rose-400" />
+                  <span>ตัวคูณโรงแรม & สาธารณูปโภค</span>
+                </h4>
+                <p className="text-xs text-amber-100 font-medium leading-relaxed">
+                  โรงแรมทั้ง 5 แห่ง การประปา และโรงไฟฟ้า <strong className="text-rose-300">สร้างบ้านไม่ได้</strong> แต่จะแข็งแกร่งขึ้นเมื่อเจ้าของเดินมาตกเอง —
+                  ตกครั้งแรก <strong className="text-yellow-300">x1</strong> · ครั้งที่ 2 <strong className="text-yellow-300">x2</strong> · สูงสุด <strong className="text-emerald-400">x4</strong>
+                </p>
+                <p className="text-[11px] text-amber-200/80 font-medium leading-relaxed mt-1.5">
+                  ตัวคูณนี้ <strong className="text-emerald-300">คูณซ้อน</strong> กับจำนวนโรงแรมในเครือ (หรือการถือครองประปา+ไฟฟ้าครบคู่) เช่น ถือโรงแรม 3 แห่ง และมาตกเองครบ 4 ครั้ง = ค่าผ่านทาง x12
+                </p>
               </div>
             </div>
           )}

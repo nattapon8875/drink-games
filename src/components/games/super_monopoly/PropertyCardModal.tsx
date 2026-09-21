@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { SuperPropertyTile, PropertyOwnership } from '@/types/database';
-import { formatMoneyM } from './superMonopolyData';
+import {
+  formatMoneyM,
+  maxHousesForVisits,
+  visitMultiplier,
+  MAX_VISIT_MULTIPLIER,
+} from './superMonopolyData';
 import { Modal } from '@/components/common/Modal';
 import { Home, Building2, Shield, Check, X, Wallet, Coins } from 'lucide-react';
 
@@ -39,6 +44,13 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
   const houses = ownership?.houses || 0;
   const hasHotel = houses === 4;
 
+  // Building is rationed by how many times the owner has landed here: two
+  // houses on the first visit, the third on the second, the hotel on the third.
+  const visits = ownership?.visits || 0;
+  const buildCap = maxHousesForVisits(visits || 1);
+  const atVisitCap = Boolean(isOwner) && !hasHotel && houses >= buildCap;
+  const boost = visitMultiplier(visits);
+
   // Buying and building close the card themselves and decide what happens to
   // the turn. Calling onClose as well ran the skip branch on top of the
   // purchase: the feed showed "did not buy" right after "bought", with the cash
@@ -64,7 +76,7 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
 
   const canAffordLand = tile.cost ? currentCash >= tile.cost : false;
   const houseCost = houses === 3 ? (tile.hotelCost || 2.0) : (tile.houseCost || 0.8);
-  const canAffordHouse = hasHotel ? false : currentCash >= houseCost;
+  const canAffordHouse = hasHotel || atVisitCap ? false : currentCash >= houseCost;
 
   const remainingAfterBuy = tile.cost ? currentCash - tile.cost : currentCash;
   const remainingAfterBuild = currentCash - houseCost;
@@ -272,6 +284,12 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
                   1.20M 🔥
                 </span>
               </div>
+              <div className="flex justify-between items-center text-amber-100 font-bold border-t border-yellow-700/60 pt-1.5">
+                <span className="text-yellow-300">เจ้าของมาตกเองแต่ละครั้ง:</span>
+                <span className="font-mono text-emerald-400 text-xs text-right">
+                  คูณเพิ่มทีละ x1 (สูงสุด x{MAX_VISIT_MULTIPLIER})
+                </span>
+              </div>
             </div>
           ) : (
             <div className="bg-[rgb(var(--c-sky-soft))] border-2 border-cyan-700/60 rounded-2xl p-3 text-xs space-y-2 shadow-inner">
@@ -289,7 +307,13 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
               <div className="flex justify-between items-center text-amber-100 font-bold border-t border-cyan-800/80 pt-1.5">
                 <span className="text-yellow-300">โบนัสเครือข่ายโรงแรม:</span>
                 <span className="font-mono text-emerald-400 text-xs text-right">
-                  คูณตามจำนวนโรงแรมในเครือที่ครอบครอง (สูงสุด 2.00M) 🔥
+                  คูณตามจำนวนโรงแรมในเครือที่ครอบครอง 🔥
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-amber-100 font-bold border-t border-cyan-800/80 pt-1.5">
+                <span className="text-yellow-300">เจ้าของมาตกเองแต่ละครั้ง:</span>
+                <span className="font-mono text-emerald-400 text-xs text-right">
+                  คูณเพิ่มทีละ x1 (สูงสุด x{MAX_VISIT_MULTIPLIER})
                 </span>
               </div>
             </div>
@@ -411,8 +435,24 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
                 </span>
               </button>
             ) : tile.isUtility ? (
-              <div className="flex-1 py-2.5 text-center text-xs font-bold text-cyan-300 bg-[rgb(var(--c-sky-soft))] rounded-xl border border-cyan-700/60">
-                ⚡ คุณเป็นเจ้าของกิจการนี้แล้ว (ไม่สามารถสร้างบ้านได้)
+              <div className="flex-1 py-2.5 text-center text-[11px] font-bold text-cyan-300 bg-[rgb(var(--c-sky-soft))] rounded-xl border border-cyan-700/60 leading-tight">
+                ⚡ กิจการนี้สร้างบ้านไม่ได้ — ค่าผ่านทางคูณ{' '}
+                <span className="text-yellow-300 font-black">x{boost}</span>
+                <br />
+                <span className="text-[10px] text-cyan-200/80 font-normal">
+                  {boost >= MAX_VISIT_MULTIPLIER
+                    ? `ตัวคูณสูงสุดแล้ว (x${MAX_VISIT_MULTIPLIER})`
+                    : `มาตกอีกครั้งจะเพิ่มเป็น x${boost + 1}`}
+                </span>
+              </div>
+            ) : atVisitCap ? (
+              <div className="flex-1 py-2 text-center text-[11px] font-bold text-amber-300 bg-[rgb(var(--c-surface-2))] rounded-xl border border-[rgb(var(--c-surface-3))] leading-tight">
+                🔒 รอบนี้สร้างครบ {houses} หลังแล้ว
+                <br />
+                <span className="text-[10px] text-amber-200/80 font-normal">
+                  ต้องเดินมาตกที่ดินนี้อีกครั้งจึงจะสร้าง
+                  {houses >= 3 ? 'โรงแรม' : `หลังที่ ${houses + 1}`}ได้
+                </span>
               </div>
             ) : !hasHotel ? (
               <button
@@ -444,7 +484,7 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
               onClick={onClose}
               className="wood-btn-brown px-5 py-3 rounded-xl font-bold text-xs sm:text-sm text-amber-200 border border-[rgb(var(--c-surface-3))]"
             >
-              ข้าม / ปิด
+              {isOwnedByMe ? 'พอแล้ว / จบตา' : 'ข้าม / ปิด'}
             </button>
           </div>
         )}
