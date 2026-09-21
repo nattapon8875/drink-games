@@ -6,6 +6,7 @@ import { useSuperMonopolyEngine } from './useSuperMonopolyEngine';
 import { SuperBoard } from './SuperBoard';
 import { SuperBoard3D, PLAYER_3D_COLORS } from './SuperBoard3D';
 import { PropertyCardModal } from './PropertyCardModal';
+import { StartingHandModal } from './StartingHandModal';
 import { ChanceChestModal } from './ChanceChestModal';
 import { PenaltyModal } from './PenaltyModal';
 import { RentReceiptModal } from './RentReceiptModal';
@@ -122,6 +123,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     handleCloseActiveModal,
     orderedPlayers,
     rollOrderDone,
+    startingDeal,
   } = useSuperMonopolyEngine(props);
 
   const [inspectTile, setInspectTile] = useState<SuperPropertyTile | null>(null);
@@ -235,6 +237,35 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     : null;
 
   // A fresh arrow here on every render would defeat the memo on both boards.
+  // The opening hand is worth reading once, and only once: a refresh mid-game
+  // should not push the board aside to tell you what you already know.
+  const startingHandKey = startingDeal ? `superStartHand:${room.code}:${startingDeal.at}` : null;
+  const [startingHandSeen, setStartingHandSeen] = useState(true);
+
+  useEffect(() => {
+    if (!startingHandKey) return;
+    try {
+      setStartingHandSeen(localStorage.getItem(startingHandKey) === '1');
+    } catch {
+      // blocked storage just means it shows again
+      setStartingHandSeen(false);
+    }
+  }, [startingHandKey]);
+
+  const showStartingHand = Boolean(
+    startingDeal && rollOrderDone && !startingHandSeen && currentPlayer && startingDeal.hands[currentPlayer.id]
+  );
+
+  const dismissStartingHand = useCallback(() => {
+    setStartingHandSeen(true);
+    if (!startingHandKey) return;
+    try {
+      localStorage.setItem(startingHandKey, '1');
+    } catch {
+      // the dismissal still holds for this visit
+    }
+  }, [startingHandKey]);
+
   const handleTileClick = useCallback((tile: SuperPropertyTile) => {
     setInspectTile(tile);
   }, []);
@@ -1004,6 +1035,14 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
       </Modal>
 
       {/* Where to? */}
+      <StartingHandModal
+        isOpen={showStartingHand}
+        deal={startingDeal}
+        players={players}
+        myId={currentPlayer?.id || null}
+        onClose={dismissStartingHand}
+      />
+
       <FlightPickerModal
         isOpen={showFlightPicker}
         fromIndex={currentPlayer ? positions[currentPlayer.id] ?? 0 : 0}

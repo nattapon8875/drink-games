@@ -31,6 +31,7 @@ import confetti from 'canvas-confetti';
 import { showToast } from '@/lib/alerts';
 import { PenaltyNotice } from './PenaltyModal';
 import { RentReceipt } from './RentReceiptModal';
+import { StartingDeal } from './StartingHandModal';
 
 // Buying your way out of jail costs a turn's worth of nothing if it is free, and
 // a fortune if it is steep. Half a million is roughly two bare-land rents.
@@ -164,6 +165,8 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   // Which side of the board is paying its holder a bonus right now. Only ever
   // one, and it moves to whoever completed a side most recently.
   const rowBonus: RowBonus | null = rawState.rowBonus || null;
+  // The hands dealt at the start, kept so the summary can be shown once.
+  const startingDeal: StartingDeal | null = rawState.startingDeal || null;
   // Out of the game: no token, no turn, and their land is back on the market.
   const bankrupt: Record<string, boolean> = rawState.bankrupt || {};
   const winnerId: string | null = (rawState.winnerId as string | null) || null;
@@ -2350,6 +2353,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     handleServeJailTurn,
     bankrupt,
     rowBonus,
+    startingDeal,
     winnerId,
     debtDecision,
     handleMortgageAndPay,

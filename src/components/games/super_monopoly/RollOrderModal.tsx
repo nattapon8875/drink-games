@@ -239,6 +239,10 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
   // Finalize Roll Order and transition into Game Turn 1
   const finalizeRollOrder = async () => {
     if (!isHost || finalizedRef.current || !allRolled) return;
+    // A refresh remounts this component with finalizedRef cleared, and the
+    // countdown is still at zero - so without this the starting hands were
+    // dealt a second time, mid-game, charging everyone for land all over again.
+    if (roomGameState?.roll_order_done) return;
     finalizedRef.current = true;
 
     const orderedIds = sortedPlayers.map((p) => p.id);
@@ -284,6 +288,26 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
       })
       .filter(Boolean) as Array<{ text: string; time: string; color: string }>;
 
+    // Kept so every player can be shown the hand they were dealt and what it
+    // cost them - the feed line scrolls away, this does not.
+    const startingDeal = {
+      at: Date.now(),
+      hands: Object.fromEntries(
+        sortedPlayers.map((p) => [
+          p.id,
+          {
+            tiles: Object.entries(dealtProperties)
+              .filter(([, own]) => own.ownerId === p.id)
+              .map(([idx]) => Number(idx))
+              .sort((a, b) => a - b),
+            spend: spend[p.id] || 0,
+            cashBefore: (roomGameState?.cash?.[p.id] ?? INITIAL_CASH_M) as number,
+            cashAfter: startingCash[p.id] ?? INITIAL_CASH_M,
+          },
+        ])
+      ),
+    };
+
     // The opening hand can already hand somebody a side of the board.
     const openingRowBonus = recomputeRowBonus(dealtProperties, null);
     const rowLog = openingRowBonus
@@ -325,6 +349,7 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
         roll_order_done: true,
         roll_order_scores: scoreMap,
         properties: dealtProperties,
+        startingDeal,
         rowBonus: openingRowBonus,
         cash: startingCash,
         gameLogs: newLogs,
@@ -338,6 +363,7 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
 
   // Trigger finalize when countdown reaches 0
   useEffect(() => {
+    if (!isOpen || roomGameState?.roll_order_done) return;
     if (countdown === 0 && !finalizedRef.current) {
       const firstHuman = players.find(
         (p) => p.line_user_id !== 'bot' && !p.id.startsWith('bot-')
@@ -347,7 +373,7 @@ export const RollOrderModal: React.FC<RollOrderModalProps> = ({
         finalizeRollOrder();
       }
     }
-  }, [countdown, isHost, currentPlayer, players]);
+  }, [countdown, isHost, currentPlayer, players, isOpen, roomGameState?.roll_order_done]);
 
   if (!isOpen) return null;
 
