@@ -18,6 +18,7 @@ import {
   Crown,
   Bot,
   Trash2,
+  Share2,
 } from 'lucide-react';
 import { BuffaloLogo } from '@/components/common/BuffaloLogo';
 
@@ -205,7 +206,7 @@ export default function SuperPlayPage() {
               title="กลับไปหน้าห้องรอ"
             >
               <ArrowLeft className="w-4 h-4 text-amber-400" />
-              <span>กลับห้องรอ (Host)</span>
+              <span className="hidden sm:inline">กลับห้องรอ (Host)</span>
             </button>
           ) : (
             <button
@@ -214,7 +215,7 @@ export default function SuperPlayPage() {
               title="ออกจากเกม"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>ออกเกม</span>
+              <span className="hidden sm:inline">ออกเกม</span>
             </button>
           )}
 
@@ -224,7 +225,8 @@ export default function SuperPlayPage() {
               className="text-xs font-bold text-rose-300 hover:text-[rgb(var(--c-ink))] bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] px-3 py-1.5 rounded-xl shadow-sm transition"
               title="ยุบห้องและจบเกมสำหรับทุกคน"
             >
-              ยุบห้อง
+              <span className="hidden sm:inline">ยุบห้อง</span>
+              <span className="sm:hidden" aria-hidden>✕</span>
             </button>
           )}
         </div>
@@ -240,7 +242,8 @@ export default function SuperPlayPage() {
             title="ดูรายชื่อผู้เล่นในห้อง"
           >
             <Users className="w-3.5 h-3.5 text-amber-400" />
-            <span>{players.length} คน</span>
+            <span>{players.length}</span>
+            <span className="hidden sm:inline">คน</span>
           </button>
 
           {/* Room Code & Share Discord Modal Button */}
@@ -251,8 +254,8 @@ export default function SuperPlayPage() {
             title="คลิกเพื่อคัดลอกรหัส ลิงก์ และดูขั้นตอนการเข้า Discord"
           >
             <BuffaloLogo className="w-4 h-4" />
-            <span>SUPER: {roomCode}</span>
-            <span className="text-[10px] text-amber-300/80 bg-amber-950 px-1.5 py-0.5 rounded border border-amber-600/40">แชร์/วิธีเข้า</span>
+            <span>{roomCode}</span>
+            <Share2 className="w-3.5 h-3.5 text-amber-400" />
           </button>
         </div>
       </div>

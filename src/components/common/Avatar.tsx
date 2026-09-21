@@ -48,10 +48,13 @@ export const Avatar: React.FC<AvatarProps> = ({
       className={clsx('relative inline-flex flex-shrink-0', className)}
       style={{ width: pixelMap[size], height: pixelMap[size] }}
     >
-      {/* RPG Golden Ribbon Crown if it's player's turn */}
+      {/* Whose turn it is: an arrow pointing down at them, nothing to read */}
       {isTurn && (
-        <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-20 px-1 py-0.2 rounded-full bg-mint text-[8px] font-black text-[rgb(var(--c-on-accent))] shadow-md border border-[rgb(var(--c-mint-deep))] animate-bounce">
-          👑ตาคุณ
+        <span
+          aria-label="ถึงตาผู้เล่นคนนี้"
+          className="absolute -top-2 left-1/2 -translate-x-1/2 z-20 text-mint text-[11px] leading-none drop-shadow animate-bounce"
+        >
+          ▼
         </span>
       )}
 

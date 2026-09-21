@@ -241,11 +241,13 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
       <div className="w-full flex items-center justify-between bg-[rgb(var(--c-surface))]/90 border-2 border-[rgb(var(--c-surface-3))] rounded-2xl px-4 py-2 mb-2 shadow-xl">
         <div className="flex items-center gap-2">
           <span className="text-xl">🐃</span>
-          <div>
-            <h2 className="text-sm sm:text-base font-black rpg-text-gold tracking-wide">
+          {/* On a phone the full title wrapped over five lines and pushed the
+              board off the screen; the room code is already in the bar above. */}
+          <div className="min-w-0 hidden sm:block">
+            <h2 className="text-sm sm:text-base font-black rpg-text-gold tracking-wide truncate">
               ซุปเปอร์เศรษฐี คลาสสิก • SUPER MONOPOLY
             </h2>
-            <p className="text-[10px] text-amber-300/80 font-bold">
+            <p className="text-[10px] text-amber-300/80 font-bold truncate">
               ห้อง: <span className="font-mono text-yellow-400">{room.code}</span> | ทุนเริ่มต้น 15.00M | ลูกเต๋า 2 ลูก 🎲🎲
             </p>
           </div>
@@ -261,7 +263,6 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           >
             <BookOpen className="w-4 h-4 text-yellow-300" />
             <span className="hidden sm:inline">กติกาการเล่น</span>
-            <span className="sm:hidden">กติกา</span>
           </button>
 
           <div className="flex items-center gap-2 bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-2))] px-3 py-1 rounded-xl">
@@ -271,7 +272,9 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               size="sm"
               isTurn={true}
             />
-            <div className="text-right">
+            {/* The arrow over the avatar already says whose turn it is, so the
+                caption is only worth its space on a wider screen. */}
+            <div className="text-right hidden sm:block">
               <span className="text-[10px] text-amber-400/80 block leading-tight font-bold">
                 {isMyTurn ? 'ตาของคุณ!' : isBotTurn ? 'บอทกำลังเล่น:' : 'ตากำลังเล่น:'}
               </span>
@@ -509,47 +512,56 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               scattered around the board - the running order is the thing people
               actually want to read off it. */}
           {is3DMode && (
-            <div className="absolute top-2 left-2 z-20 flex flex-col items-stretch gap-1 pointer-events-none max-w-[40%]">
+            // On a phone this used to float over the board and cover the
+            // squares behind it. It is a strip above the board there, and only
+            // returns to the corner of the board where there is room for it.
+            <div className="mb-1 flex flex-wrap gap-1 lg:mb-0 lg:absolute lg:top-2 lg:left-2 lg:z-20 lg:flex-col lg:items-stretch lg:pointer-events-none lg:max-w-[40%]">
           {orderedPlayers.slice(0, 8).map((seatPlayer, seatIdx) => {
               const colour = PLAYER_3D_COLORS[players.indexOf(seatPlayer) % PLAYER_3D_COLORS.length];
               const isSeatTurn = seatPlayer.id === currentTurnPlayer?.id;
               const seatCash = cash[seatPlayer.id] ?? 15;
               const seatJailed = (inJailTurns[seatPlayer.id] ?? 0) > 0;
+              const seatProps = getPlayerPropertiesCount(seatPlayer.id);
+              const seatHouses = Object.values(properties).filter(
+                (pr) => pr.ownerId === seatPlayer.id && pr.houses > 0
+              ).length;
 
               return (
                 <div
                   key={seatPlayer.id}
-                  className={`rounded-xl border-2 bg-[rgb(var(--c-bg-deep))]/95 px-2 py-1 shadow-xl ${
-                    isSeatTurn ? 'border-yellow-300' : 'border-white/15'
+                  className={`rounded-xl border-2 bg-[rgb(var(--c-surface))]/95 px-1.5 py-1 shadow-lg ${
+                    isSeatTurn ? 'border-mint' : 'border-[rgb(var(--c-line))]'
                   }`}
                 >
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1">
+                    {isSeatTurn && <span className="text-mint text-[9px] leading-none">▶</span>}
                     <span
-                      className="w-2.5 h-2.5 rounded-full shrink-0 border border-white/50"
+                      className="w-2 h-2 rounded-full shrink-0 border border-[rgb(var(--c-line-strong))]"
                       style={{ backgroundColor: colour }}
                     />
-                    <span className="text-[10px] font-black text-amber-50 truncate max-w-[84px]">
+                    <span className="text-[10px] font-black text-amber-50 truncate max-w-[72px]">
                       {seatPlayer.display_name}
                     </span>
                     {seatPlayer.id === room.host_id && <span className="text-[9px]">👑</span>}
+                    {seatJailed && <span className="text-[9px]">⛓️</span>}
                   </div>
 
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[9px] font-black text-amber-300/85 shrink-0">
-                      ที่ {seatIdx + 1}
-                    </span>
+                  <div className="flex items-center gap-2">
                     <span
                       className={`text-[11px] font-black font-mono ${
-                        seatCash <= 0 ? 'text-red-400' : 'text-emerald-300'
+                        bankrupt[seatPlayer.id] ? 'text-rose-400' : 'text-emerald-300'
                       }`}
                     >
-                      {bankrupt[seatPlayer.id] ? 'ออกแล้ว' : formatMoneyM(seatCash)}
+                      {bankrupt[seatPlayer.id] ? '💀' : formatMoneyM(seatCash)}
+                    </span>
+                    <span
+                      className="text-[9px] font-black text-amber-300/85 flex items-center gap-0.5"
+                      title={`ที่ดิน ${seatProps} แปลง · มีสิ่งปลูกสร้าง ${seatHouses} แปลง`}
+                    >
+                      🏠 {seatProps}
+                      {seatHouses > 0 && <span className="text-sky-300">· 🏨 {seatHouses}</span>}
                     </span>
                   </div>
-
-                  {seatJailed && (
-                    <div className="text-[9px] font-black text-rose-300 leading-tight">⛓️</div>
-                  )}
                 </div>
               );
           })}

@@ -77,7 +77,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
     // Same height as the 3D board so switching modes does not resize the page.
     // The grid has to stay square - eleven columns of eleven - so the width
     // follows the height, centred in whatever space the column has.
-    <div className="relative mx-auto max-w-full w-full aspect-square sm:w-auto sm:h-[560px] lg:h-[640px] bg-gradient-to-b from-[rgb(var(--c-surface-2))] via-[rgb(var(--c-surface-2))] to-[rgb(var(--c-surface))] border-4 border-[rgb(var(--c-line))] rounded-3xl p-1.5 sm:p-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.85)] select-none">
+    <div className="printed-board relative mx-auto max-w-full w-full aspect-square sm:w-auto sm:h-[560px] lg:h-[640px] bg-gradient-to-b from-[rgb(var(--c-surface-2))] via-[rgb(var(--c-surface-2))] to-[rgb(var(--c-surface))] border-4 border-[rgb(var(--c-line))] rounded-3xl p-1.5 sm:p-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.85)] select-none">
       {/* 11x11 Grid Container */}
       <div className="grid grid-cols-11 grid-rows-11 w-full h-full gap-[1.5px] sm:gap-[2.5px] relative bg-[rgb(var(--c-bg-deep))] p-1 rounded-2xl border border-yellow-700/40">
         

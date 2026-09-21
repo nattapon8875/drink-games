@@ -362,3 +362,55 @@ body {
 .rpg-corner-tr { top: 8px; right: 8px; border-top: 2px solid rgb(var(--c-mint)); border-right: 2px solid rgb(var(--c-mint)); border-top-right-radius: 6px; }
 .rpg-corner-bl { bottom: 8px; left: 8px; border-bottom: 2px solid rgb(var(--c-mint)); border-left: 2px solid rgb(var(--c-mint)); border-bottom-left-radius: 6px; }
 .rpg-corner-br { bottom: 8px; right: 8px; border-bottom: 2px solid rgb(var(--c-mint)); border-right: 2px solid rgb(var(--c-mint)); border-bottom-right-radius: 6px; }
+
+/* =========================================================
+   PRINTED BOARD
+
+   The 2D board is artwork, not chrome: coloured squares printed on
+   paper, read at a glance. It should look the same under either
+   theme, so inside this scope the colour scales go back to their
+   plain values and stop following the tokens.
+   ========================================================= */
+.printed-board {
+  --c-ink: 28 32 38;
+  --c-ink-soft: 62 68 76;
+  --c-ink-faint: 110 116 124;
+  --c-surface: 255 255 255;
+  --c-surface-2: 246 246 241;
+  --c-surface-3: 233 233 227;
+  --c-line: 201 201 193;
+  --c-line-strong: 160 160 152;
+  --c-on-accent: 255 255 255;
+
+  --c-butter: 245 158 11;
+  --c-butter-deep: 146 64 14;
+  --c-butter-soft: 254 243 199;
+  --c-butter-label: 146 64 14;
+  --c-mint: 16 138 112;
+  --c-mint-deep: 6 95 70;
+  --c-mint-soft: 209 250 229;
+  --c-mint-label: 6 95 70;
+  --c-sky: 14 132 180;
+  --c-sky-deep: 7 89 133;
+  --c-sky-soft: 224 242 254;
+  --c-sky-label: 7 89 133;
+  --c-berry: 190 40 70;
+  --c-berry-deep: 136 19 55;
+  --c-berry-soft: 255 228 230;
+  --c-berry-label: 136 19 55;
+  --c-grape: 124 58 237;
+  --c-grape-deep: 91 33 182;
+  --c-grape-soft: 237 233 254;
+
+  --c-amber-50: 255 251 235;
+  --c-amber-100: 254 243 199;
+  --c-amber-200: 253 230 138;
+  --c-amber-300: 252 211 77;
+  --c-amber-400: 251 191 36;
+  --c-amber-500: 245 158 11;
+  --c-amber-600: 217 119 6;
+  --c-amber-700: 180 83 9;
+  --c-amber-800: 146 64 14;
+  --c-amber-900: 120 53 15;
+  --c-amber-950: 69 26 3;
+}
