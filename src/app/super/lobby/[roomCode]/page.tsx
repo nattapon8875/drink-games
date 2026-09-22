@@ -26,6 +26,20 @@ import {
 } from 'lucide-react';
 import { BuffaloLogo } from '@/components/common/BuffaloLogo';
 
+// A Discord activity is short and fixed, so on a window like that the lobby is
+// one screen with its columns scrolling, rather than a page that runs off the
+// bottom. Wider-but-short windows only: below that the columns stack and the
+// page is meant to scroll. Spelled out in full because Tailwind only generates
+// classes it can see literally in the source.
+const SHORT_PAD =
+  '[@media(max-height:820px)_and_(min-width:1024px)]:h-[100dvh] [@media(max-height:820px)_and_(min-width:1024px)]:overflow-hidden [@media(max-height:820px)_and_(min-width:1024px)]:p-3';
+const SHORT_STACK =
+  '[@media(max-height:820px)_and_(min-width:1024px)]:gap-3 [@media(max-height:820px)_and_(min-width:1024px)]:h-full [@media(max-height:820px)_and_(min-width:1024px)]:min-h-0';
+const SHORT_GRID =
+  '[@media(max-height:820px)_and_(min-width:1024px)]:gap-3 [@media(max-height:820px)_and_(min-width:1024px)]:flex-1 [@media(max-height:820px)_and_(min-width:1024px)]:min-h-0 [@media(max-height:820px)_and_(min-width:1024px)]:items-stretch';
+const SHORT_COL =
+  '[@media(max-height:820px)_and_(min-width:1024px)]:min-h-0 [@media(max-height:820px)_and_(min-width:1024px)]:overflow-y-auto [@media(max-height:820px)_and_(min-width:1024px)]:scrollbar-none';
+
 export default function SuperLobbyPage() {
   const params = useParams();
   const router = useRouter();
@@ -132,8 +146,8 @@ export default function SuperLobbyPage() {
 
   const handleStartGame = async () => {
     if (!isHost || starting) return;
-    if (players.length < 1) {
-      showToast('ต้องมีผู้เล่นอย่างน้อย 1 คน', 'warning');
+    if (players.length < 2) {
+      showToast('ต้องมีผู้เล่นอย่างน้อย 2 คน (ชวนเพื่อน หรือกดเพิ่มบอท AI)', 'warning');
       return;
     }
     setStarting(true);
@@ -199,15 +213,6 @@ export default function SuperLobbyPage() {
     }
   };
 
-  const handleCopyFullMessage = async () => {
-    if (typeof window !== 'undefined') {
-      const url = `${window.location.origin}/super/lobby/${roomCode}`;
-      const message = `🎲 ขอเชิญร่วมวงประลอง "ซุปเปอร์เศรษฐี คลาสสิก"!\n🔑 รหัสห้อง: ${roomCode}\n🔗 ลิงก์เข้าห้อง: ${url}\n(เล่นผ่าน Discord Activity หรือกดเปิดลิงก์บน Browser ได้ทันที)`;
-      await navigator.clipboard.writeText(message);
-      showToast('คัดลอกข้อความชวนเพื่อนเรียบร้อย! นำไปวางในแชท Discord หรือ LINE ได้เลย', 'success');
-    }
-  };
-
   const handleAddBot = async () => {
     if (players.length >= 8) {
       showToast('ผู้เล่นเต็ม 8 คนแล้ว', 'warning');
@@ -251,8 +256,8 @@ export default function SuperLobbyPage() {
   }
 
   return (
-    <div className="w-full flex-1 flex flex-col items-center justify-between p-4 sm:p-8 select-none">
-      <div className="w-full max-w-6xl mx-auto flex flex-col gap-6">
+    <div className={`w-full flex-1 flex flex-col items-center justify-between p-4 sm:p-8 select-none ${SHORT_PAD}`}>
+      <div className={`w-full max-w-6xl mx-auto flex flex-col gap-6 ${SHORT_STACK}`}>
         {/* Top Navbar */}
         <header className="w-full flex items-center justify-between bg-[rgb(var(--c-surface))]/90 border-2 border-[rgb(var(--c-surface-3))] rounded-2xl px-4 py-3 shadow-2xl backdrop-blur-md">
           <div className="flex items-center gap-3">
@@ -327,9 +332,9 @@ export default function SuperLobbyPage() {
         </header>
 
         {/* Main 2-Column Content */}
-        <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className={`w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start ${SHORT_GRID}`}>
           {/* Left Column: Room Settings & Rules Overview (5 cols) */}
-          <div className="lg:col-span-5 flex flex-col gap-4">
+          <div className={`lg:col-span-5 flex flex-col gap-4 ${SHORT_COL}`}>
             {/* Rules & Setup Card */}
             <div className="bg-[rgb(var(--c-surface))]/90 border-2 border-[rgb(var(--c-surface-3))] rounded-2xl p-5 shadow-xl">
               <h2 className="text-sm font-black text-amber-200 flex items-center gap-2 mb-3 border-b border-[rgb(var(--c-surface-2))] pb-2">
@@ -457,29 +462,14 @@ export default function SuperLobbyPage() {
                 </button>
               </div>
 
-              {/* Full Message Button */}
-              <button
-                type="button"
-                onClick={handleCopyFullMessage}
-                className="w-full py-2 rounded-xl bg-[rgb(var(--c-surface))] hover:bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-surface-3))] text-[11px] font-bold text-amber-200 hover:text-[rgb(var(--c-ink))] flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition"
-              >
-                <span>💬 คัดลอกข้อความชวนเพื่อน (รหัส + ลิงก์ + วิธีเข้า)</span>
-              </button>
-
-              {/* Quick Discord Instructions Snippet */}
-              <div className="p-2.5 rounded-xl bg-[rgb(var(--c-surface-2))] border border-[#5865F2]/40 text-[11px] text-[rgb(var(--c-ink))] flex flex-col gap-1">
-                <div className="flex items-center gap-1.5 text-[rgb(var(--c-grape))] font-black">
-                  <span>🚀 เข้าผ่าน Discord:</span>
-                </div>
-                <p className="text-[10px] text-[rgb(var(--c-ink-soft))] leading-relaxed">
-                  เข้าห้องคุยเสียง (Voice) ➔ กดไอคอนรูปจรวด <strong>Start Activity</strong> ➔ เลือก <strong>Drink Games</strong> ➔ ใส่รหัส <span className="font-mono text-yellow-300 font-bold">{roomCode}</span>
-                </p>
-              </div>
+              {/* The long invite message and the printed steps both lived here.
+                  Copying the code or the link covers the same ground, and the
+                  steps are a tap away on "วิธีเข้า Discord" above. */}
             </div>
           </div>
 
           {/* Right Column: Player Roster & Start Control (7 cols) */}
-          <div className="lg:col-span-7 flex flex-col gap-4">
+          <div className={`lg:col-span-7 flex flex-col gap-4 ${SHORT_COL}`}>
             <div className="bg-[rgb(var(--c-surface))]/90 border-2 border-[rgb(var(--c-surface-3))] rounded-2xl p-5 shadow-xl flex flex-col justify-between min-h-[460px]">
               <div>
                 <div className="flex items-center justify-between border-b border-[rgb(var(--c-surface-2))] pb-3 mb-3">
@@ -493,7 +483,7 @@ export default function SuperLobbyPage() {
                 </div>
 
                 {/* Player Cards Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[380px] overflow-y-auto pr-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[380px] [@media(max-height:820px)_and_(min-width:1024px)]:max-h-none overflow-y-auto scrollbar-none pr-1">
                   {players.map((p, idx) => {
                     const isMe = p.id === user?.id;
                     const isPlayerHost = p.id === room.host_id;
@@ -571,15 +561,29 @@ export default function SuperLobbyPage() {
               {/* Bottom Start Game Control */}
               <div className="pt-4 border-t border-[rgb(var(--c-surface-2))] mt-4">
                 {isHost ? (
+                  <>
                   <button
                     type="button"
-                    disabled={starting || players.length === 0}
+                    disabled={starting || players.length < 2}
                     onClick={handleStartGame}
-                    className="wood-btn-gold w-full py-4 rounded-xl font-black text-base flex items-center justify-center gap-3 shadow-2xl active:scale-95 disabled:opacity-50 tracking-wide"
+                    className="wood-btn-gold w-full py-4 rounded-xl font-black text-base flex items-center justify-center gap-3 shadow-2xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed tracking-wide"
+                    title={players.length < 2 ? 'ต้องมีผู้เล่นอย่างน้อย 2 คน' : undefined}
                   >
                     <Play className="w-5 h-5 fill-current" />
-                    <span>{starting ? 'กำลังเข้าสู่กระดาน...' : 'เริ่มเกมซุปเปอร์เศรษฐี!'}</span>
+                    <span>
+                      {starting
+                        ? 'กำลังเข้าสู่กระดาน...'
+                        : players.length < 2
+                        ? 'ต้องมีอย่างน้อย 2 คนถึงจะเริ่มได้'
+                        : 'เริ่มเกมซุปเปอร์เศรษฐี!'}
+                    </span>
                   </button>
+                  {players.length < 2 && (
+                    <p className="mt-2 text-center text-[11px] font-bold text-[rgb(var(--c-ink-faint))]">
+                      ชวนเพื่อนด้วยรหัสห้อง หรือกด “เพิ่มบอท AI” ด้านซ้ายก็ได้
+                    </p>
+                  )}
+                  </>
                 ) : (
                   <div className="py-3.5 px-4 rounded-xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))] flex items-center justify-center gap-2 text-xs font-bold text-amber-300/80 animate-pulse">
                     <Loader2 className="w-4 h-4 animate-spin text-yellow-400" />
