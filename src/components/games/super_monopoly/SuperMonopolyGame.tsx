@@ -64,7 +64,7 @@ function logColor(c?: string): string {
 }
 
 export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
-  const { room, players, currentPlayer, isHost } = props;
+  const { room, players, currentPlayer, isHost, onUpdateGameState, onReturnToLobby } = props;
 
   const {
     dice,
@@ -94,6 +94,8 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     jailNotice,
     handleAcknowledgeJail,
     restNotice,
+    flightNotice,
+    handleAcknowledgeFlight,
     handleAcknowledgeRest,
     gameLogs,
     isCurrentPlayerInJail,
@@ -103,6 +105,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     rollDice,
     handleServeJailTurn,
     bankrupt,
+    bankruptcyNotice,
     rowBonus,
     winnerId,
     debtDecision,
@@ -208,6 +211,58 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
   // Landlords were only told through the log that someone had paid them. This is
   // theirs alone - it is keyed on the receipt's owner, so nobody else sees it.
   const [dismissedReceiptAt, setDismissedReceiptAt] = useState<number | null>(null);
+  // A winner is only declared when exactly one player is left standing, so a
+  // table where the last two went out together ended with no winner, no end
+  // screen and nothing to press at all. The game is over when nobody is left
+  // to play it, whether or not somebody won.
+  const activePlayers = orderedPlayers.filter((p) => !bankrupt[p.id]);
+  const anyBankrupt = Object.values(bankrupt).some(Boolean);
+  const gameOver = Boolean(winnerId) || (anyBankrupt && activePlayers.length <= 1);
+  const endWinner = winnerId || (activePlayers.length === 1 ? activePlayers[0].id : null);
+
+  // The winner card can be put aside to look at the final board.
+  const [endGameDismissed, setEndGameDismissed] = useState(false);
+  useEffect(() => {
+    if (!gameOver) setEndGameDismissed(false);
+  }, [gameOver]);
+
+  // Starting over wipes the finished game rather than leaving its wreckage in
+  // the room: a fresh lobby, not a board that still remembers who went out.
+  const handlePlayAgain = useCallback(async () => {
+    if (!isHost || !onReturnToLobby) return;
+    await onUpdateGameState({
+      positions: {},
+      cash: {},
+      properties: {},
+      inJailTurns: {},
+      restTurns: {},
+      pendingFlights: {},
+      bankrupt: {},
+      rowBonus: null,
+      winnerId: null,
+      startingDeal: null,
+      bankruptcyNotice: null,
+      rentReceipt: null,
+      drawnCard: null,
+      dice: null,
+      gameLogs: [],
+      roll_order_done: false,
+      roll_order_rolls: {},
+      roll_order_scores: {},
+      isRolling: false,
+      isMoving: false,
+      activeStepTileIndex: null,
+      activeStepPlayerId: null,
+    });
+    await onReturnToLobby();
+  }, [isHost, onReturnToLobby, onUpdateGameState]);
+
+  // Everybody at the table should be told who just went out, once.
+  const [dismissedBustAt, setDismissedBustAt] = useState<number | null>(null);
+  const showBust = Boolean(
+    bankruptcyNotice && dismissedBustAt !== bankruptcyNotice.at && !gameOver
+  );
+
   const myReceipt =
     rentReceipt &&
     currentPlayer &&
@@ -712,9 +767,10 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           !activePenaltyModal &&
           !jailNotice &&
           !restNotice &&
+          !flightNotice &&
           !showFlightPicker &&
           !debtDecision &&
-          !winnerId &&
+          !gameOver &&
           !isEndingTurn && (
             <div
               // On the board itself, at the bottom edge - reachable without
@@ -977,11 +1033,11 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
       >
         <div className="flex flex-col gap-3 text-center">
           <span className="text-5xl">🏖️</span>
-          <p className="text-sm font-black text-sky-200">
+          <p className="text-sm font-black text-[rgb(var(--c-sky-label))]">
             คุณเดินมาถึง [{restNotice?.tileName}] ➜ ปลอดภัยจากค่าผ่านทาง แต่ต้องพัก 1 ตา
           </p>
           {restNotice?.wasDouble && (
-            <p className="text-xs font-bold text-sky-300/90 px-3 py-2 rounded-xl bg-sky-500/10 border border-sky-500/40">
+            <p className="text-xs font-bold text-[rgb(var(--c-ink-soft))] px-3 py-2 rounded-xl bg-[rgb(var(--c-sky-soft))] border border-[rgb(var(--c-sky))]">
               แม้จะทอยได้แต้มคู่ ก็ไม่ได้ทอยต่อ เพราะต้องพักที่จุดนี้ จบตานี้ทันที
             </p>
           )}
@@ -998,6 +1054,36 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
         </div>
       </Modal>
 
+      {/* Landing on the airport books the seat; it is taken next turn. Saying so
+          is the whole point - the map used to flash open here and disappear. */}
+      <Modal
+        isOpen={Boolean(flightNotice)}
+        onClose={handleAcknowledgeFlight}
+        title="✈️ ถึงสนามบินแล้ว"
+      >
+        <div className="flex flex-col gap-3 text-center">
+          <span className="text-5xl">✈️</span>
+          <p className="text-sm font-black text-[rgb(var(--c-sky-label))]">
+            คุณเดินมาถึง [{flightNotice?.tileName}] ➜ จองตั๋วเรียบร้อย
+          </p>
+          <p className="text-xs font-bold text-[rgb(var(--c-ink-soft))] px-3 py-2 rounded-xl bg-[rgb(var(--c-sky-soft))] border border-[rgb(var(--c-sky))] leading-relaxed">
+            <strong className="text-[rgb(var(--c-sky-label))]">ตาถัดไปของคุณจะได้เลือกบินไปช่องไหนก็ได้</strong>
+            <br />
+            แผนที่จะเปิดให้เลือกเองเมื่อถึงตาคุณ ไม่ต้องทอยเต๋า
+          </p>
+          <p className="text-[11px] font-bold text-amber-200/80">
+            ถ้าทอยได้แต้มคู่แล้วตกสนามบิน จะได้บินทันทีโดยไม่ต้องรอ
+          </p>
+          <button
+            type="button"
+            onClick={handleAcknowledgeFlight}
+            className="wood-btn-gold w-full py-3 rounded-2xl text-sm font-black shadow-lg active:scale-95"
+          >
+            รับทราบ (ส่งตาให้คนถัดไป)
+          </button>
+        </div>
+      </Modal>
+
       {/* Cannot cover the bill: sell up, or go out */}
       <DebtModal
         isOpen={Boolean(debtDecision)}
@@ -1007,27 +1093,37 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
       />
 
       {/* Last one standing */}
-      <Modal isOpen={Boolean(winnerId)} onClose={() => {}} title="🏆 จบเกม">
+      {/* The end of the game used to be a dead end: a card with no close that
+          worked and nothing to press. */}
+      <Modal
+        isOpen={gameOver && !endGameDismissed}
+        onClose={() => setEndGameDismissed(true)}
+        title="🏆 จบเกม"
+      >
         <div className="flex flex-col items-center gap-3 text-center">
-          <span className="text-6xl">🏆</span>
-          <span className="text-lg font-black text-yellow-300">
-            {players.find((p) => p.id === winnerId)?.display_name || 'ผู้ชนะ'}
+          <span className="text-6xl">{endWinner ? '🏆' : '💀'}</span>
+          <span className="text-lg font-black text-[rgb(var(--c-butter-label))]">
+            {endWinner
+              ? players.find((p) => p.id === endWinner)?.display_name || 'ผู้ชนะ'
+              : 'ไม่มีผู้ชนะ'}
           </span>
-          <span className="text-xs font-bold text-amber-200/80">
-            เป็นคนสุดท้ายที่ยังไม่ล้มละลาย · ชนะการแข่งขันนี้!
+          <span className="text-xs font-bold text-[rgb(var(--c-ink-soft))]">
+            {endWinner
+              ? 'เป็นคนสุดท้ายที่ยังไม่ล้มละลาย · ชนะการแข่งขันนี้!'
+              : 'ทุกคนล้มละลายหมด · จบเกมโดยไม่มีผู้ชนะ'}
           </span>
           <div className="w-full flex flex-col gap-1.5 mt-1">
             {orderedPlayers.map((p) => (
               <div
                 key={p.id}
                 className={`flex items-center justify-between px-3 py-2 rounded-xl border text-xs font-black ${
-                  p.id === winnerId
-                    ? 'bg-[rgb(var(--c-surface-3))] border-yellow-400 text-yellow-100'
-                    : 'bg-[rgb(var(--c-bg-deep))] border-[rgb(var(--c-surface-2))] text-amber-300/80'
+                  p.id === endWinner
+                    ? 'bg-[rgb(var(--c-butter-soft))] border-[rgb(var(--c-butter))] text-[rgb(var(--c-butter-label))]'
+                    : 'bg-[rgb(var(--c-bg-deep))] border-[rgb(var(--c-surface-2))] text-[rgb(var(--c-ink-soft))]'
                 }`}
               >
                 <span className="truncate">
-                  {p.id === winnerId ? '🏆 ' : bankrupt[p.id] ? '💀 ' : ''}
+                  {p.id === endWinner ? '🏆 ' : bankrupt[p.id] ? '💀 ' : ''}
                   {p.display_name}
                 </span>
                 <span className="font-mono shrink-0">
@@ -1036,6 +1132,62 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               </div>
             ))}
           </div>
+
+          <div className="w-full flex flex-col gap-2 mt-2">
+            {isHost && onReturnToLobby ? (
+              <button
+                type="button"
+                onClick={handlePlayAgain}
+                className="wood-btn-gold w-full py-3 rounded-2xl text-sm font-black shadow-lg active:scale-95"
+              >
+                🔄 เล่นเกมใหม่ (กลับห้องรอ)
+              </button>
+            ) : (
+              <span className="text-[11px] font-bold text-[rgb(var(--c-ink-faint))]">
+                รอหัวหน้าห้องเริ่มเกมใหม่
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={() => setEndGameDismissed(true)}
+              className="w-full py-2.5 rounded-2xl text-xs font-black bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-line))] text-[rgb(var(--c-ink-soft))] active:scale-95"
+            >
+              ปิดหน้าต่าง (ดูกระดานต่อ)
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Somebody is out. Said plainly, once, to everyone - the feed line went
+          past while the table was still working out who was left. */}
+      <Modal
+        isOpen={showBust}
+        onClose={() => setDismissedBustAt(bankruptcyNotice?.at ?? null)}
+        title="💀 มีคนล้มละลาย"
+      >
+        <div className="flex flex-col items-center gap-3 text-center">
+          <span className="text-5xl">💀</span>
+          <span className="text-lg font-black text-[rgb(var(--c-berry-label))]">
+            {bankruptcyNotice?.name}
+          </span>
+          <span className="text-xs font-bold text-[rgb(var(--c-ink-soft))]">
+            {bankruptcyNotice?.playerId === currentPlayer?.id
+              ? 'คุณล้มละลายและออกจากเกมแล้ว'
+              : 'ล้มละลายและออกจากเกมแล้ว'}
+          </span>
+          <span className="text-[11px] font-bold text-[rgb(var(--c-ink-faint))] px-3 py-2 rounded-xl bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-line))]">
+            สาเหตุ: {bankruptcyNotice?.cause}
+            <br />
+            ที่ดินทั้งหมดกลับมาเป็นที่ว่าง · เหลือผู้เล่นอีก{' '}
+            {players.filter((p) => !bankrupt[p.id]).length} คน
+          </span>
+          <button
+            type="button"
+            onClick={() => setDismissedBustAt(bankruptcyNotice?.at ?? null)}
+            className="wood-btn-gold w-full py-3 rounded-2xl text-sm font-black shadow-lg active:scale-95"
+          >
+            รับทราบ
+          </button>
         </div>
       </Modal>
 

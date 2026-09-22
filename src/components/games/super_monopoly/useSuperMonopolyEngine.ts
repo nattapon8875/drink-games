@@ -172,6 +172,10 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   const winnerId: string | null = (rawState.winnerId as string | null) || null;
   const gameLogs: Array<{ text: string; time: string; color?: string }> = rawState.gameLogs || [];
   const rentReceipt: RentReceipt | null = (rawState.rentReceipt as RentReceipt | null) || null;
+  // Going out of the game was only ever a line in the feed, which scrolls away
+  // while the table is still working out who is left.
+  const bankruptcyNotice: { playerId: string; name: string; cause: string; at: number } | null =
+    (rawState.bankruptcyNotice as { playerId: string; name: string; cause: string; at: number } | null) || null;
 
   // Synchronized across all screens via Supabase Realtime
   const isRolling = Boolean(rawState.isRolling);
@@ -205,6 +209,10 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   // still said "double!", which reads like another roll is coming. Say it.
   const [jailNotice, setJailNotice] = useState<{ tileName: string; wasDouble: boolean } | null>(null);
   const [restNotice, setRestNotice] = useState<{ tileName: string; wasDouble: boolean } | null>(null);
+  // Booking a seat is not the same as taking it. Landing on the airport without
+  // a double used to flash the map open for the instant before the turn ended,
+  // which read as the flight being taken away again.
+  const [flightNotice, setFlightNotice] = useState<{ tileName: string } | null>(null);
   // Open while the traveller is choosing where to land.
   const [showFlightPicker, setShowFlightPicker] = useState(false);
   // A bill the player cannot cover in cash: sell up, or go out.
@@ -325,6 +333,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     setActivePenaltyModal(null);
     setJailNotice(null);
     setRestNotice(null);
+    setFlightNotice(null);
     setShowFlightPicker(false);
     setDebtDecision(null);
     setIsEndingTurn(false);
@@ -770,6 +779,10 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                   '#0ea5e9',
                   newLogs
                 );
+                if (canActThisTurn) {
+                  setFlightNotice({ tileName: targetTile.name });
+                  requiresUserModalAction = true;
+                }
               }
             } else if (targetTile.type === 'jail') {
               // No such thing as just visiting here: standing on the cell means
@@ -1257,6 +1270,12 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       rowBonus: afterBustRow,
       bankrupt: nextBankrupt,
       winnerId: winner ? winner.id : null,
+      bankruptcyNotice: {
+        playerId: me,
+        name: currentTurnPlayer.display_name,
+        cause: debtDecision.reason || 'จ่ายหนี้ไม่ไหว',
+        at: Date.now(),
+      },
       gameLogs: logs,
     });
 
@@ -1419,9 +1438,13 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   // first. It waits for anything else on screen to be dealt with.
   useEffect(() => {
     if (!isCurrentPlayerBoarding || !canActThisTurn) return;
+    // The seat is for the next turn, so the map waits for it. Opening the
+    // moment it was booked put the map on screen for the tail of a turn that
+    // was already ending, and it vanished again a second later.
+    if (hasRolledThisTurn || isEndingTurn) return;
     if (isRolling || isMoving) return;
     if (activePropertyModal || activeCard || activePenaltyModal) return;
-    if (jailNotice || restNotice || debtDecision) return;
+    if (jailNotice || restNotice || flightNotice || debtDecision) return;
     setShowFlightPicker(true);
   }, [
     isCurrentPlayerBoarding,
@@ -1433,7 +1456,10 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     activePenaltyModal,
     jailNotice,
     restNotice,
+    flightNotice,
     debtDecision,
+    hasRolledThisTurn,
+    isEndingTurn,
   ]);
 
   const handleOpenFlightPicker = () => {
@@ -1510,6 +1536,11 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
   const handleAcknowledgeRest = useCallback(async () => {
     setRestNotice(null);
+    await handleEndTurn();
+  }, [handleEndTurn]);
+
+  const handleAcknowledgeFlight = useCallback(async () => {
+    setFlightNotice(null);
     await handleEndTurn();
   }, [handleEndTurn]);
 
@@ -1615,6 +1646,12 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               properties: freed,
               rowBonus: botRowBonus,
               winnerId: left.length === 1 ? left[0].id : null,
+              bankruptcyNotice: {
+                playerId: turnPlayerId,
+                name: currentTurnPlayer.display_name,
+                cause: 'จ่ายค่าผ่านทางไม่ไหว',
+                at: Date.now(),
+              },
             },
             logs: nextLogs,
           };
@@ -2352,6 +2389,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     restTurns,
     handleServeJailTurn,
     bankrupt,
+    bankruptcyNotice,
     rowBonus,
     startingDeal,
     winnerId,
@@ -2381,6 +2419,8 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     handleAcknowledgeJail,
     restNotice,
     handleAcknowledgeRest,
+    flightNotice,
+    handleAcknowledgeFlight,
     gameLogs,
     rollDice,
     handleBuyLand,

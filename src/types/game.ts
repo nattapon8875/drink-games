@@ -10,6 +10,8 @@ export interface BaseGameProps {
   onNextTurn: (nextPlayerId: string) => Promise<void>;
   onKickPlayer?: (playerId: string) => Promise<void>;
   onReorderPlayers?: (orderedPlayerIds: string[]) => Promise<void>;
+  // Used by the end-of-game screen to start the table over.
+  onReturnToLobby?: () => Promise<void>;
 }
 
 export interface GameInfo {

@@ -194,6 +194,10 @@ export default function SuperPlayPage() {
     onNextTurn: nextTurn,
     onKickPlayer: kickPlayer,
     onReorderPlayers: reorderPlayers,
+    onReturnToLobby: async () => {
+      await returnToLobby();
+      router.push(`/super/lobby/${roomCode}`);
+    },
   };
 
   return (
