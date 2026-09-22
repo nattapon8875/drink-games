@@ -812,10 +812,14 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           !gameOver &&
           !isEndingTurn && (
             <div
-              // On the board itself, at the bottom edge - reachable without
-              // scrolling past the whole board, and centred on the game rather
-              // than on the browser window.
-              className="absolute bottom-3 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-1 pointer-events-none"
+              // On the board itself, reachable without scrolling past the whole
+              // board, and centred on the game rather than on the browser
+              // window. In 2D the bottom edge is a row of squares, so the button
+              // sits up inside the empty middle instead of covering them; in 3D
+              // the bottom of the frame is bare table.
+              className={`absolute left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-1 pointer-events-none ${
+                is3DMode ? 'bottom-3' : 'bottom-[21%]'
+              }`}
             >
               <span
                 className={`pointer-events-none px-2 py-0.5 rounded-full border text-[10px] font-black shadow ${
