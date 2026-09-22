@@ -28,7 +28,51 @@ export const DebtModal: React.FC<DebtModalProps> = ({ isOpen, debt, onMortgage, 
   const shortfall = Math.max(0, debt.amount - debt.cashNow);
 
   return (
-    <Modal isOpen={isOpen} onClose={() => {}} title="⚠️ เงินสดไม่พอจ่าย">
+    // Owing money is a forced decision, so the two answers stay pinned where
+    // they cannot scroll out of reach.
+    <Modal
+      isOpen={isOpen}
+      onClose={() => {}}
+      title="⚠️ เงินสดไม่พอจ่าย"
+      footer={<div className="flex flex-col gap-2">
+          {debt.canCover ? (
+            <>
+              <p className="text-[11px] font-bold text-emerald-300">
+                จำนองแล้วพอจ่าย เลือกได้ว่าจะสู้ต่อหรือยอมแพ้
+              </p>
+              <button
+                type="button"
+                onClick={onMortgage}
+                className="wood-btn-gold w-full py-3 rounded-2xl text-sm font-black shadow-lg active:scale-95 flex items-center justify-center gap-2"
+              >
+                <Wallet className="w-4 h-4" />
+                จำนองที่ดิน แล้วจ่าย {formatMoneyM(debt.amount)}
+              </button>
+              <button
+                type="button"
+                onClick={onBankrupt}
+                className="w-full py-2.5 rounded-2xl text-xs font-black bg-[rgb(var(--c-surface))] border-2 border-[rgb(var(--c-surface-3))] text-rose-200 active:scale-95"
+              >
+                💀 ยอมล้มละลาย ออกจากเกม
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-[11px] font-bold text-rose-300 px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/40">
+                จำนองทั้งหมดแล้วก็ยังไม่พอจ่าย ต้องล้มละลาย
+              </p>
+              <button
+                type="button"
+                onClick={onBankrupt}
+                className="w-full py-3 rounded-2xl text-sm font-black bg-[rgb(var(--c-surface))] border-2 border-[rgb(var(--c-surface-3))] text-rose-100 active:scale-95 flex items-center justify-center gap-2"
+              >
+                <Skull className="w-4 h-4" />
+                ล้มละลาย ออกจากเกม
+              </button>
+            </>
+          )}
+      </div>}
+    >
       <div className="flex flex-col gap-3 text-center">
         <div className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-[rgb(var(--c-surface))] border-2 border-orange-700">
           <span className="text-3xl">{debt.tileIcon}</span>
@@ -58,42 +102,6 @@ export const DebtModal: React.FC<DebtModalProps> = ({ isOpen, debt, onMortgage, 
           <span className="font-black font-mono text-sky-100">{formatMoneyM(debt.raisable)}</span>
         </div>
 
-        {debt.canCover ? (
-          <>
-            <p className="text-[11px] font-bold text-emerald-300">
-              จำนองแล้วพอจ่าย เลือกได้ว่าจะสู้ต่อหรือยอมแพ้
-            </p>
-            <button
-              type="button"
-              onClick={onMortgage}
-              className="wood-btn-gold w-full py-3 rounded-2xl text-sm font-black shadow-lg active:scale-95 flex items-center justify-center gap-2"
-            >
-              <Wallet className="w-4 h-4" />
-              จำนองที่ดิน แล้วจ่าย {formatMoneyM(debt.amount)}
-            </button>
-            <button
-              type="button"
-              onClick={onBankrupt}
-              className="w-full py-2.5 rounded-2xl text-xs font-black bg-[rgb(var(--c-surface))] border-2 border-[rgb(var(--c-surface-3))] text-rose-200 active:scale-95"
-            >
-              💀 ยอมล้มละลาย ออกจากเกม
-            </button>
-          </>
-        ) : (
-          <>
-            <p className="text-[11px] font-bold text-rose-300 px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/40">
-              จำนองทั้งหมดแล้วก็ยังไม่พอจ่าย ต้องล้มละลาย
-            </p>
-            <button
-              type="button"
-              onClick={onBankrupt}
-              className="w-full py-3 rounded-2xl text-sm font-black bg-[rgb(var(--c-surface))] border-2 border-[rgb(var(--c-surface-3))] text-rose-100 active:scale-95 flex items-center justify-center gap-2"
-            >
-              <Skull className="w-4 h-4" />
-              ล้มละลาย ออกจากเกม
-            </button>
-          </>
-        )}
       </div>
     </Modal>
   );

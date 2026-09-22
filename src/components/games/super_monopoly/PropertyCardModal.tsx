@@ -231,7 +231,86 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`โฉนดที่ดิน: ${tile.name}`}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`โฉนดที่ดิน: ${tile.name}`}
+      footer={
+        <>
+          {/* Action Buttons */}
+          {isMyTurn && (
+            <div className="flex gap-2 mt-1">
+              {!isOwner ? (
+                <button
+                  type="button"
+                  disabled={loading || !canAffordLand}
+                  onClick={handleBuy}
+                  className="wood-btn-gold flex-1 py-3 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-lg active:scale-95 disabled:opacity-40"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>
+                    {canAffordLand
+                      ? `ซื้อ${tile.isUtility ? 'กิจการ' : 'ที่ดิน'} (${tile.cost ? formatMoneyM(tile.cost) : ''})`
+                      : `เงินไม่พอ (ขาด ${formatMoneyM(tile.cost! - currentCash)})`}
+                  </span>
+                </button>
+              ) : tile.isUtility ? (
+                <div className="flex-1 py-2.5 text-center text-[11px] font-bold text-[rgb(var(--c-sky-label))] bg-[rgb(var(--c-sky-soft))] rounded-xl border border-cyan-700/60 leading-tight">
+                  ⚡ กิจการนี้สร้างบ้านไม่ได้ — ค่าผ่านทางคูณ{' '}
+                  <span className="text-yellow-300 font-black">x{boost}</span>
+                  <br />
+                  <span className="text-[10px] text-[rgb(var(--c-ink-soft))] font-normal">
+                    {boost >= MAX_VISIT_MULTIPLIER
+                      ? `ตัวคูณสูงสุดแล้ว (x${MAX_VISIT_MULTIPLIER})`
+                      : `มาตกอีกครั้งจะเพิ่มเป็น x${boost + 1}`}
+                  </span>
+                </div>
+              ) : atVisitCap ? (
+                <div className="flex-1 py-2 text-center text-[11px] font-bold text-amber-300 bg-[rgb(var(--c-surface-2))] rounded-xl border border-[rgb(var(--c-surface-3))] leading-tight">
+                  🔒 รอบนี้สร้างครบ {houses} หลังแล้ว
+                  <br />
+                  <span className="text-[10px] text-amber-200/80 font-normal">
+                    ต้องเดินมาตกที่ดินนี้อีกครั้งจึงจะสร้าง
+                    {houses >= 3 ? 'โรงแรม' : `หลังที่ ${houses + 1}`}ได้
+                  </span>
+                </div>
+              ) : !hasHotel ? (
+                <button
+                  type="button"
+                  disabled={loading || !canAffordHouse}
+                  onClick={handleBuild}
+                  className="wood-btn-gold flex-1 py-3 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-lg active:scale-95 disabled:opacity-40"
+                >
+                  {houses === 3 ? (
+                    <>
+                      <Building2 className="w-4 h-4 text-rose-300" />
+                      <span>สร้างโรงแรม ({tile.hotelCost ? formatMoneyM(tile.hotelCost) : ''})</span>
+                    </>
+                  ) : (
+                    <>
+                      <Home className="w-4 h-4 text-[rgb(var(--c-sky-label))]" />
+                      <span>สร้างบ้านหลังที่ {houses + 1} ({tile.houseCost ? formatMoneyM(tile.houseCost) : ''})</span>
+                    </>
+                  )}
+                </button>
+              ) : (
+                <div className="flex-1 py-2 text-center text-xs font-bold text-amber-300 bg-[rgb(var(--c-surface-2))] rounded-xl border border-[rgb(var(--c-surface-3))]">
+                  ⭐ พัฒนาที่ดินขั้นสูงสุดแล้ว (โรงแรม)
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={onClose}
+                className="wood-btn-brown px-5 py-3 rounded-xl font-bold text-xs sm:text-sm text-amber-200 border border-[rgb(var(--c-surface-3))]"
+              >
+                {isOwnedByMe ? 'พอแล้ว / จบตา' : 'ข้าม / ปิด'}
+              </button>
+            </div>
+          )}
+        </>
+      }
+    >
       <div className="flex flex-col gap-3">
         {/* Title Deed Card Header */}
         <div
@@ -445,77 +524,6 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
           </div>
         )}
 
-        {/* Action Buttons */}
-        {isMyTurn && (
-          <div className="flex gap-2 mt-1">
-            {!isOwner ? (
-              <button
-                type="button"
-                disabled={loading || !canAffordLand}
-                onClick={handleBuy}
-                className="wood-btn-gold flex-1 py-3 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-lg active:scale-95 disabled:opacity-40"
-              >
-                <Check className="w-4 h-4" />
-                <span>
-                  {canAffordLand
-                    ? `ซื้อ${tile.isUtility ? 'กิจการ' : 'ที่ดิน'} (${tile.cost ? formatMoneyM(tile.cost) : ''})`
-                    : `เงินไม่พอ (ขาด ${formatMoneyM(tile.cost! - currentCash)})`}
-                </span>
-              </button>
-            ) : tile.isUtility ? (
-              <div className="flex-1 py-2.5 text-center text-[11px] font-bold text-[rgb(var(--c-sky-label))] bg-[rgb(var(--c-sky-soft))] rounded-xl border border-cyan-700/60 leading-tight">
-                ⚡ กิจการนี้สร้างบ้านไม่ได้ — ค่าผ่านทางคูณ{' '}
-                <span className="text-yellow-300 font-black">x{boost}</span>
-                <br />
-                <span className="text-[10px] text-[rgb(var(--c-ink-soft))] font-normal">
-                  {boost >= MAX_VISIT_MULTIPLIER
-                    ? `ตัวคูณสูงสุดแล้ว (x${MAX_VISIT_MULTIPLIER})`
-                    : `มาตกอีกครั้งจะเพิ่มเป็น x${boost + 1}`}
-                </span>
-              </div>
-            ) : atVisitCap ? (
-              <div className="flex-1 py-2 text-center text-[11px] font-bold text-amber-300 bg-[rgb(var(--c-surface-2))] rounded-xl border border-[rgb(var(--c-surface-3))] leading-tight">
-                🔒 รอบนี้สร้างครบ {houses} หลังแล้ว
-                <br />
-                <span className="text-[10px] text-amber-200/80 font-normal">
-                  ต้องเดินมาตกที่ดินนี้อีกครั้งจึงจะสร้าง
-                  {houses >= 3 ? 'โรงแรม' : `หลังที่ ${houses + 1}`}ได้
-                </span>
-              </div>
-            ) : !hasHotel ? (
-              <button
-                type="button"
-                disabled={loading || !canAffordHouse}
-                onClick={handleBuild}
-                className="wood-btn-gold flex-1 py-3 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-lg active:scale-95 disabled:opacity-40"
-              >
-                {houses === 3 ? (
-                  <>
-                    <Building2 className="w-4 h-4 text-rose-300" />
-                    <span>สร้างโรงแรม ({tile.hotelCost ? formatMoneyM(tile.hotelCost) : ''})</span>
-                  </>
-                ) : (
-                  <>
-                    <Home className="w-4 h-4 text-[rgb(var(--c-sky-label))]" />
-                    <span>สร้างบ้านหลังที่ {houses + 1} ({tile.houseCost ? formatMoneyM(tile.houseCost) : ''})</span>
-                  </>
-                )}
-              </button>
-            ) : (
-              <div className="flex-1 py-2 text-center text-xs font-bold text-amber-300 bg-[rgb(var(--c-surface-2))] rounded-xl border border-[rgb(var(--c-surface-3))]">
-                ⭐ พัฒนาที่ดินขั้นสูงสุดแล้ว (โรงแรม)
-              </div>
-            )}
-
-            <button
-              type="button"
-              onClick={onClose}
-              className="wood-btn-brown px-5 py-3 rounded-xl font-bold text-xs sm:text-sm text-amber-200 border border-[rgb(var(--c-surface-3))]"
-            >
-              {isOwnedByMe ? 'พอแล้ว / จบตา' : 'ข้าม / ปิด'}
-            </button>
-          </div>
-        )}
       </div>
     </Modal>
   );
