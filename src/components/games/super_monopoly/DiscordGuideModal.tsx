@@ -158,15 +158,15 @@ export const DiscordGuideModal: React.FC<DiscordGuideModalProps> = ({
         <div className="max-h-[46vh] overflow-y-auto pr-1 space-y-3 text-left">
           {/* Option 1: Discord Activity */}
           <div className="p-3.5 rounded-2xl bg-[rgb(var(--c-sky-soft))] border-2 border-[#5865F2]/60 shadow-md space-y-2.5">
-            <div className="flex items-center gap-2 text-[#5865F2] font-black text-sm">
+            <div className="flex items-center gap-2 text-[rgb(var(--c-grape))] font-black text-sm">
               <span className="text-xl">🚀</span>
               <span className="text-white font-extrabold">วิธีที่ 1: เข้าเล่นผ่าน Discord Activity (ในห้องเสียง)</span>
             </div>
-            <p className="text-xs text-indigo-200/90 font-medium leading-relaxed">
+            <p className="text-xs text-[rgb(var(--c-ink-soft))] font-medium leading-relaxed">
               เหมาะสำหรับเพื่อนๆ ที่กำลังพูดคุยอยู่ใน Voice Channel บน Discord:
             </p>
 
-            <div className="space-y-2 text-xs text-indigo-100">
+            <div className="space-y-2 text-xs text-[rgb(var(--c-ink))]">
               <div className="flex items-start gap-2 bg-[rgb(var(--c-surface-2))] p-2.5 rounded-xl border border-[#5865F2]/30">
                 <span className="font-black text-[rgb(var(--c-ink))] bg-[rgb(var(--c-butter-soft))] px-2 py-0.5 rounded-md shrink-0">
                   ขั้นที่ 1

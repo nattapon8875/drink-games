@@ -76,7 +76,7 @@ export const ShareInvite: React.FC<ShareInviteProps> = ({
         </Button>
       ) : platform === 'discord' ? (
         <div className="p-3 bg-[#5865F2]/20 border border-[#5865F2]/40 rounded-xl text-center">
-          <div className="flex items-center justify-center gap-2 text-[#5865F2] font-bold mb-1">
+          <div className="flex items-center justify-center gap-2 text-[rgb(var(--c-grape))] font-bold mb-1">
             <Disc className="w-5 h-5 animate-spin" />
             <span>ซิงก์ใน Discord Voice Channel เรียบร้อย!</span>
           </div>

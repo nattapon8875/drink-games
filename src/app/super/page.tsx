@@ -542,13 +542,13 @@ export default function SuperHomePage() {
               <div className="mb-5 bg-[#5865F2]/25 border-2 border-[#5865F2]/70 p-4 rounded-2xl shadow-xl">
                 <div className="flex items-center gap-2 mb-1.5">
                   <span className="text-base">🎮</span>
-                  <p className="text-xs sm:text-sm text-indigo-200 font-black">
+                  <p className="text-xs sm:text-sm text-[rgb(var(--c-ink))] font-black">
                     ตรวจพบการเข้าเล่นผ่าน Discord Voice Channel
                   </p>
                 </div>
-                <p className="text-xs text-gray-200 mb-3 font-medium">
+                <p className="text-xs text-[rgb(var(--c-ink-soft))] mb-3 font-medium">
                   รหัสห้องอัตโนมัติสำหรับช่องสนทนานี้คือ: <b className="text-yellow-300 font-mono font-black text-sm">{discordRoomCode}</b>
-                  <span className="block text-[11px] text-indigo-300/80 mt-0.5">
+                  <span className="block text-[11px] text-[rgb(var(--c-ink-soft))] mt-0.5">
                     คลิกปุ่มด้านล่างเพื่อเข้าห้องทันที (หากห้องยังไม่มี ระบบจะสร้างห้องให้อัตโนมัติ)
                   </span>
                 </p>

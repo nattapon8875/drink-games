@@ -420,7 +420,7 @@ export default function SuperLobbyPage() {
                 <button
                   type="button"
                   onClick={() => setShowDiscordModal(true)}
-                  className="px-2.5 py-1 rounded-lg bg-[#5865F2]/20 hover:bg-[#5865F2]/30 border border-[#5865F2]/50 text-[11px] font-bold text-indigo-200 flex items-center gap-1 transition"
+                  className="px-2.5 py-1 rounded-lg bg-[#5865F2]/20 hover:bg-[#5865F2]/30 border border-[#5865F2]/50 text-[11px] font-bold text-[rgb(var(--c-ink))] flex items-center gap-1 transition"
                   title="ดูขั้นตอนการเข้าเล่นผ่าน Discord อย่างละเอียด"
                 >
                   <span>🎮 วิธีเข้า Discord</span>
@@ -467,11 +467,11 @@ export default function SuperLobbyPage() {
               </button>
 
               {/* Quick Discord Instructions Snippet */}
-              <div className="p-2.5 rounded-xl bg-[rgb(var(--c-surface-2))] border border-[#5865F2]/40 text-[11px] text-indigo-100 flex flex-col gap-1">
-                <div className="flex items-center gap-1.5 text-[#5865F2] font-black">
+              <div className="p-2.5 rounded-xl bg-[rgb(var(--c-surface-2))] border border-[#5865F2]/40 text-[11px] text-[rgb(var(--c-ink))] flex flex-col gap-1">
+                <div className="flex items-center gap-1.5 text-[rgb(var(--c-grape))] font-black">
                   <span>🚀 เข้าผ่าน Discord:</span>
                 </div>
-                <p className="text-[10px] text-indigo-200/80 leading-relaxed">
+                <p className="text-[10px] text-[rgb(var(--c-ink-soft))] leading-relaxed">
                   เข้าห้องคุยเสียง (Voice) ➔ กดไอคอนรูปจรวด <strong>Start Activity</strong> ➔ เลือก <strong>Drink Games</strong> ➔ ใส่รหัส <span className="font-mono text-yellow-300 font-bold">{roomCode}</span>
                 </p>
               </div>
