@@ -62,6 +62,145 @@ export const PLAYER_3D_COLORS = [
 ];
 
 // 6 Funny Anime / Meme Faces ported from เกมเศรษฐีวงเหล้า
+// An anime face, drawn big enough to read at the size a token actually is on
+// screen: tall eyes with a highlight, a small mouth, and blush. Six of them, so
+// a table of players is not six copies of one expression.
+const animeFaceCache = new Map<string, THREE.CanvasTexture>();
+
+// Painted-figure palettes. Skin and hair vary per player so a table does not
+// look like four castings of the same mould.
+const FIGURE_SKIN = ['#ffe0c4', '#f8d3b0', '#ffd8bc', '#eec6a6', '#ffe6d0', '#f3cba8'];
+const FIGURE_HAIR = ['#2b2440', '#7c3f2f', '#c2410c', '#1e3a5f', '#4c1d95', '#0f766e'];
+const FIGURE_EYES = ['#0ea5e9', '#7c3aed', '#059669', '#b45309', '#e11d48', '#0369a1'];
+
+export function createAnimeFaceTexture(typeIndex: number, irisColor: string): THREE.CanvasTexture {
+  const key = `${typeIndex % 6}|${irisColor}`;
+  const hit = animeFaceCache.get(key);
+  if (hit) return hit;
+
+  const S = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = S;
+  canvas.height = S;
+  const ctx = canvas.getContext('2d')!;
+  ctx.clearRect(0, 0, S, S);
+
+  const kind = typeIndex % 6;
+  const ink = '#2b2545';
+
+  // Blush on the cheeks, under everything else.
+  ctx.fillStyle = 'rgba(248,113,113,0.38)';
+  ctx.beginPath();
+  ctx.ellipse(52, 150, 22, 12, 0, 0, Math.PI * 2);
+  ctx.ellipse(204, 150, 22, 12, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  const bigEye = (cx: number, cy: number) => {
+    // White of the eye
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, 26, 32, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Iris
+    ctx.fillStyle = irisColor;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + 3, 19, 24, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Pupil
+    ctx.fillStyle = ink;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + 5, 10, 15, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // The highlight that makes an anime eye an anime eye
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(cx - 9, cy - 11, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx + 8, cy + 12, 4, 0, Math.PI * 2);
+    ctx.fill();
+    // Lash line across the top
+    ctx.strokeStyle = ink;
+    ctx.lineWidth = 8;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 27, Math.PI * 1.08, Math.PI * 1.92);
+    ctx.stroke();
+  };
+
+  const happyEye = (cx: number, cy: number) => {
+    ctx.strokeStyle = ink;
+    ctx.lineWidth = 9;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.arc(cx, cy + 12, 22, Math.PI * 1.15, Math.PI * 1.85);
+    ctx.stroke();
+  };
+
+  ctx.strokeStyle = ink;
+  ctx.fillStyle = ink;
+
+  if (kind === 1) {
+    happyEye(70, 112);
+    happyEye(186, 112);
+  } else if (kind === 4) {
+    // One eye winking
+    bigEye(70, 112);
+    happyEye(186, 112);
+  } else {
+    bigEye(70, 112);
+    bigEye(186, 112);
+  }
+
+  // Brows, a little different per face
+  ctx.lineWidth = 7;
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = ink;
+  const brow = (cx: number, tilt: number) => {
+    ctx.beginPath();
+    ctx.moveTo(cx - 22, 66 + tilt);
+    ctx.lineTo(cx + 22, 66 - tilt);
+    ctx.stroke();
+  };
+  if (kind === 2) {
+    brow(70, -7);
+    brow(186, 7);
+  } else if (kind === 5) {
+    brow(70, 6);
+    brow(186, -6);
+  } else {
+    brow(70, 2);
+    brow(186, -2);
+  }
+
+  // Mouth
+  ctx.lineWidth = 7;
+  ctx.strokeStyle = ink;
+  if (kind === 3) {
+    // Open, delighted
+    ctx.fillStyle = '#9f1239';
+    ctx.beginPath();
+    ctx.ellipse(128, 176, 20, 16, 0, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (kind === 5) {
+    // A flat little line
+    ctx.beginPath();
+    ctx.moveTo(112, 178);
+    ctx.lineTo(144, 178);
+    ctx.stroke();
+  } else {
+    ctx.beginPath();
+    ctx.arc(128, 166, 17, 0.2 * Math.PI, 0.8 * Math.PI);
+    ctx.stroke();
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  animeFaceCache.set(key, tex);
+  return tex;
+}
+
 export function createFunnyFaceTexture(typeIndex: number): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 128;
@@ -893,8 +1032,13 @@ const PlayerToken3D: React.FC<{
 
   const faceTexture = useMemo(() => {
     if (typeof window === 'undefined') return null;
-    return createFunnyFaceTexture(costumeId);
+    return createAnimeFaceTexture(costumeId, FIGURE_EYES[costumeId % FIGURE_EYES.length]);
   }, [costumeId]);
+
+  // A figure is painted, not moulded in one colour: skin and hair are their own
+  // and only the outfit carries the player's colour.
+  const skin = FIGURE_SKIN[costumeId % FIGURE_SKIN.length];
+  const hair = FIGURE_HAIR[costumeId % FIGURE_HAIR.length];
 
   // Distribute players neatly on the same tile so they NEVER hang off the board edge
   const playersOnThisTile = players.filter((other) => {
@@ -996,94 +1140,179 @@ const PlayerToken3D: React.FC<{
         </group>
       )}
 
-      {/* 1. Character Body (Chibi Anime Cape/Coat) */}
-      <mesh castShadow position={[0, 0.18, 0]}>
-        <cylinderGeometry args={[0.10, 0.22, 0.38, 16]} />
-        <meshStandardMaterial color={color} roughness={0.3} metalness={0.2} />
+      {/* A collectible figure rather than a pawn: a plinth to stand on, chibi
+          proportions where the head carries the silhouette, limbs that are
+          actually there, and the wet gloss of painted PVC. Every part of it is
+          a primitive, so none of this costs a byte of download. */}
+
+      {/* Plinth */}
+      <mesh position={[0, -0.185, 0]} receiveShadow castShadow>
+        <cylinderGeometry args={[0.25, 0.27, 0.05, 28]} />
+        <meshPhysicalMaterial color={color} roughness={0.25} metalness={0.3} clearcoat={0.8} />
+      </mesh>
+      <mesh position={[0, -0.152, 0]}>
+        <cylinderGeometry args={[0.235, 0.235, 0.02, 28]} />
+        <meshPhysicalMaterial color="#f8fafc" roughness={0.35} clearcoat={0.6} />
       </mesh>
 
-      {/* 2. Belt / Gold Buckle */}
-      <mesh position={[0, 0.24, 0]}>
-        <torusGeometry args={[0.135, 0.024, 8, 16]} />
+      {/* Legs */}
+      {[-0.062, 0.062].map((x) => (
+        <group key={x} position={[x, -0.015, 0]}>
+          <mesh castShadow>
+            <capsuleGeometry args={[0.042, 0.09, 6, 12]} />
+            <meshPhysicalMaterial color={skin} roughness={0.45} clearcoat={0.5} />
+          </mesh>
+          <mesh position={[0, -0.082, 0.012]} castShadow>
+            <sphereGeometry args={[0.05, 14, 12]} />
+            <meshPhysicalMaterial color="#1f2937" roughness={0.28} clearcoat={0.9} />
+          </mesh>
+        </group>
+      ))}
+
+      {/* Body: a tunic, wider at the hem the way a chibi is drawn */}
+      <mesh castShadow position={[0, 0.11, 0]}>
+        <cylinderGeometry args={[0.105, 0.155, 0.23, 20]} />
+        <meshPhysicalMaterial
+          color={color}
+          roughness={0.28}
+          metalness={0.15}
+          clearcoat={0.9}
+          clearcoatRoughness={0.15}
+        />
+      </mesh>
+      <mesh position={[0, 0.225, 0]}>
+        <torusGeometry args={[0.1, 0.022, 8, 20]} />
+        <meshPhysicalMaterial color="#f8fafc" roughness={0.3} clearcoat={0.8} />
+      </mesh>
+      <mesh position={[0, 0.045, 0]}>
+        <torusGeometry args={[0.132, 0.019, 8, 20]} />
         <meshStandardMaterial color="#fcd34d" metalness={0.9} roughness={0.2} />
       </mesh>
 
-      {/* 3. Chibi Head (Skin Tone Ivory/Peach) */}
-      <mesh castShadow position={[0, 0.44, 0]}>
-        <sphereGeometry args={[0.17, 24, 24]} />
-        <meshStandardMaterial color="#ffedd5" roughness={0.5} />
+      {/* Arms, hanging in the slight A-pose a figure is posed in */}
+      {[-1, 1].map((side) => (
+        <group key={side} position={[side * 0.135, 0.15, 0]} rotation={[0, 0, side * 0.34]}>
+          <mesh castShadow>
+            <capsuleGeometry args={[0.036, 0.1, 6, 12]} />
+            <meshPhysicalMaterial color={color} roughness={0.28} clearcoat={0.9} />
+          </mesh>
+          <mesh position={[0, -0.09, 0]} castShadow>
+            <sphereGeometry args={[0.042, 14, 14]} />
+            <meshPhysicalMaterial color={skin} roughness={0.45} clearcoat={0.5} />
+          </mesh>
+        </group>
+      ))}
+
+      {/* The head, which on a chibi is most of the figure */}
+      <mesh castShadow position={[0, 0.42, 0]}>
+        <sphereGeometry args={[0.2, 28, 28]} />
+        <meshPhysicalMaterial color={skin} roughness={0.42} clearcoat={0.55} clearcoatRoughness={0.3} />
       </mesh>
 
-      {/* 4. Funny Anime Face Decal on the front */}
       {faceTexture && (
-        <mesh position={[0, 0.44, 0.165]}>
-          <planeGeometry args={[0.22, 0.22]} />
+        <mesh position={[0, 0.412, 0.178]}>
+          <planeGeometry args={[0.3, 0.3]} />
           <meshBasicMaterial map={faceTexture} transparent side={THREE.DoubleSide} />
         </mesh>
       )}
 
-      {/* 5. Quirky Anime Hair / Headwear on top */}
-      {costumeId % 4 === 0 && (
-        // Straw Hat / Luffy style
-        <group position={[0, 0.56, 0]}>
-          <mesh position={[0, 0, 0]}>
-            <cylinderGeometry args={[0.24, 0.26, 0.03, 16]} />
-            <meshStandardMaterial color="#facc15" roughness={0.7} />
+      {/* Hair: a cap over the skull, a fringe across the brow and locks down
+          the sides - the shape that reads as anime before any detail does. */}
+      <group position={[0, 0.42, 0]}>
+        <mesh castShadow scale={[1, 0.94, 1]}>
+          <sphereGeometry args={[0.209, 26, 26, 0, Math.PI * 2, 0, Math.PI * 0.6]} />
+          <meshPhysicalMaterial color={hair} roughness={0.3} clearcoat={0.9} clearcoatRoughness={0.2} />
+        </mesh>
+        {[-0.105, -0.035, 0.035, 0.105].map((x, i) => (
+          <mesh
+            key={x}
+            position={[x, 0.055 - Math.abs(x) * 0.15, 0.155]}
+            rotation={[0.45, 0, x * 2.6]}
+            castShadow
+          >
+            <coneGeometry args={[0.045, 0.14 + (i % 2) * 0.04, 6]} />
+            <meshPhysicalMaterial color={hair} roughness={0.3} clearcoat={0.9} />
           </mesh>
-          <mesh position={[0, 0.04, 0]}>
-            <cylinderGeometry args={[0.13, 0.15, 0.07, 16]} />
-            <meshStandardMaterial color="#ca8a04" roughness={0.7} />
+        ))}
+        {[-1, 1].map((side) => (
+          <mesh
+            key={side}
+            position={[side * 0.176, -0.058, 0.04]}
+            rotation={[0.1, 0, side * -0.16]}
+            castShadow
+          >
+            <capsuleGeometry args={[0.038, 0.09, 6, 10]} />
+            <meshPhysicalMaterial color={hair} roughness={0.3} clearcoat={0.9} />
+          </mesh>
+        ))}
+      </group>
+
+      {/* One piece of headwear each, so a table is not four of the same figure */}
+      {costumeId % 4 === 0 && (
+        <group position={[0, 0.575, -0.015]} rotation={[-0.2, 0, 0]}>
+          <mesh castShadow>
+            <cylinderGeometry args={[0.28, 0.3, 0.022, 24]} />
+            <meshPhysicalMaterial color="#facc15" roughness={0.65} clearcoat={0.3} />
+          </mesh>
+          <mesh position={[0, 0.045, 0]} castShadow>
+            <cylinderGeometry args={[0.135, 0.16, 0.08, 20]} />
+            <meshPhysicalMaterial color="#eab308" roughness={0.65} clearcoat={0.3} />
           </mesh>
           <mesh position={[0, 0.02, 0]}>
-            <torusGeometry args={[0.14, 0.015, 8, 16]} />
-            <meshStandardMaterial color="#dc2626" />
+            <torusGeometry args={[0.152, 0.014, 8, 20]} />
+            <meshStandardMaterial color="#dc2626" roughness={0.5} />
           </mesh>
         </group>
       )}
 
       {costumeId % 4 === 1 && (
-        // Naruto / Ninja Headband
-        <group position={[0, 0.50, 0.02]}>
-          <mesh position={[0, 0, 0]} rotation={[0.1, 0, 0]}>
-            <torusGeometry args={[0.165, 0.028, 8, 16]} />
-            <meshStandardMaterial color="#1e293b" />
+        <group position={[0, 0.5, 0.01]} rotation={[0.12, 0, 0]}>
+          <mesh>
+            <torusGeometry args={[0.2, 0.026, 8, 22]} />
+            <meshPhysicalMaterial color="#1e293b" roughness={0.45} clearcoat={0.6} />
           </mesh>
-          <mesh position={[0, 0, 0.155]} rotation={[0.1, 0, 0]}>
-            <boxGeometry args={[0.11, 0.045, 0.02]} />
-            <meshStandardMaterial color="#e2e8f0" metalness={0.9} roughness={0.2} />
+          <mesh position={[0, 0.005, 0.192]}>
+            <boxGeometry args={[0.13, 0.055, 0.016]} />
+            <meshStandardMaterial color="#e2e8f0" metalness={0.9} roughness={0.18} />
           </mesh>
         </group>
       )}
 
       {costumeId % 4 === 2 && (
-        // Anya Horns / Hair Buns
-        <group position={[0, 0.54, 0]}>
-          <mesh position={[-0.12, 0, 0]} rotation={[0, 0, 0.35]}>
-            <coneGeometry args={[0.045, 0.10, 12]} />
-            <meshStandardMaterial color="#1e1b4b" />
-          </mesh>
-          <mesh position={[0.12, 0, 0]} rotation={[0, 0, -0.35]}>
-            <coneGeometry args={[0.045, 0.10, 12]} />
-            <meshStandardMaterial color="#1e1b4b" />
-          </mesh>
+        <group position={[0, 0.5, -0.03]}>
+          {[-1, 1].map((side) => (
+            <group key={side} position={[side * 0.19, 0.02, 0]} rotation={[0, 0, side * -0.5]}>
+              <mesh castShadow>
+                <sphereGeometry args={[0.058, 14, 14]} />
+                <meshPhysicalMaterial color={hair} roughness={0.3} clearcoat={0.9} />
+              </mesh>
+              <mesh position={[0, -0.09, 0]} castShadow>
+                <coneGeometry args={[0.05, 0.16, 10]} />
+                <meshPhysicalMaterial color={hair} roughness={0.3} clearcoat={0.9} />
+              </mesh>
+              <mesh position={[0, 0.045, 0]}>
+                <torusGeometry args={[0.052, 0.013, 8, 14]} />
+                <meshStandardMaterial color="#f43f5e" roughness={0.4} />
+              </mesh>
+            </group>
+          ))}
         </group>
       )}
 
       {costumeId % 4 === 3 && (
-        // Super Saiyan Spiky Crown Hair
-        <group position={[0, 0.57, 0]}>
-          <mesh position={[0, 0.03, 0]}>
-            <coneGeometry args={[0.08, 0.16, 8]} />
-            <meshStandardMaterial color="#fde047" roughness={0.3} />
-          </mesh>
-          <mesh position={[-0.07, 0, 0]} rotation={[0, 0, 0.4]}>
-            <coneGeometry args={[0.06, 0.13, 8]} />
-            <meshStandardMaterial color="#fde047" roughness={0.3} />
-          </mesh>
-          <mesh position={[0.07, 0, 0]} rotation={[0, 0, -0.4]}>
-            <coneGeometry args={[0.06, 0.13, 8]} />
-            <meshStandardMaterial color="#fde047" roughness={0.3} />
-          </mesh>
+        <group position={[0, 0.56, -0.01]}>
+          {[
+            [0, 0.05, 0, 0.09, 0.2],
+            [-0.11, 0.01, 0.02, 0.06, 0.16],
+            [0.11, 0.01, 0.02, 0.06, 0.16],
+            [-0.055, 0.03, -0.09, 0.055, 0.15],
+            [0.055, 0.03, -0.09, 0.055, 0.15],
+          ].map(([x, y, z, r, h], i) => (
+            <mesh key={i} position={[x, y, z]} rotation={[z * 1.6, 0, -x * 2.6]} castShadow>
+              <coneGeometry args={[r, h, 7]} />
+              <meshPhysicalMaterial color={hair} roughness={0.28} clearcoat={0.95} />
+            </mesh>
+          ))}
         </group>
       )}
     </group>
