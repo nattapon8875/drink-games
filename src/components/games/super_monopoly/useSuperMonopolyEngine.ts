@@ -1059,7 +1059,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
     setActivePropertyModal(null);
 
-    if (isDouble && !isCurrentPlayerInJail && !isCurrentPlayerResting) {
+    if (isDouble && !isEndingTurn && !isCurrentPlayerInJail && !isCurrentPlayerResting) {
       showToast('🎉 ได้แต้มคู่! คุณมีสิทธิ์ทอยเต๋าต่ออีกรอบ', 'success');
       setHasRolledThisTurn(false);
     } else {
@@ -1145,7 +1145,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     // close itself afterwards and the close handler did this - so once the card
     // stopped closing twice, building a house quietly ate the reroll a double
     // had earned and left the turn waiting on "pass".
-    if (isDouble && !isCurrentPlayerInJail && !isCurrentPlayerResting) {
+    if (isDouble && !isEndingTurn && !isCurrentPlayerInJail && !isCurrentPlayerResting) {
       showToast('🎉 ได้แต้มคู่! คุณมีสิทธิ์ทอยเต๋าต่ออีกรอบ', 'success');
       setHasRolledThisTurn(false);
     } else {
@@ -1400,6 +1400,11 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     // stops a stray tap on the dice from walking again.
     setIsEndingTurn(true);
     setHasRolledThisTurn(true);
+    // Landing on the airport with a double buys the flight, not a flight and
+    // then another roll. Without this the card that opens on arrival handed
+    // back a re-roll the turn had already spent, and since the turn was also
+    // marked as ending, the dice never came back and the turn simply stopped.
+    setIsDouble(false);
 
     const destTile = SUPER_MONOPOLY_TILES[destIndex];
     const passedStart = destIndex <= fromIndex;
@@ -1507,7 +1512,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     }
 
     if (canActThisTurn && hasRolledThisTurn) {
-      if (isDouble && !isCurrentPlayerInJail && !isCurrentPlayerResting) {
+      if (isDouble && !isEndingTurn && !isCurrentPlayerInJail && !isCurrentPlayerResting) {
         showToast('🎉 ได้แต้มคู่! คุณมีสิทธิ์ทอยเต๋าต่ออีกรอบ', 'success');
         setHasRolledThisTurn(false);
       } else {
@@ -1520,7 +1525,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   const handleAcknowledgePenalty = useCallback(async () => {
     setActivePenaltyModal(null);
     if (canActThisTurn && hasRolledThisTurn) {
-      if (isDouble && !isCurrentPlayerInJail && !isCurrentPlayerResting) {
+      if (isDouble && !isEndingTurn && !isCurrentPlayerInJail && !isCurrentPlayerResting) {
         showToast('🎉 ได้แต้มคู่! คุณมีสิทธิ์ทอยเต๋าต่ออีกรอบ', 'success');
         setHasRolledThisTurn(false);
       } else {
