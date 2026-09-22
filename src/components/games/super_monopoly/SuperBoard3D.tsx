@@ -67,11 +67,26 @@ export const PLAYER_3D_COLORS = [
 // a table of players is not six copies of one expression.
 const animeFaceCache = new Map<string, THREE.CanvasTexture>();
 
-// Painted-figure palettes. Skin and hair vary per player so a table does not
-// look like four castings of the same mould.
-const FIGURE_SKIN = ['#ffe0c4', '#f8d3b0', '#ffd8bc', '#eec6a6', '#ffe6d0', '#f3cba8'];
-const FIGURE_HAIR = ['#2b2440', '#7c3f2f', '#c2410c', '#1e3a5f', '#4c1d95', '#0f766e'];
-const FIGURE_EYES = ['#0ea5e9', '#7c3aed', '#059669', '#b45309', '#e11d48', '#0369a1'];
+// One character per seat colour, fixed. Hashing the player id gave everyone a
+// different figure every game, so nobody could learn that the red one is the
+// player in the straw hat. The colour is the character now: same seat, same
+// face, same hair, every time.
+//
+// hat: 0 straw hat · 1 headband · 2 twin tails · 3 spiked up
+const FIGURE_CAST = [
+  { hair: '#2b2440', skin: '#ffe0c4', eyes: '#0ea5e9', face: 0, hat: 0 }, // 1 red
+  { hair: '#1e3a5f', skin: '#f8d3b0', eyes: '#0369a1', face: 2, hat: 1 }, // 2 blue
+  { hair: '#0f766e', skin: '#ffd8bc', eyes: '#059669', face: 3, hat: 3 }, // 3 green
+  { hair: '#c2410c', skin: '#eec6a6', eyes: '#b45309', face: 4, hat: 2 }, // 4 amber
+  { hair: '#4c1d95', skin: '#ffe6d0', eyes: '#7c3aed', face: 5, hat: 0 }, // 5 violet
+  { hair: '#9d174d', skin: '#ffe0c4', eyes: '#e11d48', face: 1, hat: 1 }, // 6 pink
+  { hair: '#155e75', skin: '#f3cba8', eyes: '#06b6d4', face: 0, hat: 2 }, // 7 cyan
+  { hair: '#3f6212', skin: '#f8d3b0', eyes: '#4d7c0f', face: 2, hat: 3 }, // 8 lime
+  { hair: '#7c2d12', skin: '#ffd8bc', eyes: '#ea580c', face: 3, hat: 0 }, // 9 orange
+  { hair: '#881337', skin: '#ffe6d0', eyes: '#be123c', face: 4, hat: 1 }, // 10 ruby
+  { hair: '#134e4a', skin: '#eec6a6', eyes: '#0d9488', face: 5, hat: 2 }, // 11 teal
+  { hair: '#312e81', skin: '#ffe0c4', eyes: '#4f46e5', face: 1, hat: 3 }, // 12 indigo
+];
 
 export function createAnimeFaceTexture(typeIndex: number, irisColor: string): THREE.CanvasTexture {
   const key = `${typeIndex % 6}|${irisColor}`;
@@ -1020,25 +1035,18 @@ const PlayerToken3D: React.FC<{
   const [tx, ty, tz] = getSuperTile3DPosition(targetTileIndex);
   const color = PLAYER_3D_COLORS[playerIndex % PLAYER_3D_COLORS.length];
 
-  // Stable random costume ID per player (Hair / Accessories / Faces)
-  const costumeId = useMemo(() => {
-    let hash = 0;
-    const str = player.id || player.display_name || 'player';
-    for (let i = 0; i < str.length; i++) {
-      hash = (hash * 31 + str.charCodeAt(i)) & 0xffffff;
-    }
-    return Math.abs(hash + playerIndex);
-  }, [player.id, player.display_name, playerIndex]);
+  // The seat decides the character, so the colour is something you can learn.
+  const cast = FIGURE_CAST[playerIndex % FIGURE_CAST.length];
 
   const faceTexture = useMemo(() => {
     if (typeof window === 'undefined') return null;
-    return createAnimeFaceTexture(costumeId, FIGURE_EYES[costumeId % FIGURE_EYES.length]);
-  }, [costumeId]);
+    return createAnimeFaceTexture(cast.face, cast.eyes);
+  }, [cast]);
 
-  // A figure is painted, not moulded in one colour: skin and hair are their own
-  // and only the outfit carries the player's colour.
-  const skin = FIGURE_SKIN[costumeId % FIGURE_SKIN.length];
-  const hair = FIGURE_HAIR[costumeId % FIGURE_HAIR.length];
+  // A figure is painted, not moulded in one colour: skin and hair are the
+  // character's own, and only the outfit carries the seat colour.
+  const skin = cast.skin;
+  const hair = cast.hair;
 
   // Distribute players neatly on the same tile so they NEVER hang off the board edge
   const playersOnThisTile = players.filter((other) => {
@@ -1248,7 +1256,7 @@ const PlayerToken3D: React.FC<{
       </group>
 
       {/* One piece of headwear each, so a table is not four of the same figure */}
-      {costumeId % 4 === 0 && (
+      {cast.hat === 0 && (
         <group position={[0, 0.575, -0.015]} rotation={[-0.2, 0, 0]}>
           <mesh castShadow>
             <cylinderGeometry args={[0.28, 0.3, 0.022, 24]} />
@@ -1265,7 +1273,7 @@ const PlayerToken3D: React.FC<{
         </group>
       )}
 
-      {costumeId % 4 === 1 && (
+      {cast.hat === 1 && (
         <group position={[0, 0.5, 0.01]} rotation={[0.12, 0, 0]}>
           <mesh>
             <torusGeometry args={[0.2, 0.026, 8, 22]} />
@@ -1278,7 +1286,7 @@ const PlayerToken3D: React.FC<{
         </group>
       )}
 
-      {costumeId % 4 === 2 && (
+      {cast.hat === 2 && (
         <group position={[0, 0.5, -0.03]}>
           {[-1, 1].map((side) => (
             <group key={side} position={[side * 0.19, 0.02, 0]} rotation={[0, 0, side * -0.5]}>
@@ -1299,7 +1307,7 @@ const PlayerToken3D: React.FC<{
         </group>
       )}
 
-      {costumeId % 4 === 3 && (
+      {cast.hat === 3 && (
         <group position={[0, 0.56, -0.01]}>
           {[
             [0, 0.05, 0, 0.09, 0.2],
