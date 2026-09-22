@@ -31,6 +31,10 @@ interface SuperBoard3DProps {
   // token comes off the board.
   bankrupt?: Record<string, boolean>;
   rowBonus?: RowBonus | null;
+  // Shown as real dice on the felt rather than a card floating over the board.
+  dice?: number[] | null;
+  isRolling?: boolean;
+  showDice?: boolean;
   onTileClick: (tile: SuperPropertyTile) => void;
 }
 
@@ -1113,6 +1117,119 @@ function useThemeColor(varName: string, fallback: string): string {
   return value;
 }
 
+// A die face, drawn once per number and kept. Pips on a canvas stay crisp at
+// any angle, where pip meshes would have to be positioned six times over.
+const dieFaceCache = new Map<number, THREE.CanvasTexture>();
+
+function dieFaceTexture(n: number): THREE.CanvasTexture {
+  const cached = dieFaceCache.get(n);
+  if (cached) return cached;
+
+  const S = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = S;
+  canvas.height = S;
+  const ctx = canvas.getContext('2d')!;
+
+  ctx.fillStyle = '#fdfdfb';
+  ctx.fillRect(0, 0, S, S);
+
+  const a = S * 0.26;
+  const b = S * 0.5;
+  const c = S * 0.74;
+  const layouts: Record<number, Array<[number, number]>> = {
+    1: [[b, b]],
+    2: [[a, a], [c, c]],
+    3: [[a, a], [b, b], [c, c]],
+    4: [[a, a], [c, a], [a, c], [c, c]],
+    5: [[a, a], [c, a], [b, b], [a, c], [c, c]],
+    6: [[a, a], [c, a], [a, b], [c, b], [a, c], [c, c]],
+  };
+
+  ctx.fillStyle = n === 1 ? '#dc2626' : '#1f2937';
+  (layouts[n] || layouts[1]).forEach(([x, y]) => {
+    ctx.beginPath();
+    ctx.arc(x, y, S * 0.085, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  dieFaceCache.set(n, tex);
+  return tex;
+}
+
+// Box faces come in the order +X, -X, +Y, -Y, +Z, -Z. Opposite faces of a real
+// die add up to seven, and this arrangement keeps that.
+const DIE_FACE_ORDER = [3, 4, 1, 6, 2, 5];
+
+// How far to turn the cube to bring a given number to the top.
+const DIE_REST_ROTATION: Record<number, [number, number, number]> = {
+  1: [0, 0, 0],
+  6: [Math.PI, 0, 0],
+  3: [0, 0, Math.PI / 2],
+  4: [0, 0, -Math.PI / 2],
+  2: [-Math.PI / 2, 0, 0],
+  5: [Math.PI / 2, 0, 0],
+};
+
+const Die3D: React.FC<{
+  value: number;
+  rolling: boolean;
+  position: [number, number, number];
+  spin: number;
+}> = ({ value, rolling, position, spin }) => {
+  const ref = useRef<THREE.Group>(null);
+
+  const geo = useMemo(() => new RoundedBoxGeometry(0.62, 0.62, 0.62, 4, 0.12), []);
+  const materials = useMemo(
+    () =>
+      DIE_FACE_ORDER.map(
+        (n) =>
+          new THREE.MeshStandardMaterial({
+            map: dieFaceTexture(n),
+            roughness: 0.32,
+            metalness: 0.05,
+          })
+      ),
+    []
+  );
+
+  useFrame((_, delta) => {
+    const g = ref.current;
+    if (!g) return;
+    if (rolling) {
+      // Tumbling, each die on its own axes so they do not move as a pair.
+      g.rotation.x += delta * (7 + spin * 2.5);
+      g.rotation.y += delta * (5.5 + spin * 3);
+      g.rotation.z += delta * (6 + spin);
+      g.position.y = position[1] + Math.abs(Math.sin(performance.now() / 110 + spin)) * 0.35;
+      return;
+    }
+    // Settle onto the number that was rolled.
+    const target = DIE_REST_ROTATION[value] || DIE_REST_ROTATION[1];
+    g.rotation.x += (target[0] - g.rotation.x) * Math.min(1, delta * 9);
+    g.rotation.y += (target[1] - g.rotation.y) * Math.min(1, delta * 9);
+    g.rotation.z += (target[2] - g.rotation.z) * Math.min(1, delta * 9);
+    g.position.y += (position[1] - g.position.y) * Math.min(1, delta * 9);
+  });
+
+  return (
+    <group ref={ref} position={position}>
+      <mesh geometry={geo} material={materials} castShadow receiveShadow />
+    </group>
+  );
+};
+
+// The dice land on the felt in the middle, the way they would on a table.
+const CenterDice3D: React.FC<{ dice: number[]; rolling: boolean }> = ({ dice, rolling }) => (
+  <group position={[0, 0.42, 0]}>
+    <Die3D value={dice[0] || 1} rolling={rolling} position={[-0.52, 0, 0.1]} spin={0} />
+    <Die3D value={dice[1] || 1} rolling={rolling} position={[0.52, 0, -0.1]} spin={1.4} />
+  </group>
+);
+
 const CenterDeck3D: React.FC = () => {
   const tableTop = useThemeColor('--c-surface-2', 'rgb(33,49,76)');
   const tableEdge = useThemeColor('--c-line', 'rgb(56,79,115)');
@@ -1172,6 +1289,9 @@ const SuperBoard3DBase: React.FC<SuperBoard3DProps> = ({
   activeStepPlayerId,
   bankrupt,
   rowBonus,
+  dice,
+  isRolling,
+  showDice,
   onTileClick,
 }) => {
   return (
@@ -1216,6 +1336,10 @@ const SuperBoard3DBase: React.FC<SuperBoard3DProps> = ({
         <group rotation={[0, -Math.PI / 4, 0]}>
           {/* Center Play Mat, Table Base & Money Stacks */}
           <CenterDeck3D />
+
+          {showDice && dice && dice.length >= 2 && (
+            <CenterDice3D dice={dice} rolling={Boolean(isRolling)} />
+          )}
 
           {/* 40 Tiles around board with ultra-sharp textures & authentic orientation */}
           {SUPER_MONOPOLY_TILES.map((tile) => {

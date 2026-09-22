@@ -686,7 +686,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
 
           {/* Dice roll in the middle of the board, the way they would on a table.
               Non-interactive so tiles underneath stay clickable. */}
-          {diceShownForTurn && (
+          {diceShownForTurn && !is3DMode && (
             <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
               <div
                 // Solid, not translucent: a blurred backdrop over the animating
@@ -734,6 +734,42 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
             </div>
           )}
 
+          {diceShownForTurn && is3DMode && (
+            // Top centre: the dice have the middle, and the roll button has the
+            // bottom, so this is the one strip of the board that is free.
+            <div className="absolute inset-x-0 top-2 z-30 flex justify-center pointer-events-none">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-[rgb(var(--c-bg-deep))] border-2 border-amber-600/60 shadow-2xl">
+                {isRolling ? (
+                  <span className="text-[11px] font-black text-yellow-300 animate-pulse">
+                    กำลังทอย...
+                  </span>
+                ) : (
+                  <span className="text-[11px] font-black text-amber-100">
+                    {dice[0] + dice[1]} แต้ม
+                    {dice[0] === dice[1] && (
+                      <span
+                        className={
+                          isCurrentPlayerInJail || isCurrentPlayerResting
+                            ? 'text-rose-300'
+                            : 'text-yellow-300'
+                        }
+                      >
+                        {isCurrentPlayerInJail
+                          ? ' · แต้มคู่ (ติดคุก ไม่ได้ทอยต่อ)'
+                          : isCurrentPlayerResting
+                          ? ' · แต้มคู่ (ต้องพัก ไม่ได้ทอยต่อ)'
+                          : ' · แต้มคู่!'}
+                      </span>
+                    )}
+                  </span>
+                )}
+                <span className="text-[9px] font-bold text-amber-300/80 max-w-[140px] truncate">
+                  {currentTurnPlayer?.display_name || ''}
+                </span>
+              </div>
+            </div>
+          )}
+
           {is3DMode ? (
             <SuperBoard3D
               positions={positions}
@@ -744,6 +780,9 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               activeStepPlayerId={activeStepPlayerId}
               bankrupt={bankrupt}
               rowBonus={rowBonus}
+              dice={dice}
+              isRolling={isRolling}
+              showDice={diceShownForTurn}
               onTileClick={handleTileClick}
             />
           ) : (
