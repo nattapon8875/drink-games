@@ -1218,9 +1218,9 @@ const PlayerToken3D: React.FC<{
       </mesh>
 
       {faceTexture && (
-        <mesh position={[0, 0.412, 0.178]}>
-          <planeGeometry args={[0.3, 0.3]} />
-          <meshBasicMaterial map={faceTexture} transparent side={THREE.DoubleSide} />
+        <mesh position={[0, 0.414, 0.203]}>
+          <planeGeometry args={[0.27, 0.27]} />
+          <meshBasicMaterial map={faceTexture} transparent depthWrite={false} side={THREE.DoubleSide} />
         </mesh>
       )}
 
@@ -1234,8 +1234,8 @@ const PlayerToken3D: React.FC<{
         {[-0.105, -0.035, 0.035, 0.105].map((x, i) => (
           <mesh
             key={x}
-            position={[x, 0.055 - Math.abs(x) * 0.15, 0.155]}
-            rotation={[0.45, 0, x * 2.6]}
+            position={[x, 0.086 - Math.abs(x) * 0.16, 0.181]}
+            rotation={[0.52, 0, x * 2.6]}
             castShadow
           >
             <coneGeometry args={[0.045, 0.14 + (i % 2) * 0.04, 6]} />
@@ -1607,7 +1607,7 @@ const SuperBoard3DBase: React.FC<SuperBoard3DProps> = ({
           enablePan
           screenSpacePanning
           enableZoom
-          minDistance={4}
+          minDistance={2.4}
           maxDistance={30}
           maxPolarAngle={Math.PI / 2.15}
           minPolarAngle={Math.PI / 6}
