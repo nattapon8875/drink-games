@@ -182,22 +182,38 @@ body {
 }
 
 /* Scrollbar */
+/* Solid 8px mint was louder than most of the content it sat beside, and on a
+   phone it reads as a green stripe down the page. */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgb(var(--c-surface-2));
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgb(var(--c-mint));
+  background: rgb(var(--c-mint) / 0.55);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgb(var(--c-mint-deep));
+}
+
+/* Used in half a dozen places - the seat strip, the rules tabs, the player
+   list - and never actually defined, so every one of them was drawing the
+   full-fat mint scrollbar across its own content. */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 /* Animations */

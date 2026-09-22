@@ -297,7 +297,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
   return (
     <div className="w-full h-full min-h-[90vh] flex flex-col justify-between p-2 sm:p-4 select-none mx-auto max-w-none">
       {/* Top Status Header */}
-      <div className="w-full flex items-center justify-between bg-[rgb(var(--c-surface))]/90 border-2 border-[rgb(var(--c-surface-3))] rounded-2xl px-4 py-2 mb-2 shadow-xl">
+      <div className="w-full hidden sm:flex items-center justify-between bg-[rgb(var(--c-surface))]/90 border-2 border-[rgb(var(--c-surface-3))] rounded-2xl px-4 py-2 mb-2 shadow-xl">
         <div className="flex items-center gap-2">
           <span className="text-xl">🐃</span>
           {/* On a phone the full title wrapped over five lines and pushed the
@@ -536,8 +536,8 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
         {/* Center Column: 3D / 2D Super Monopoly Classic Board (6 cols) */}
         <div className={`${is3DMode ? 'lg:col-span-9' : 'lg:col-span-6'} flex flex-col items-center justify-center order-1 lg:order-2 w-full`}>
           {/* 3D / 2D Toggle Button Bar */}
-          <div className="w-full flex items-center justify-between pb-1.5 px-1">
-            <span className="text-[11px] font-bold text-amber-300/80 flex items-center gap-1">
+          <div className="w-full flex items-center justify-end sm:justify-between pb-1 sm:pb-1.5 px-1">
+            <span className="hidden sm:flex text-[11px] font-bold text-amber-300/80 items-center gap-1">
               <span>กระดานซุปเปอร์เศรษฐี</span>
             </span>
 
@@ -576,7 +576,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
             // On a phone this used to float over the board and cover the
             // squares behind it. It is a strip above the board there, and only
             // returns to the corner of the board where there is room for it.
-            <div className="mb-1 flex flex-wrap gap-1 lg:mb-0 lg:absolute lg:top-2 lg:left-2 lg:z-20 lg:flex-col lg:items-stretch lg:pointer-events-none lg:max-w-[40%]">
+            <div className="mb-1 flex flex-nowrap overflow-x-auto scrollbar-none gap-1 lg:mb-0 lg:overflow-visible lg:flex-wrap lg:absolute lg:top-2 lg:left-2 lg:z-20 lg:flex-col lg:items-stretch lg:pointer-events-none lg:max-w-[40%]">
           {orderedPlayers.slice(0, 8).map((seatPlayer, seatIdx) => {
               const colour = PLAYER_3D_COLORS[players.indexOf(seatPlayer) % PLAYER_3D_COLORS.length];
               const isSeatTurn = seatPlayer.id === currentTurnPlayer?.id;
@@ -590,7 +590,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               return (
                 <div
                   key={seatPlayer.id}
-                  className={`rounded-xl border-2 bg-[rgb(var(--c-surface))]/95 px-1.5 py-1 shadow-lg ${
+                  className={`shrink-0 rounded-xl border-2 bg-[rgb(var(--c-surface))]/95 px-1.5 py-1 shadow-lg ${
                     isSeatTurn ? 'border-mint' : 'border-[rgb(var(--c-line))]'
                   }`}
                 >
@@ -801,7 +801,11 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
         <div className="lg:col-span-3 flex flex-col gap-2 order-3">
           {/* Turn status. Rolling, ending the turn and acknowledging jail
               all live on the floating action now, so only the things it
-              cannot show are kept here. */}
+              cannot show are kept here - and every one of them is optional,
+              so on your own turn the panel drew an empty bordered box. */}
+          {((isProxying && currentTurnPlayer) ||
+            (canOfferProxy && currentTurnPlayer) ||
+            (!isMyTurn && !isProxying)) && (
           <div className="bg-[rgb(var(--c-surface))] border-2 border-[rgb(var(--c-surface-3))] rounded-2xl p-3 shadow-xl">
             {/* Host standing in for an absent player */}
             {isProxying && currentTurnPlayer && (
@@ -846,6 +850,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               )
             )}
           </div>
+          )}
 
           {/* Live History Feed Box */}
           <div className="bg-[rgb(var(--c-surface))] border-2 border-[rgb(var(--c-surface-3))] rounded-2xl p-3 shadow-xl flex-1 flex flex-col min-h-[160px]">

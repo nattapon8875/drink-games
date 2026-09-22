@@ -373,25 +373,38 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
               )}
 
               {/* Tile Content (Icon + Short Name + Price) */}
+              {/* A phone gives each square 27px. An emoji, a Thai province name
+                  and a price cannot all live in that, and what came out was a
+                  clipped name over an unreadable price. On a narrow screen a
+                  buyable square spends the whole cell on its name, over two
+                  lines; the icon and the price come back with the room for
+                  them, and a tap shows everything either way. */}
               <div className="flex-1 flex flex-col items-center justify-center px-0.5 py-0.5 text-center leading-none">
-                <span className="text-[10px] sm:text-[13px] drop-shadow-sm mb-0.5">
+                <span
+                  className={`text-[10px] sm:text-[13px] drop-shadow-sm mb-0.5 ${
+                    tile.cost ? 'hidden sm:block' : ''
+                  }`}
+                >
                   {tile.icon}
                 </span>
 
-                <span className="text-[7.5px] sm:text-[9.5px] font-black text-[rgb(var(--c-ink))] tracking-tight truncate w-full">
+                <span
+                  className="text-[7.5px] sm:text-[9.5px] font-black text-[rgb(var(--c-ink))] tracking-tight w-full leading-[1.15] line-clamp-2 sm:truncate sm:leading-none"
+                  
+                >
                   {getTileShortName(tile.name)}
                 </span>
 
                 {tile.cost ? (
-                  <span className="text-[6.5px] sm:text-[8px] font-mono font-black text-[rgb(var(--c-mint-label))] bg-[rgb(var(--c-mint-soft))] px-1 py-0.2 rounded mt-0.5 shadow-inner">
+                  <span className="hidden sm:inline-block text-[6.5px] sm:text-[8px] font-mono font-black text-[rgb(var(--c-mint-label))] bg-[rgb(var(--c-mint-soft))] px-1 py-0.2 rounded mt-0.5 shadow-inner">
                     {formatMoneyM(tile.cost)}
                   </span>
                 ) : tile.type === 'tax' ? (
-                  <span className="text-[6px] sm:text-[7.5px] font-bold text-[rgb(var(--c-berry-label))] mt-0.5">
+                  <span className="hidden sm:block text-[6px] sm:text-[7.5px] font-bold text-[rgb(var(--c-berry-label))] mt-0.5">
                     จ่าย 1.0M
                   </span>
                 ) : (
-                  <span className="text-[6px] sm:text-[7.5px] font-bold text-[rgb(var(--c-ink-faint))] mt-0.5">
+                  <span className="hidden sm:block text-[6px] sm:text-[7.5px] font-bold text-[rgb(var(--c-ink-faint))] mt-0.5">
                     พิเศษ
                   </span>
                 )}

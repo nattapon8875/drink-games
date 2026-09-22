@@ -1121,8 +1121,10 @@ const SuperBoard3DBase: React.FC<SuperBoard3DProps> = ({
         </group>
       </Canvas>
 
-      {/* Overlay Hint */}
-      <div className="absolute bottom-2 left-2 pointer-events-none px-2.5 py-1 rounded-lg bg-[rgb(var(--c-bg-deep))] border border-amber-500/30 text-[10px] text-amber-200/90 font-bold flex items-center gap-1.5 shadow">
+      {/* Overlay hint. The roll button sits in this same corner on a phone and
+          printed itself straight over the caption, so the caption gives way -
+          a finger already knows how to drag and pinch. */}
+      <div className="hidden sm:flex absolute bottom-2 left-2 pointer-events-none px-2.5 py-1 rounded-lg bg-[rgb(var(--c-bg-deep))] border border-amber-500/30 text-[10px] text-amber-200/90 font-bold items-center gap-1.5 shadow">
         <span>🎮 มุมมอง 3D สไตล์เกมเศรษฐี</span>
         <span className="text-amber-400/80">•</span>
         <span>ลากเพื่อหมุน • เลื่อนลูกกลิ้งเพื่อซูม</span>
