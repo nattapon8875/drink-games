@@ -198,7 +198,7 @@ export async function POST(req: Request) {
         }
 
         case 'update_player': {
-          const { playerId, displayName, avatarUrl } = body;
+          const { playerId, displayName, avatarUrl, isConnected } = body;
           const currentPlayers = serverStore.players.get(roomCode) || [];
           const updatedPlayers = currentPlayers.map((p) =>
             p.id === playerId
@@ -206,6 +206,9 @@ export async function POST(req: Request) {
                   ...p,
                   display_name: displayName !== undefined ? displayName : p.display_name,
                   avatar_url: avatarUrl !== undefined ? avatarUrl : p.avatar_url,
+                  // Marked away rather than removed: a party game keeps the
+                  // seat so whoever went to the toilet can sit back down.
+                  is_connected: isConnected !== undefined ? isConnected : p.is_connected,
                 }
               : p
           );

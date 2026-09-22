@@ -267,6 +267,8 @@ export default function PlayPage() {
             const isMe = p.id === user?.id;
             const isPlayerHost = p.id === room.host_id;
             const isBot = p.line_user_id === 'bot' || p.id.startsWith('bot-');
+            // Away, not gone: their seat and their drinks are still here.
+            const isAway = !isBot && p.is_connected === false;
 
             return (
               <div
@@ -277,7 +279,11 @@ export default function PlayPage() {
                     : 'bg-[rgb(var(--c-surface))] border-[rgb(var(--c-surface-2))]'
                 }`}
               >
-                <div className="flex items-center gap-2.5 min-w-0 flex-1 mr-2">
+                <div
+                  className={`flex items-center gap-2.5 min-w-0 flex-1 mr-2 ${
+                    isAway ? 'opacity-50' : ''
+                  }`}
+                >
                   <Avatar src={p.avatar_url} name={p.display_name} size="sm" />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 font-black text-xs text-amber-100">
@@ -295,6 +301,14 @@ export default function PlayPage() {
                       {isPlayerHost && (
                         <span title="หัวหน้าห้อง" className="shrink-0">
                           <Crown className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
+                        </span>
+                      )}
+                      {isAway && (
+                        <span
+                          title="ไม่ได้เปิดหน้าจออยู่ - ที่นั่งยังอยู่ กลับมาเล่นต่อได้เลย"
+                          className="text-[9px] bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-line-strong))] text-[rgb(var(--c-ink-faint))] font-black px-1.5 py-0.2 rounded-md shrink-0"
+                        >
+                          💤 ไม่อยู่
                         </span>
                       )}
                     </div>

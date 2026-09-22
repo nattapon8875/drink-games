@@ -989,6 +989,37 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
     };
   }, [roomCode, currentUser?.id]);
 
+  // Dims a player who has stopped checking in, without taking their seat. The
+  // heartbeat sets is_connected back to true the moment they return.
+  const markAway = useCallback(
+    async (playerId: string) => {
+      if (!roomCode) return;
+      try {
+        if (!isSupabaseConfigured()) {
+          await fetch('/api/room', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'update_player',
+              code: roomCode,
+              playerId,
+              isConnected: false,
+            }),
+          });
+          return;
+        }
+        await supabase
+          .from('players')
+          .update({ is_connected: false })
+          .eq('room_code', roomCode)
+          .eq('id', playerId);
+      } catch {
+        // the next tick tries again
+      }
+    },
+    [roomCode]
+  );
+
   // Exactly one client reaps, so leaveRoom's game_state write is never racing
   // itself. The reaper cannot be the host: when the host is the ghost, nobody
   // would be left to clean it up. Instead every client independently elects the
@@ -1037,7 +1068,21 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
         (p) => !isBotPlayer(p) && p.id !== myId && p.last_seen && !isFresh(p)
       );
 
+      // A party game never gives up a seat while it is being played. Going to
+      // the toilet used to end somebody's game - they came back to a room that
+      // no longer had them in it. Mark them away instead; the next heartbeat
+      // they send puts them straight back.
+      const keepSeats =
+        roomRef.current?.status === 'playing' &&
+        roomRef.current?.game_type !== 'super-monopoly';
+
       for (const p of stale) {
+        if (keepSeats) {
+          if (p.is_connected === false) continue; // already dimmed
+          console.log('[Presence] Marking player away:', p.display_name, p.id);
+          await markAway(p.id);
+          continue;
+        }
         console.log('[Presence] Removing stale player:', p.display_name, p.id);
         await leaveRoomRef.current(p.id);
       }
@@ -1049,7 +1094,7 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
       cancelled = true;
       clearInterval(timer);
     };
-  }, [roomCode, currentUser?.id]);
+  }, [roomCode, currentUser?.id, markAway]);
 
   return {
     room,
