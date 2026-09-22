@@ -1226,26 +1226,26 @@ const PlayerToken3D: React.FC<{
 
       {/* Hair: a cap over the skull, a fringe across the brow and locks down
           the sides - the shape that reads as anime before any detail does. */}
-      <group position={[0, 0.42, 0]}>
-        <mesh castShadow scale={[1, 0.94, 1]}>
-          <sphereGeometry args={[0.209, 26, 26, 0, Math.PI * 2, 0, Math.PI * 0.6]} />
+      <group position={[0, 0.435, -0.01]}>
+        <mesh castShadow scale={[1, 0.9, 1]} rotation={[-0.3, 0, 0]}>
+          <sphereGeometry args={[0.209, 26, 26, 0, Math.PI * 2, 0, Math.PI * 0.56]} />
           <meshPhysicalMaterial color={hair} roughness={0.3} clearcoat={0.9} clearcoatRoughness={0.2} />
         </mesh>
         {[-0.105, -0.035, 0.035, 0.105].map((x, i) => (
           <mesh
             key={x}
-            position={[x, 0.086 - Math.abs(x) * 0.16, 0.181]}
-            rotation={[0.52, 0, x * 2.6]}
+            position={[x, 0.05 - Math.abs(x) * 0.08, 0.172]}
+            rotation={[0.6, 0, x * 2.6]}
             castShadow
           >
-            <coneGeometry args={[0.045, 0.14 + (i % 2) * 0.04, 6]} />
+            <coneGeometry args={[0.034, 0.08 + (i % 2) * 0.02, 6]} />
             <meshPhysicalMaterial color={hair} roughness={0.3} clearcoat={0.9} />
           </mesh>
         ))}
         {[-1, 1].map((side) => (
           <mesh
             key={side}
-            position={[side * 0.176, -0.058, 0.04]}
+            position={[side * 0.176, -0.07, 0.045]}
             rotation={[0.1, 0, side * -0.16]}
             castShadow
           >
