@@ -1178,8 +1178,8 @@ const Die3D: React.FC<{
   value: number;
   rolling: boolean;
   position: [number, number, number];
-  spin: number;
-}> = ({ value, rolling, position, spin }) => {
+  seed: number;
+}> = ({ value, rolling, position, seed }) => {
   const ref = useRef<THREE.Group>(null);
 
   const geo = useMemo(() => new RoundedBoxGeometry(0.62, 0.62, 0.62, 4, 0.12), []);
@@ -1196,23 +1196,67 @@ const Die3D: React.FC<{
     []
   );
 
+  // Where the face that came up has to end up.
+  const target = useMemo(() => {
+    const e = DIE_REST_ROTATION[value] || DIE_REST_ROTATION[1];
+    return new THREE.Quaternion().setFromEuler(new THREE.Euler(e[0], e[1], e[2]));
+  }, [value]);
+
+  const spin = useRef(new THREE.Vector3());
+  const from = useRef(new THREE.Quaternion());
+  const step = useRef(new THREE.Quaternion());
+  const tmp = useRef(new THREE.Euler());
+  const settle = useRef(1); // 1 = at rest
+  const clock = useRef(0);
+
+  // A throw, and then the landing. Capturing where the die actually is when the
+  // roll ends is what makes the last turn look like the end of a tumble rather
+  // than a separate animation.
+  useEffect(() => {
+    clock.current = 0;
+    if (rolling) {
+      const r = (n: number) => Math.sin(seed * 12.9898 + n * 78.233) * 43758.5453;
+      const frac = (n: number) => Math.abs(r(n) - Math.floor(r(n)));
+      spin.current.set(
+        9 + frac(1) * 11,
+        7 + frac(2) * 12,
+        9 + frac(3) * 11
+      );
+      settle.current = 0;
+    } else if (ref.current) {
+      from.current.copy(ref.current.quaternion);
+      settle.current = 0;
+    }
+  }, [rolling, value, seed]);
+
   useFrame((_, delta) => {
     const g = ref.current;
     if (!g) return;
+    const d = Math.min(delta, 1 / 30);
+    clock.current += d;
+
     if (rolling) {
-      // Tumbling, each die on its own axes so they do not move as a pair.
-      g.rotation.x += delta * (7 + spin * 2.5);
-      g.rotation.y += delta * (5.5 + spin * 3);
-      g.rotation.z += delta * (6 + spin);
-      g.position.y = position[1] + Math.abs(Math.sin(performance.now() / 110 + spin)) * 0.35;
+      // Compounding the turn onto the quaternion keeps it a real rotation, and
+      // the damping means it is already slowing by the time it lands.
+      spin.current.multiplyScalar(1 - d * 0.55);
+      tmp.current.set(spin.current.x * d, spin.current.y * d, spin.current.z * d);
+      step.current.setFromEuler(tmp.current);
+      g.quaternion.multiply(step.current);
+      // Thrown up and coming down, not hovering.
+      const t = clock.current * 3.1 + seed;
+      g.position.y = position[1] + Math.abs(Math.sin(t)) * 0.55;
       return;
     }
-    // Settle onto the number that was rolled.
-    const target = DIE_REST_ROTATION[value] || DIE_REST_ROTATION[1];
-    g.rotation.x += (target[0] - g.rotation.x) * Math.min(1, delta * 9);
-    g.rotation.y += (target[1] - g.rotation.y) * Math.min(1, delta * 9);
-    g.rotation.z += (target[2] - g.rotation.z) * Math.min(1, delta * 9);
-    g.position.y += (position[1] - g.position.y) * Math.min(1, delta * 9);
+
+    // Shortest way round to the face that came up, easing out - a die does not
+    // glide into place, it turns the last little bit and stops.
+    settle.current = Math.min(1, settle.current + d / 0.5);
+    const e = 1 - Math.pow(1 - settle.current, 3);
+    g.quaternion.copy(from.current).slerp(target, e);
+
+    // One firm bounce that dies away, instead of sinking.
+    const b = 0.42 * Math.exp(-clock.current * 6.5) * Math.abs(Math.sin(clock.current * 15));
+    g.position.y = position[1] + b;
   });
 
   return (
@@ -1225,8 +1269,8 @@ const Die3D: React.FC<{
 // The dice land on the felt in the middle, the way they would on a table.
 const CenterDice3D: React.FC<{ dice: number[]; rolling: boolean }> = ({ dice, rolling }) => (
   <group position={[0, 0.42, 0]}>
-    <Die3D value={dice[0] || 1} rolling={rolling} position={[-0.52, 0, 0.1]} spin={0} />
-    <Die3D value={dice[1] || 1} rolling={rolling} position={[0.52, 0, -0.1]} spin={1.4} />
+    <Die3D value={dice[0] || 1} rolling={rolling} position={[-0.52, 0, 0.1]} seed={0.37} />
+    <Die3D value={dice[1] || 1} rolling={rolling} position={[0.52, 0, -0.1]} seed={2.11} />
   </group>
 );
 
