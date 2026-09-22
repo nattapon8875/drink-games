@@ -14,7 +14,11 @@ import {
   rowOfTile,
   RowBonus,
   HOTEL_TILE_INDICES,
+  UTILITY_TILE_INDICES,
 } from './superMonopolyData';
+
+// การประปานครหลวง and โรงไฟฟ้านครหลวง, in the order the board lists them.
+const [WATER_TILE_INDEX, POWER_TILE_INDEX] = UTILITY_TILE_INDICES;
 
 interface SuperBoard3DProps {
   positions: Record<string, number>;
@@ -519,37 +523,75 @@ const ClaimFlag3D: React.FC<{ color: string }> = ({ color }) => {
   );
 };
 
-// A map pin, the way a place is marked on a map: a ring head with the hole
-// showing through, tapering to a point that stands on the square. Hotels, the
-// power plant and the waterworks get one instead of a claim flag - they are
-// landmarks rather than plots you build on.
-const MapPin3D: React.FC<{ color: string; scale?: number; lift?: number }> = ({
-  color,
-  scale = 1,
-  lift = 0,
-}) => (
-  <group position={[0, 0.11 + lift, -0.15]} scale={[scale, scale, scale]}>
-    {/* The point, apex down so it stands on the square */}
-    <mesh position={[0, 0.2, 0]} rotation={[Math.PI, 0, 0]} castShadow>
-      <coneGeometry args={[0.15, 0.36, 24]} />
-      <meshStandardMaterial color={color} roughness={0.14} metalness={0.25} />
+// The power plant is a bolt and the waterworks a drop, cut as real shapes so
+// they read at a glance instead of being two identical pins.
+const BOLT_SHAPE = (() => {
+  const pts: Array<[number, number]> = [
+    [0.34, 1.0],
+    [-0.36, 0.08],
+    [0.0, 0.08],
+    [-0.28, -1.0],
+    [0.44, -0.06],
+    [0.08, -0.06],
+  ];
+  const shape = new THREE.Shape();
+  shape.moveTo(pts[0][0], pts[0][1]);
+  pts.slice(1).forEach(([x, y]) => shape.lineTo(x, y));
+  shape.closePath();
+  return shape;
+})();
+
+const Bolt3D: React.FC<{ color: string }> = ({ color }) => {
+  const geo = useMemo(
+    () =>
+      new THREE.ExtrudeGeometry(BOLT_SHAPE, {
+        depth: 0.09,
+        bevelEnabled: true,
+        bevelThickness: 0.02,
+        bevelSize: 0.02,
+        bevelSegments: 2,
+      }),
+    []
+  );
+  return (
+    <group position={[0, 0.13, -0.15]}>
+      <mesh geometry={geo} position={[0, 0.26, -0.045]} scale={[0.26, 0.26, 1]} castShadow>
+        <meshStandardMaterial color={color} roughness={0.2} metalness={0.35} />
+      </mesh>
+      {/* A pad so it is standing on something rather than floating */}
+      <mesh position={[0, 0.01, 0]}>
+        <cylinderGeometry args={[0.13, 0.15, 0.04, 16]} />
+        <meshStandardMaterial color={color} roughness={0.45} metalness={0.25} />
+      </mesh>
+    </group>
+  );
+};
+
+const Drop3D: React.FC<{ color: string }> = ({ color }) => (
+  <group position={[0, 0.13, -0.15]}>
+    {/* Round bottom, pointed top - a drop the way it is always drawn */}
+    <mesh position={[0, 0.2, 0]} castShadow>
+      <sphereGeometry args={[0.15, 20, 20]} />
+      <meshStandardMaterial color={color} roughness={0.12} metalness={0.3} />
     </mesh>
-    {/* The head. A torus gives the hole for free, and it faces out from the
-        board the way the squares do. */}
-    <mesh position={[0, 0.44, 0]} castShadow>
-      <torusGeometry args={[0.13, 0.085, 16, 32]} />
-      <meshStandardMaterial color={color} roughness={0.14} metalness={0.25} />
+    <mesh position={[0, 0.39, 0]} castShadow>
+      <coneGeometry args={[0.15, 0.24, 20]} />
+      <meshStandardMaterial color={color} roughness={0.12} metalness={0.3} />
     </mesh>
-    {/* A highlight along the top, so it reads as glossy rather than flat */}
-    <mesh position={[-0.05, 0.53, 0.05]} rotation={[0, 0, -0.5]}>
-      <sphereGeometry args={[0.035, 10, 10]} />
-      <meshBasicMaterial color="#ffffff" transparent opacity={0.65} />
+    {/* The highlight a drop always carries */}
+    <mesh position={[-0.055, 0.23, 0.105]}>
+      <sphereGeometry args={[0.032, 10, 10]} />
+      <meshBasicMaterial color="#ffffff" transparent opacity={0.7} />
+    </mesh>
+    <mesh position={[0, 0.01, 0]}>
+      <cylinderGeometry args={[0.13, 0.15, 0.04, 16]} />
+      <meshStandardMaterial color={color} roughness={0.45} metalness={0.25} />
     </mesh>
   </group>
 );
 
-// The hotel squares are a block of three, tall one in the middle, the way a
-// hotel reads on a sign.
+// The hotel a province earns after its third house: a block of three, tall one
+// in the middle. This is the built upgrade, not the hotel square.
 const HotelTowers3D: React.FC<{ color: string }> = ({ color }) => {
   const tower = (x: number, h: number, w: number) => (
     <>
@@ -562,7 +604,7 @@ const HotelTowers3D: React.FC<{ color: string }> = ({ color }) => {
         <planeGeometry args={[w * 0.68, h * 0.78]} />
         <meshBasicMaterial color="#fef9c3" />
       </mesh>
-      {/* Flat white roof slab, like the sign block in the middle */}
+      {/* Flat white roof slab */}
       <mesh position={[x, h + 0.02, 0]} castShadow>
         <boxGeometry args={[w * 1.12, 0.04, 0.23]} />
         <meshStandardMaterial color="#f8fafc" roughness={0.4} />
@@ -583,6 +625,46 @@ const HotelTowers3D: React.FC<{ color: string }> = ({ color }) => {
       <mesh position={[0, 0.52, 0.051]}>
         <planeGeometry args={[0.16, 0.05]} />
         <meshBasicMaterial color={color} />
+      </mesh>
+    </group>
+  );
+};
+
+// A hotel square is one building: a tall block with a gabled top, the sign
+// across the front and rows of lit windows, with the door on the street.
+const HotelBuilding3D: React.FC<{ color: string }> = ({ color }) => {
+  const rows = [0.15, 0.26, 0.37];
+  const cols = [-0.075, -0.026, 0.026, 0.075];
+  return (
+    <group position={[0, 0.11, -0.15]}>
+      {/* Body */}
+      <mesh position={[0, 0.25, 0]} castShadow>
+        <boxGeometry args={[0.24, 0.5, 0.2]} />
+        <meshStandardMaterial color={color} roughness={0.35} metalness={0.15} />
+      </mesh>
+      {/* Gable, the peak the block comes to in the picture */}
+      <mesh position={[0, 0.56, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
+        <coneGeometry args={[0.185, 0.14, 4]} />
+        <meshStandardMaterial color={color} roughness={0.3} metalness={0.2} />
+      </mesh>
+      {/* HOTEL sign across the front */}
+      <mesh position={[0, 0.455, 0.102]}>
+        <planeGeometry args={[0.17, 0.045]} />
+        <meshBasicMaterial color="#fbbf24" />
+      </mesh>
+      {/* Window grid */}
+      {rows.map((y) =>
+        cols.map((x) => (
+          <mesh key={`${x}-${y}`} position={[x, y, 0.102]}>
+            <planeGeometry args={[0.038, 0.055]} />
+            <meshBasicMaterial color="#38bdf8" />
+          </mesh>
+        ))
+      )}
+      {/* Door */}
+      <mesh position={[0, 0.045, 0.102]}>
+        <planeGeometry args={[0.06, 0.09]} />
+        <meshBasicMaterial color="#fb7185" />
       </mesh>
     </group>
   );
@@ -609,32 +691,6 @@ const House3D: React.FC<{ position: [number, number, number]; color?: string }> 
       <mesh position={[0.06, 0.34, 0.06]}>
         <boxGeometry args={[0.04, 0.10, 0.04]} />
         <meshStandardMaterial color="#fef9c3" />
-      </mesh>
-    </group>
-  );
-};
-
-// 3D Hotel Model (LINE เกมเศรษฐี Luxurious Landmark Hotel)
-const Hotel3D: React.FC<{ position: [number, number, number]; color?: string }> = ({
-  position,
-  color = '#b91c1c',
-}) => {
-  return (
-    <group position={position}>
-      {/* Main tower in the owner's colour, gold crown kept for all hotels */}
-      <mesh position={[0, 0.22, 0]} castShadow>
-        <boxGeometry args={[0.42, 0.44, 0.30]} />
-        <meshStandardMaterial color={color} roughness={0.3} metalness={0.2} />
-      </mesh>
-      {/* Top Roof (Golden Crown) */}
-      <mesh position={[0, 0.48, 0]} castShadow>
-        <boxGeometry args={[0.46, 0.08, 0.34]} />
-        <meshStandardMaterial color="#f59e0b" metalness={0.8} roughness={0.2} />
-      </mesh>
-      {/* Glowing Windows */}
-      <mesh position={[0, 0.22, 0.155]}>
-        <planeGeometry args={[0.34, 0.32]} />
-        <meshBasicMaterial color="#fef08a" />
       </mesh>
     </group>
   );
@@ -769,16 +825,17 @@ const Tile3D: React.FC<{
         </group>
       )}
 
-      {/* A landmark square is marked with a pin rather than a claim flag - the
-          hotels also get the block of three towers they are named for. */}
+      {/* A landmark square shows what it is: the hotel squares a hotel, the
+          power plant a bolt, the waterworks a drop. */}
       {ownerColor && tile.isUtility && (
         isHotelSquare ? (
-          <>
-            <HotelTowers3D color={ownerColor} />
-            <MapPin3D color={ownerColor} scale={0.62} lift={0.56} />
-          </>
+          <HotelBuilding3D color={ownerColor} />
+        ) : tile.index === POWER_TILE_INDEX ? (
+          <Bolt3D color={ownerColor} />
+        ) : tile.index === WATER_TILE_INDEX ? (
+          <Drop3D color={ownerColor} />
         ) : (
-          <MapPin3D color={ownerColor} />
+          <ClaimFlag3D color={ownerColor} />
         )
       )}
 
@@ -789,7 +846,9 @@ const Tile3D: React.FC<{
       {houses > 0 && (
         <group position={[0, 0.11, -0.15]}>
           {hasHotel ? (
-            <Hotel3D position={[0, 0, 0]} color={ownerColor || undefined} />
+            <group position={[0, -0.11, 0.15]}>
+              <HotelTowers3D color={ownerColor || '#b91c1c'} />
+            </group>
           ) : (
             <>
               {houses >= 1 && <House3D position={[-0.24, 0, 0]} color={ownerColor || undefined} />}
