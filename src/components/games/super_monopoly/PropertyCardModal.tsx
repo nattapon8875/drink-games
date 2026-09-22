@@ -308,13 +308,13 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
               </div>
               <div className="flex justify-between items-center text-amber-100 font-bold border-t border-yellow-700/60 pt-1.5">
                 <span className="text-yellow-300">ถือครองครบ 2 แห่ง (ประปา + ไฟฟ้า):</span>
-                <span className="font-mono text-emerald-400 text-xs text-right">
+                <span className="font-mono text-[rgb(var(--c-mint-label))] text-xs text-right">
                   1.20M 🔥
                 </span>
               </div>
               <div className="flex justify-between items-center text-amber-100 font-bold border-t border-yellow-700/60 pt-1.5">
                 <span className="text-yellow-300">เจ้าของมาตกเองแต่ละครั้ง:</span>
-                <span className="font-mono text-emerald-400 text-xs text-right">
+                <span className="font-mono text-[rgb(var(--c-mint-label))] text-xs text-right">
                   คูณเพิ่มทีละ x1 (สูงสุด x{MAX_VISIT_MULTIPLIER})
                 </span>
               </div>
@@ -324,8 +324,8 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
               <div className="flex items-center gap-2 pb-1 border-b border-cyan-800">
                 <span className="text-xl">🏨</span>
                 <div>
-                  <span className="text-xs font-black text-cyan-200 block">โรงแรมระดับพรีเมียม (Hotel Chain)</span>
-                  <span className="text-[10px] text-cyan-300/70">โรงแรมสำเร็จรูป ไม่ต้องสร้างบ้านเพิ่ม</span>
+                  <span className="text-xs font-black text-[rgb(var(--c-sky-label))] block">โรงแรมระดับพรีเมียม (Hotel Chain)</span>
+                  <span className="text-[10px] text-[rgb(var(--c-ink-soft))]">โรงแรมสำเร็จรูป ไม่ต้องสร้างบ้านเพิ่ม</span>
                 </div>
               </div>
               <div className="flex justify-between items-center text-amber-100">
@@ -334,13 +334,13 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
               </div>
               <div className="flex justify-between items-center text-amber-100 font-bold border-t border-cyan-800/80 pt-1.5">
                 <span className="text-yellow-300">โบนัสเครือข่ายโรงแรม:</span>
-                <span className="font-mono text-emerald-400 text-xs text-right">
+                <span className="font-mono text-[rgb(var(--c-mint-label))] text-xs text-right">
                   คูณตามจำนวนโรงแรมในเครือที่ครอบครอง 🔥
                 </span>
               </div>
               <div className="flex justify-between items-center text-amber-100 font-bold border-t border-cyan-800/80 pt-1.5">
                 <span className="text-yellow-300">เจ้าของมาตกเองแต่ละครั้ง:</span>
-                <span className="font-mono text-emerald-400 text-xs text-right">
+                <span className="font-mono text-[rgb(var(--c-mint-label))] text-xs text-right">
                   คูณเพิ่มทีละ x1 (สูงสุด x{MAX_VISIT_MULTIPLIER})
                 </span>
               </div>
@@ -416,7 +416,7 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
                 </span>
                 <span
                   className={`text-sm sm:text-base font-black font-mono ${
-                    canAffordLand ? 'text-emerald-400' : 'text-red-400'
+                    canAffordLand ? 'text-[rgb(var(--c-mint-label))]' : 'text-red-400'
                   }`}
                 >
                   {canAffordLand
@@ -433,7 +433,7 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
                 </span>
                 <span
                   className={`text-sm sm:text-base font-black font-mono ${
-                    canAffordHouse ? 'text-emerald-400' : 'text-red-400'
+                    canAffordHouse ? 'text-[rgb(var(--c-mint-label))]' : 'text-red-400'
                   }`}
                 >
                   {canAffordHouse
@@ -463,11 +463,11 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
                 </span>
               </button>
             ) : tile.isUtility ? (
-              <div className="flex-1 py-2.5 text-center text-[11px] font-bold text-cyan-300 bg-[rgb(var(--c-sky-soft))] rounded-xl border border-cyan-700/60 leading-tight">
+              <div className="flex-1 py-2.5 text-center text-[11px] font-bold text-[rgb(var(--c-sky-label))] bg-[rgb(var(--c-sky-soft))] rounded-xl border border-cyan-700/60 leading-tight">
                 ⚡ กิจการนี้สร้างบ้านไม่ได้ — ค่าผ่านทางคูณ{' '}
                 <span className="text-yellow-300 font-black">x{boost}</span>
                 <br />
-                <span className="text-[10px] text-cyan-200/80 font-normal">
+                <span className="text-[10px] text-[rgb(var(--c-ink-soft))] font-normal">
                   {boost >= MAX_VISIT_MULTIPLIER
                     ? `ตัวคูณสูงสุดแล้ว (x${MAX_VISIT_MULTIPLIER})`
                     : `มาตกอีกครั้งจะเพิ่มเป็น x${boost + 1}`}
@@ -496,7 +496,7 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
                   </>
                 ) : (
                   <>
-                    <Home className="w-4 h-4 text-cyan-300" />
+                    <Home className="w-4 h-4 text-[rgb(var(--c-sky-label))]" />
                     <span>สร้างบ้านหลังที่ {houses + 1} ({tile.houseCost ? formatMoneyM(tile.houseCost) : ''})</span>
                   </>
                 )}

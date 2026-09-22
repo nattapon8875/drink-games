@@ -127,7 +127,7 @@ export const WheelResultModal: React.FC<WheelResultModalProps> = ({
 
         {item.actionType === 'safe' && (
           <p className="text-emerald-300 font-black leading-relaxed flex items-center gap-1.5">
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <ShieldCheck className="w-4 h-4 text-[rgb(var(--c-mint-label))]" />
             <span>รอดตัวอย่างหวุดหวิด! ไม่มีใครต้องดื่มในตานี้! 🎉</span>
           </p>
         )}

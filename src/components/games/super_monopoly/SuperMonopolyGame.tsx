@@ -572,7 +572,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
                           </span>
                         ) : (
                           <div className="flex flex-col items-end">
-                            <span className="text-xs font-black text-emerald-400 font-mono">
+                            <span className="text-xs font-black text-[rgb(var(--c-mint-label))] font-mono">
                               {formatMoneyM(playerCash)}
                             </span>
                             <span className="text-[9px] text-amber-400/80 font-bold">เงินสด</span>

@@ -13,6 +13,7 @@ import {
   rowMultiplierFor,
   rowOfTile,
   RowBonus,
+  HOTEL_TILE_INDICES,
 } from './superMonopolyData';
 
 interface SuperBoard3DProps {
@@ -518,6 +519,75 @@ const ClaimFlag3D: React.FC<{ color: string }> = ({ color }) => {
   );
 };
 
+// A map pin, the way a place is marked on a map: a ring head with the hole
+// showing through, tapering to a point that stands on the square. Hotels, the
+// power plant and the waterworks get one instead of a claim flag - they are
+// landmarks rather than plots you build on.
+const MapPin3D: React.FC<{ color: string; scale?: number; lift?: number }> = ({
+  color,
+  scale = 1,
+  lift = 0,
+}) => (
+  <group position={[0, 0.11 + lift, -0.15]} scale={[scale, scale, scale]}>
+    {/* The point, apex down so it stands on the square */}
+    <mesh position={[0, 0.2, 0]} rotation={[Math.PI, 0, 0]} castShadow>
+      <coneGeometry args={[0.15, 0.36, 24]} />
+      <meshStandardMaterial color={color} roughness={0.14} metalness={0.25} />
+    </mesh>
+    {/* The head. A torus gives the hole for free, and it faces out from the
+        board the way the squares do. */}
+    <mesh position={[0, 0.44, 0]} castShadow>
+      <torusGeometry args={[0.13, 0.085, 16, 32]} />
+      <meshStandardMaterial color={color} roughness={0.14} metalness={0.25} />
+    </mesh>
+    {/* A highlight along the top, so it reads as glossy rather than flat */}
+    <mesh position={[-0.05, 0.53, 0.05]} rotation={[0, 0, -0.5]}>
+      <sphereGeometry args={[0.035, 10, 10]} />
+      <meshBasicMaterial color="#ffffff" transparent opacity={0.65} />
+    </mesh>
+  </group>
+);
+
+// The hotel squares are a block of three, tall one in the middle, the way a
+// hotel reads on a sign.
+const HotelTowers3D: React.FC<{ color: string }> = ({ color }) => {
+  const tower = (x: number, h: number, w: number) => (
+    <>
+      <mesh position={[x, h / 2, 0]} castShadow>
+        <boxGeometry args={[w, h, 0.2]} />
+        <meshStandardMaterial color={color} roughness={0.35} metalness={0.15} />
+      </mesh>
+      {/* Rows of lit windows down the face */}
+      <mesh position={[x, h / 2, 0.101]}>
+        <planeGeometry args={[w * 0.68, h * 0.78]} />
+        <meshBasicMaterial color="#fef9c3" />
+      </mesh>
+      {/* Flat white roof slab, like the sign block in the middle */}
+      <mesh position={[x, h + 0.02, 0]} castShadow>
+        <boxGeometry args={[w * 1.12, 0.04, 0.23]} />
+        <meshStandardMaterial color="#f8fafc" roughness={0.4} />
+      </mesh>
+    </>
+  );
+
+  return (
+    <group position={[0, 0.11, -0.15]}>
+      {tower(-0.185, 0.3, 0.16)}
+      {tower(0, 0.46, 0.17)}
+      {tower(0.185, 0.3, 0.16)}
+      {/* HOTEL sign on the centre tower */}
+      <mesh position={[0, 0.52, 0.02]} castShadow>
+        <boxGeometry args={[0.2, 0.09, 0.06]} />
+        <meshStandardMaterial color="#f8fafc" roughness={0.35} />
+      </mesh>
+      <mesh position={[0, 0.52, 0.051]}>
+        <planeGeometry args={[0.16, 0.05]} />
+        <meshBasicMaterial color={color} />
+      </mesh>
+    </group>
+  );
+};
+
 // 3D House Model (LINE เกมเศรษฐี Cute Cottage Style)
 const House3D: React.FC<{ position: [number, number, number]; color?: string }> = ({
   position,
@@ -632,6 +702,7 @@ const Tile3D: React.FC<{
 
   const houses = ownership?.houses || 0;
   const hasHotel = houses === 4;
+  const isHotelSquare = HOTEL_TILE_INDICES.includes(tile.index);
 
   // A hotel or a utility its owner keeps visiting charges a multiple of its
   // rent, which nothing on the board used to show. Heat the tile instead.
@@ -698,8 +769,21 @@ const Tile3D: React.FC<{
         </group>
       )}
 
+      {/* A landmark square is marked with a pin rather than a claim flag - the
+          hotels also get the block of three towers they are named for. */}
+      {ownerColor && tile.isUtility && (
+        isHotelSquare ? (
+          <>
+            <HotelTowers3D color={ownerColor} />
+            <MapPin3D color={ownerColor} scale={0.62} lift={0.56} />
+          </>
+        ) : (
+          <MapPin3D color={ownerColor} />
+        )
+      )}
+
       {/* Bought but not built on yet: plant the owner's flag */}
-      {ownerColor && houses === 0 && <ClaimFlag3D color={ownerColor} />}
+      {ownerColor && !tile.isUtility && houses === 0 && <ClaimFlag3D color={ownerColor} />}
 
       {/* 3D Houses / Hotel sitting on Tile */}
       {houses > 0 && (

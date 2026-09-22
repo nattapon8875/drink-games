@@ -340,7 +340,7 @@ export default function SuperLobbyPage() {
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div className="p-2.5 rounded-xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))]">
                   <span className="text-[10px] text-amber-400/85 block font-bold">ทุนเริ่มต้น:</span>
-                  <span className="text-sm font-black text-emerald-400 font-mono">15.00 M</span>
+                  <span className="text-sm font-black text-[rgb(var(--c-mint-label))] font-mono">15.00 M</span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))]">
                   <span className="text-[10px] text-amber-400/85 block font-bold">ผ่านจุดเริ่มต้นรับ:</span>
@@ -530,7 +530,7 @@ export default function SuperLobbyPage() {
                                 </span>
                               )}
                             </div>
-                            <span className="text-[10px] text-emerald-400 font-mono font-bold block">
+                            <span className="text-[10px] text-[rgb(var(--c-mint-label))] font-mono font-bold block">
                               เงินเริ่มต้น: 15.00M
                             </span>
                           </div>

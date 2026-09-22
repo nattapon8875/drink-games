@@ -103,7 +103,7 @@ export const DiscordGuideModal: React.FC<DiscordGuideModalProps> = ({
             >
               {copiedCode ? (
                 <>
-                  <Check className="w-4 h-4 text-emerald-400" />
+                  <Check className="w-4 h-4 text-[rgb(var(--c-mint-label))]" />
                   <span className="text-emerald-300">คัดลอกแล้ว</span>
                 </>
               ) : (

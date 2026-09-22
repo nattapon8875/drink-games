@@ -145,7 +145,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                     <span>🏁 เงินเดือนรอบละ</span>
                   </div>
                   <p className="text-xs text-amber-200/90 font-medium">
-                    เดินผ่านหรือตกจุดเริ่มต้น รับทันที <strong className="text-emerald-400">+2.0M</strong>
+                    เดินผ่านหรือตกจุดเริ่มต้น รับทันที <strong className="text-[rgb(var(--c-mint-label))]">+2.0M</strong>
                   </p>
                 </div>
 
@@ -198,7 +198,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                   <span>🚶 การเดินผ่านจุดเริ่มต้น (GO)</span>
                 </div>
                 <p className="text-xs text-amber-200/90 font-medium">
-                  ไม่ว่าจะเดินผ่าน หรือทอยแต้มตกพอดีที่ช่อง 0 (จุดเริ่มต้น) ระบบจะโอนเงินเดือน <strong className="text-emerald-400">+2.0M</strong> เข้าบัญชีทันทีอัตโนมัติ
+                  ไม่ว่าจะเดินผ่าน หรือทอยแต้มตกพอดีที่ช่อง 0 (จุดเริ่มต้น) ระบบจะโอนเงินเดือน <strong className="text-[rgb(var(--c-mint-label))]">+2.0M</strong> เข้าบัญชีทันทีอัตโนมัติ
                 </p>
               </div>
             </div>
@@ -214,15 +214,15 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                 </h4>
                 <div className="space-y-2 text-xs text-amber-100 font-medium leading-relaxed">
                   <div className="flex items-start gap-2">
-                    <span className="text-emerald-400 font-bold">1.</span>
+                    <span className="text-[rgb(var(--c-mint-label))] font-bold">1.</span>
                     <p><strong>ที่ดินว่าง:</strong> เมื่อเดินมาตกช่องที่ดินที่ยังไม่มีใครครอบครอง สามารถเลือกซื้อโฉนดได้ตามราคาที่ระบุ</p>
                   </div>
                   <div className="flex items-start gap-2">
-                    <span className="text-emerald-400 font-bold">2.</span>
+                    <span className="text-[rgb(var(--c-mint-label))] font-bold">2.</span>
                     <p><strong>สร้างได้ตามจำนวนครั้งที่มาตก:</strong> ตกครั้งแรก (รวมตอนซื้อ) สร้างได้เลยสูงสุด <strong className="text-yellow-300">2 หลัง</strong> 🏠🏠 · ตกครั้งที่ 2 สร้างหลังที่ <strong className="text-yellow-300">3</strong> · ตกครั้งที่ 3 อัปเกรดเป็น <strong className="text-rose-300">โรงแรม</strong> 🏨</p>
                   </div>
                   <div className="flex items-start gap-2">
-                    <span className="text-emerald-400 font-bold">3.</span>
+                    <span className="text-[rgb(var(--c-mint-label))] font-bold">3.</span>
                     <p><strong>ที่ดินตั้งต้น:</strong> เริ่มเกมทุกคนได้ที่ดินสุ่มคนละ <strong className="text-yellow-300">3 แปลง</strong> และถูกหักเงินตามราคาที่ดินนั้นทันที (แจกแบบคุมให้มูลค่าใกล้เคียงกัน)</p>
                   </div>
                 </div>
@@ -244,7 +244,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                   </div>
                   <div className="bg-[rgb(var(--c-bg-deep))] p-2 rounded-xl border border-cyan-800 text-center">
                     <span className="text-cyan-300 block font-bold">ถือครองครบ 2 แห่ง</span>
-                    <span className="text-sm font-black text-emerald-400">ค่าเช่า 1.2M ทันที!</span>
+                    <span className="text-sm font-black text-[rgb(var(--c-mint-label))]">ค่าเช่า 1.2M ทันที!</span>
                   </div>
                 </div>
               </div>
@@ -283,7 +283,7 @@ export const RulesModal: React.FC<RulesModalProps> = ({ isOpen, onClose }) => {
                 </h4>
                 <p className="text-xs text-amber-100 font-medium leading-relaxed">
                   โรงแรมทั้ง 5 แห่ง การประปา และโรงไฟฟ้า <strong className="text-rose-300">สร้างบ้านไม่ได้</strong> แต่จะแข็งแกร่งขึ้นเมื่อเจ้าของเดินมาตกเอง —
-                  ตกครั้งแรก <strong className="text-yellow-300">x1</strong> · ครั้งที่ 2 <strong className="text-yellow-300">x2</strong> · สูงสุด <strong className="text-emerald-400">x4</strong>
+                  ตกครั้งแรก <strong className="text-yellow-300">x1</strong> · ครั้งที่ 2 <strong className="text-yellow-300">x2</strong> · สูงสุด <strong className="text-[rgb(var(--c-mint-label))]">x4</strong>
                 </p>
                 <p className="text-[11px] text-amber-200/80 font-medium leading-relaxed mt-1.5">
                   ตัวคูณนี้ <strong className="text-emerald-300">คูณซ้อน</strong> กับจำนวนโรงแรมในเครือ (หรือการถือครองประปา+ไฟฟ้าครบคู่) เช่น ถือโรงแรม 3 แห่ง และมาตกเองครบ 4 ครั้ง = ค่าผ่านทาง x12

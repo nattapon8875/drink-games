@@ -334,7 +334,7 @@ export const WheelCustomModal: React.FC<WheelCustomModalProps> = ({
                 >
                   {item.enabled ? (
                     <>
-                      <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                      <CheckCircle2 className="w-3 h-3 text-[rgb(var(--c-mint-label))]" />
                       <span>เปิด</span>
                     </>
                   ) : (
