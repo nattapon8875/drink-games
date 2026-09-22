@@ -1179,7 +1179,7 @@ const SuperBoard3DBase: React.FC<SuperBoard3DProps> = ({
       // Full width of the column with the height pinned, rather than a square
       // capped to the viewport height. The camera keeps the board centred, so
       // the extra width is just more table around it.
-      className="w-full h-[460px] sm:h-[560px] lg:h-[640px] rounded-2xl overflow-hidden shadow-2xl relative bg-[rgb(var(--c-bg-deep))] border-2 border-[rgb(var(--c-line))]"
+      className="w-full h-[460px] sm:h-[min(560px,calc(100dvh-250px))] lg:h-[min(640px,calc(100dvh-215px))] [@media(max-height:820px)_and_(min-width:1024px)]:h-full [@media(max-height:820px)_and_(min-width:1024px)]:min-h-0 rounded-2xl overflow-hidden shadow-2xl relative bg-[rgb(var(--c-bg-deep))] border-2 border-[rgb(var(--c-line))]"
       onContextMenu={(e) => e.preventDefault()}
     >
       <Canvas shadows dpr={CANVAS_DPR} camera={CANVAS_CAMERA} gl={CANVAS_GL}>

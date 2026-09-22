@@ -201,9 +201,9 @@ export default function SuperPlayPage() {
   };
 
   return (
-    <div className="w-full min-h-screen flex flex-col justify-between p-2 sm:p-4 select-none">
+    <div className="w-full min-h-screen [@media(max-height:820px)_and_(min-width:1024px)]:min-h-0 [@media(max-height:820px)_and_(min-width:1024px)]:h-[100dvh] [@media(max-height:820px)_and_(min-width:1024px)]:overflow-hidden flex flex-col justify-between p-2 sm:p-4 [@media(max-height:820px)_and_(min-width:1024px)]:p-1.5 select-none">
       {/* Top minimal navigation bar */}
-      <div className="max-w-7xl w-full mx-auto pb-2 flex items-center justify-between">
+      <div className="max-w-7xl w-full mx-auto shrink-0 pb-2 [@media(max-height:820px)_and_(min-width:1024px)]:pb-1 flex items-center justify-between">
         <div className="flex items-center gap-2">
           {isHost ? (
             <button
@@ -267,7 +267,7 @@ export default function SuperPlayPage() {
       </div>
 
       {/* Main Game Screen */}
-      <main className="w-full flex-1 flex flex-col items-center justify-center">
+      <main className="w-full flex-1 min-h-0 flex flex-col items-center justify-center">
         <SuperMonopolyGame {...baseGameProps} />
       </main>
 

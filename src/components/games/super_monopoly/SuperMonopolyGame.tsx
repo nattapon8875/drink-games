@@ -350,9 +350,9 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
   }, [isRolling, isMoving, hasRolledThisTurn]);
 
   return (
-    <div className="w-full h-full min-h-[90vh] flex flex-col justify-between p-2 sm:p-4 select-none mx-auto max-w-none">
+    <div className="w-full h-full flex flex-col justify-between p-2 sm:p-4 [@media(max-height:820px)_and_(min-width:1024px)]:sm:p-2 select-none mx-auto max-w-none">
       {/* Top Status Header */}
-      <div className="w-full hidden sm:flex items-center justify-between bg-[rgb(var(--c-surface))]/90 border-2 border-[rgb(var(--c-surface-3))] rounded-2xl px-4 py-2 mb-2 shadow-xl">
+      <div className="w-full hidden sm:flex [@media(max-height:820px)_and_(min-width:1024px)]:sm:hidden items-center justify-between bg-[rgb(var(--c-surface))]/90 border-2 border-[rgb(var(--c-surface-3))] rounded-2xl px-4 py-2 mb-2 shadow-xl">
         <div className="flex items-center gap-2">
           <span className="text-xl">🐃</span>
           {/* On a phone the full title wrapped over five lines and pushed the
@@ -403,7 +403,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
       {/* Persistent Live Action Ticker (Always Visible on all devices!) */}
       {/* The ticker and its two buttons shared one line, which left the latest
           move cut off mid-word on a phone. They stack there instead. */}
-      <div className="w-full bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-3))] rounded-2xl px-3 sm:px-4 py-2 mb-2.5 shadow-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2 transition hover:border-amber-500/50">
+      <div className="w-full shrink-0 bg-[rgb(var(--c-surface))] border border-[rgb(var(--c-surface-3))] rounded-2xl px-3 sm:px-4 py-2 mb-2.5 [@media(max-height:820px)_and_(min-width:1024px)]:mb-1.5 shadow-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2 transition hover:border-amber-500/50">
         <div className="flex items-center gap-2 min-w-0 w-full sm:flex-1">
           <span className="flex h-2.5 w-2.5 relative shrink-0">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
@@ -460,7 +460,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
       {/* Main 3-Column Landscape Grid (Discord Widescreen Layout) */}
       {/* Both board modes get the whole screen; 2D was boxed into max-w-7xl,
           which squeezed its square board below the height it is allowed. */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 items-start my-auto w-full max-w-none">
+      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-3 items-start [@media(max-height:820px)_and_(min-width:1024px)]:items-stretch my-auto [@media(max-height:820px)_and_(min-width:1024px)]:my-0 w-full max-w-none">
         {/* Left Column: Player Leaderboard & Net Worth (3 cols) */}
         <div className={`lg:col-span-3 flex-col gap-2 order-2 lg:order-1 ${is3DMode ? 'hidden' : 'flex'}`}>
           <div className="bg-[rgb(var(--c-surface))] border-2 border-[rgb(var(--c-surface-3))] rounded-2xl p-3 shadow-xl">
@@ -589,9 +589,9 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
         </div>
 
         {/* Center Column: 3D / 2D Super Monopoly Classic Board (6 cols) */}
-        <div className={`${is3DMode ? 'lg:col-span-9' : 'lg:col-span-6'} flex flex-col items-center justify-center order-1 lg:order-2 w-full`}>
+        <div className={`${is3DMode ? 'lg:col-span-9' : 'lg:col-span-6'} flex flex-col items-center justify-center order-1 lg:order-2 w-full min-h-0`}>
           {/* 3D / 2D Toggle Button Bar */}
-          <div className="w-full flex items-center justify-end sm:justify-between pb-1 sm:pb-1.5 px-1">
+          <div className="w-full shrink-0 flex items-center justify-end sm:justify-between pb-1 sm:pb-1.5 px-1">
             <span className="hidden sm:flex text-[11px] font-bold text-amber-300/80 items-center gap-1">
               <span>กระดานซุปเปอร์เศรษฐี</span>
             </span>
@@ -623,7 +623,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
           </div>
 
           {/* Active Board Display */}
-          <div className="relative w-full">
+          <div className="relative w-full flex-1 min-h-0 flex flex-col">
           {/* One column in the top left, in turn order, rather than seats
               scattered around the board - the running order is the thing people
               actually want to read off it. */}
