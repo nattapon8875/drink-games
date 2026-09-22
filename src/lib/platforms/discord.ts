@@ -63,16 +63,30 @@ export async function initDiscord(): Promise<{
     let user: UnifiedUser | null = null;
     let authCode: string | null = null;
 
+    // Discord shows its consent screen every single time unless it is told the
+    // user may already have agreed. Ask silently first, and only fall back to
+    // the screen when they genuinely have not authorised the app yet - so the
+    // dialog appears once, not on every launch.
     try {
-      // Call authorize without prompt: 'none' so Discord can open the consent modal if not authorized yet
-      const authRes = await discordSdk.commands.authorize({
+      const silent = await discordSdk.commands.authorize({
         client_id: clientId,
         response_type: 'code',
         scope: ['identify'],
+        prompt: 'none',
       });
-      authCode = authRes.code;
-    } catch (authErr) {
-      console.warn('[Discord] Authorize cancelled or failed:', authErr);
+      authCode = silent.code;
+    } catch {
+      // Not authorised yet (or the grant was revoked): ask properly.
+      try {
+        const authRes = await discordSdk.commands.authorize({
+          client_id: clientId,
+          response_type: 'code',
+          scope: ['identify'],
+        });
+        authCode = authRes.code;
+      } catch (authErr) {
+        console.warn('[Discord] Authorize cancelled or failed:', authErr);
+      }
     }
 
     if (authCode) {

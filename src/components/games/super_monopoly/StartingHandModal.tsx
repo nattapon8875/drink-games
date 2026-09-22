@@ -41,7 +41,20 @@ export const StartingHandModal: React.FC<StartingHandModalProps> = ({
     PLAYER_3D_COLORS[players.indexOf(p) % PLAYER_3D_COLORS.length];
 
   return (
-    <Modal isOpen={isOpen} title="🎴 ที่ดินตั้งต้นของคุณ" showCloseButton={false}>
+    <Modal
+      isOpen={isOpen}
+      title="🎴 ที่ดินตั้งต้นของคุณ"
+      showCloseButton={false}
+      footer={
+        <button
+          type="button"
+          onClick={onClose}
+          className="wood-btn-gold w-full py-3 rounded-2xl text-sm font-black shadow-lg active:scale-95"
+        >
+          เริ่มเล่น
+        </button>
+      }
+    >
       <div className="flex flex-col gap-3">
         <p className="text-[11px] font-bold text-[rgb(var(--c-sky-label))] text-center leading-relaxed">
           เริ่มเกมทุกคนได้ที่ดินสุ่มคนละ {mine?.tiles.length ?? 3} แปลง
@@ -109,9 +122,11 @@ export const StartingHandModal: React.FC<StartingHandModalProps> = ({
           </>
         )}
 
-        {/* Who else is holding what, so the first lap is not a blind walk */}
+        {/* Who else is holding what, so the first lap is not a blind walk. This
+            is the part that grows with the table, so it is the part that
+            scrolls - the button below it stays where it can be pressed. */}
         {others.length > 0 && (
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 max-h-[24vh] overflow-y-auto scrollbar-none">
             <span className="text-[10px] font-black text-[rgb(var(--c-ink-faint))]">
               ที่ดินตั้งต้นของคนอื่น
             </span>
@@ -145,14 +160,6 @@ export const StartingHandModal: React.FC<StartingHandModalProps> = ({
             })}
           </div>
         )}
-
-        <button
-          type="button"
-          onClick={onClose}
-          className="wood-btn-gold w-full py-3 rounded-2xl text-sm font-black shadow-lg active:scale-95"
-        >
-          เริ่มเล่น
-        </button>
       </div>
     </Modal>
   );
