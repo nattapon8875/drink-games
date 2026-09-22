@@ -1250,12 +1250,12 @@ const Die3D: React.FC<{
 
     // Shortest way round to the face that came up, easing out - a die does not
     // glide into place, it turns the last little bit and stops.
-    settle.current = Math.min(1, settle.current + d / 0.5);
+    settle.current = Math.min(1, settle.current + d / 0.85);
     const e = 1 - Math.pow(1 - settle.current, 3);
     g.quaternion.copy(from.current).slerp(target, e);
 
     // One firm bounce that dies away, instead of sinking.
-    const b = 0.42 * Math.exp(-clock.current * 6.5) * Math.abs(Math.sin(clock.current * 15));
+    const b = 0.42 * Math.exp(-clock.current * 4.2) * Math.abs(Math.sin(clock.current * 10.5));
     g.position.y = position[1] + b;
   });
 
