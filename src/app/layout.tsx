@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Chakra_Petch } from 'next/font/google';
 import './globals.css';
+import { ServiceWorkerRegister } from '@/components/common/ServiceWorkerRegister';
 
 const chakraPetch = Chakra_Petch({
   subsets: ['thai', 'latin'],
@@ -12,11 +13,24 @@ const chakraPetch = Chakra_Petch({
 export const metadata: Metadata = {
   title: 'Buffy Party Drink 🐃 | ศูนย์รวมเกมวงเหล้าออนไลน์',
   description: 'Buffy Party Drink ศูนย์รวมเกมวงเหล้าออนไลน์ เล่นหลายคนแบบเรียลไทม์ รองรับ LINE LIFF, Discord Activity และ Web Browser',
+  manifest: '/manifest.json',
+  applicationName: 'Buffy Party Drink',
   icons: {
     icon: '/buffy-mascot.png?v=4_1',
     shortcut: '/buffy-mascot.png?v=4_1',
-    apple: '/buffy-mascot.png?v=4_1',
+    // iOS never composites transparency and does its own rounding, so it gets
+    // a 180px opaque square of its own rather than the site favicon.
+    apple: '/apple-touch-icon.png',
   },
+  appleWebApp: {
+    capable: true,
+    title: 'Buffy Party',
+    // 'black' and not 'black-translucent': translucent puts the page under the
+    // notch, and nothing in this app reads env(safe-area-inset-*) yet, so the
+    // top of every screen would be sitting behind the clock.
+    statusBarStyle: 'black',
+  },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
@@ -24,6 +38,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  // Matches --c-bg of the dark theme, which is the default.
+  themeColor: '#101a2b',
 };
 
 export default function RootLayout({
@@ -47,6 +63,7 @@ export default function RootLayout({
             __html: `(function(){try{var t=localStorage.getItem('party_theme');if(t!=='light'&&t!=='dark'&&t!=='system'){t='dark';}if(t!=='system'){document.documentElement.setAttribute('data-theme',t);}}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();`,
           }}
         />
+        <ServiceWorkerRegister />
         {children}
       </body>
     </html>

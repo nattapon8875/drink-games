@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ออฟไลน์ | Buffy Party Drink</title>
+    <meta name="theme-color" content="#101a2b" />
+    <link rel="icon" href="/buffy-mascot.png?v=4_1" />
+    <!-- A plain file with no build step behind it: the service worker serves
+         this when the network is gone, so it cannot depend on anything the
+         network would have to fetch. The colours are the dark theme's tokens,
+         written out literally for the same reason. -->
+    <style>
+      :root {
+        --bg: #101a2b;
+        --bg-deep: #0b121f;
+        --ink: #e8eef7;
+        --ink-soft: #9fb0c9;
+        --mint: #42d6b2;
+        --line: #24354f;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+        color: var(--ink);
+        font-family: 'Chakra Petch', 'Segoe UI', system-ui, -apple-system, sans-serif;
+        text-align: center;
+      }
+      .card {
+        width: 100%;
+        max-width: 360px;
+      }
+      img {
+        width: 128px;
+        height: 128px;
+        border-radius: 28px;
+        border: 2px solid var(--line);
+        opacity: 0.85;
+      }
+      h1 {
+        margin: 20px 0 8px;
+        font-size: 22px;
+        font-weight: 800;
+      }
+      p {
+        margin: 0 0 22px;
+        font-size: 14px;
+        line-height: 1.7;
+        color: var(--ink-soft);
+      }
+      button {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 16px;
+        background: var(--mint);
+        color: #06241d;
+        font: inherit;
+        font-size: 15px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      button:active {
+        transform: scale(0.97);
+      }
+      .hint {
+        margin-top: 14px;
+        font-size: 12px;
+        color: var(--ink-soft);
+        opacity: 0.75;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <img src="/icons/icon-192.png" alt="Buffy" />
+      <h1>ไม่ได้เชื่อมต่ออินเทอร์เน็ต 📡</h1>
+      <p>
+        เกมทุกเกมเล่นแบบเรียลไทม์กับเพื่อน จึงต้องต่อเน็ตตลอดเวลา<br />
+        ลองเช็ก Wi-Fi หรือเน็ตมือถือแล้วลองใหม่อีกครั้ง
+      </p>
+      <button type="button" onclick="location.reload()">ลองใหม่อีกครั้ง</button>
+      <div class="hint">ห้องที่เล่นค้างไว้จะยังอยู่ ถ้ากลับมาภายในไม่กี่นาที</div>
+    </div>
+    <script>
+      // Come back by itself the moment the connection returns, so nobody is
+      // left staring at this page after the Wi-Fi reconnects.
+      window.addEventListener('online', function () {
+        location.reload();
+      });
+    </script>
+  </body>
+</html>
