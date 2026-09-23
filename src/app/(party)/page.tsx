@@ -268,52 +268,66 @@ export default function HomePage() {
 
   return (
     <main className="w-full flex-1 flex flex-col items-center justify-between p-4 sm:p-5 select-none">
-      {/* Top Bar: User Profile & Platform Info (Rustic Wood Plaque) */}
-      <header className="w-full flex items-center justify-between py-2 border-b border-[rgb(var(--c-surface-3))] mb-4">
-        <div className="flex items-center gap-2.5">
-          <div className="p-1 rounded-2xl bg-[rgb(var(--c-surface-2))] border-2 border-[rgb(var(--c-surface-3))] shadow-md flex items-center justify-center">
-            <BuffaloLogo className="w-8 h-8 drop-shadow" />
+      {/* Top bar, two rows so it fits a phone: the name and the theme on top,
+          the LINE add-friend button and the profile underneath. In one row the
+          title wrapped to three lines at phone width. */}
+      <header className="w-full flex flex-col gap-2.5 pb-3 border-b border-[rgb(var(--c-surface-3))] mb-4">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="shrink-0 p-1 rounded-2xl bg-[rgb(var(--c-surface-2))] border-2 border-[rgb(var(--c-surface-3))] shadow-md flex items-center justify-center">
+              <BuffaloLogo className="w-8 h-8 drop-shadow" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-[13px] min-[360px]:text-base sm:text-lg font-black tracking-normal min-[360px]:tracking-wide rpg-text-gold uppercase whitespace-nowrap leading-tight">
+                BUFFY PARTY DRINK
+              </h1>
+              <p className="text-[11px] text-amber-300/80 font-bold truncate">โรงเตี๊ยมเกมวงเหล้าออนไลน์ 🐃🍻</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-base sm:text-lg font-black tracking-widest rpg-text-gold uppercase flex items-center gap-1.5">
-              <span>BUFFY PARTY DRINK</span>
-            </h1>
-            <p className="text-[10px] text-amber-300/80 font-bold">โรงเตี๊ยมเกมวงเหล้าออนไลน์ 🐃🍻</p>
-          </div>
+          <ThemeToggle className="shrink-0" />
         </div>
 
-        <div className="flex items-center gap-2">
-        <ThemeToggle />
-
-        {/* Profile Chip */}
-        <div
-          onClick={() => setShowEditModal(true)}
-          className="flex items-center gap-2 bg-[rgb(var(--c-surface))] border-2 border-[rgb(var(--c-surface-3))] px-3 py-1.5 rounded-full cursor-pointer hover:border-amber-400 transition shadow-inner"
-          title="คลิกเพื่อแก้ไขโปรไฟล์"
-        >
-          <Avatar
-            src={user.avatarUrl}
-            name={user.displayName}
-            size="sm"
-            platform={platform}
-          />
-          <span
-            suppressHydrationWarning
-            className="text-xs font-black text-amber-100 truncate max-w-[80px]"
+        <div className="flex items-center justify-between gap-2">
+          <a
+            href="https://lin.ee/uKOS9hm"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 transition hover:brightness-110 active:scale-95"
           >
-            {user.displayName}
-          </span>
-          <Edit2 className="w-3 h-3 text-amber-400" />
-        </div>
+            {/* LINE's own button image, as LINE asks it to be used. */}
+            <img
+              src="https://scdn.line-apps.com/n/line_add_friends/btn/th.png"
+              alt="เพิ่มเพื่อน"
+              height={36}
+              className="h-9 w-auto"
+            />
+          </a>
+
+          {/* Profile Chip */}
+          <div
+            onClick={() => setShowEditModal(true)}
+            className="min-w-0 flex items-center gap-2 bg-[rgb(var(--c-surface))] border-2 border-[rgb(var(--c-surface-3))] px-3 py-1.5 rounded-full cursor-pointer hover:border-amber-400 transition shadow-inner"
+            title="คลิกเพื่อแก้ไขโปรไฟล์"
+          >
+            <Avatar
+              src={user.avatarUrl}
+              name={user.displayName}
+              size="sm"
+              platform={platform}
+            />
+            <span
+              suppressHydrationWarning
+              className="text-xs font-black text-amber-100 truncate max-w-[110px]"
+            >
+              {user.displayName}
+            </span>
+            <Edit2 className="w-3 h-3 shrink-0 text-amber-400" />
+          </div>
         </div>
       </header>
 
       {/* Hero Section */}
       <section className="text-center my-2 w-full">
-        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-line))] text-amber-300 text-xs font-black mb-2 shadow-inner">
-          <Sparkles className="w-3.5 h-3.5 text-yellow-400 animate-spin" />
-          <span>Multi-platform (LINE + Discord + Web)</span>
-        </div>
         <h2 className="text-2xl sm:text-3xl font-black rpg-text-gold tracking-tight mb-1">
           ชนแก้ว เปิดตี้ เริ่มเกม!
         </h2>
