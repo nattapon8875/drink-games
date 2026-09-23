@@ -197,6 +197,9 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   // A teleport card drops you on a new tile, and that tile has to be resolved
   // too - otherwise you warp onto empty land and are never offered the purchase.
   const [pendingTeleportTile, setPendingTeleportTile] = useState<number | null>(null);
+  // A card that hands you the choice of where to go. The picker cannot open
+  // while the card is still on screen, so it waits here until the card closes.
+  const [pendingCardFlight, setPendingCardFlight] = useState<boolean>(false);
 
   const handledTurnKeyRef = useRef<string>('');
   // Whether a bot turn is actually in flight. Without this, a turn torn down
@@ -692,6 +695,10 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                   updatedFlights[currentTurnPlayer.id] = true;
                 }
               }
+              if (card.chooseDestination && canActThisTurn) {
+                setPendingCardFlight(true);
+                requiresUserModalAction = true;
+              }
               if (card.goJail) {
                 updatedPositions[currentTurnPlayer.id] = 10;
                 updatedJail[currentTurnPlayer.id] = 1;
@@ -710,6 +717,8 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                 if (teleportPassedGo) {
                   chanceDesc += ` (ผ่านจุดเริ่มต้น รับ +${formatMoneyM(SALARY_M)})`;
                 }
+              } else if (card.chooseDestination) {
+                chanceDesc += ` ➔ เลือกได้เลยว่าจะไปช่องไหน`;
               } else if (card.goJail) {
                 chanceDesc += ` ➔ ถูกส่งตัวเข้าห้องขังทันที!`;
               }
@@ -1506,6 +1515,14 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       if (await resolveArrivalAt(destIndex, 'วาร์ป')) return;
     }
 
+    // A card that hands over the choice: the picker opens now that the card is
+    // off the screen, and handleChooseFlight takes the turn from there.
+    if (wasCard && pendingCardFlight && canActThisTurn) {
+      setPendingCardFlight(false);
+      setShowFlightPicker(true);
+      return;
+    }
+
     if (canActThisTurn && hasRolledThisTurn) {
       if (isDouble && !isEndingTurn && !isCurrentPlayerInJail && !isCurrentPlayerResting) {
         showToast('🎉 ได้แต้มคู่! คุณมีสิทธิ์ทอยเต๋าต่ออีกรอบ', 'success');
@@ -1839,11 +1856,14 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             if (arrival.wentBankrupt) botBankrupted = true;
 
             const flightCash = { ...botCashAll, [turnPlayerId]: botCash };
-            botCashAll = { ...flightCash };
             if (arrival.ownerPay) {
+              // Credit the landlord against the running tally, not the snapshot
+              // this turn opened with, and bank it afterwards - reading `cash`
+              // here lost a payment the same way the walk path used to.
               flightCash[arrival.ownerPay.id] =
-                (cash[arrival.ownerPay.id] ?? INITIAL_CASH_M) + arrival.ownerPay.amount;
+                (botCashAll[arrival.ownerPay.id] ?? INITIAL_CASH_M) + arrival.ownerPay.amount;
             }
+            botCashAll = { ...flightCash };
 
             const bust = botBankrupted ? botBankruptPatch(botTurnLogs) : null;
             if (bust) botTurnLogs = bust.logs;
@@ -2144,6 +2164,8 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               updatedCash[turnPlayerId] = botCash;
             }
             let botTeleportPassedGo = false;
+            let botCardFlightDest: number | null = null;
+            let botCardFlightPassedGo = false;
             if (card.teleportToIndex !== undefined) {
               // Forward round the board: a destination behind you means the
               // start went past, and the salary with it.
@@ -2222,6 +2244,21 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                 botFlightState[turnPlayerId] = true;
               }
             }
+            if (card.chooseDestination) {
+              // No trip to the airport and no waiting: the bot picks now, from
+              // where it stands, exactly as a player would.
+              const dest = chooseBotDestination(currentPos, botProperties, turnPlayerId, botCash);
+              if (dest !== currentPos) {
+                if (dest <= currentPos) {
+                  botCash += SALARY_M;
+                  updatedCash[turnPlayerId] = botCash;
+                  botCardFlightPassedGo = true;
+                }
+                currentPos = dest;
+                updatedPositions[turnPlayerId] = dest;
+                botCardFlightDest = dest;
+              }
+            }
             if (card.goJail) {
               updatedPositions[turnPlayerId] = 10;
               botJailState[turnPlayerId] = 1;
@@ -2241,10 +2278,32 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               if (botTeleportPassedGo) {
                 botChanceDesc += ` (ผ่านจุดเริ่มต้น รับ +${formatMoneyM(SALARY_M)})`;
               }
+            } else if (card.chooseDestination && botCardFlightDest !== null) {
+              botChanceDesc += ` ➔ ย้ายไป [${SUPER_MONOPOLY_TILES[botCardFlightDest]?.name}]${
+                botCardFlightPassedGo ? ` (ผ่านจุดเริ่มต้น รับ +${formatMoneyM(SALARY_M)})` : ''
+              }`;
             } else if (card.goJail) {
               botChanceDesc += ` ➔ เข้าห้องขังทันที!`;
             }
             botTurnLogs = addLog(botChanceDesc, '#eab308', botTurnLogs);
+
+            // Landing by card is landing: buy it, build on it, or pay for it.
+            if (botCardFlightDest !== null) {
+              const arrival = botResolveArrival(botCardFlightDest, 'ย้ายฐาน', botTurnLogs);
+              botTurnLogs = arrival.logs;
+              if (arrival.wentBankrupt) botBankrupted = true;
+              updatedCash[turnPlayerId] = botCash;
+              if (arrival.ownerPay) {
+                updatedCash[arrival.ownerPay.id] =
+                  (botCashAll[arrival.ownerPay.id] ?? INITIAL_CASH_M) + arrival.ownerPay.amount;
+                if (arrival.receipt) {
+                  botRentReceipt = {
+                    ...arrival.receipt,
+                    ownerCashAfter: updatedCash[arrival.ownerPay.id],
+                  };
+                }
+              }
+            }
           } else if (targetTile.type === 'tax') {
             botCash = Math.max(0, botCash - 1.0);
             updatedCash[turnPlayerId] = botCash;

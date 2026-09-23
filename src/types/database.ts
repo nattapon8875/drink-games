@@ -92,6 +92,10 @@ export interface CardAction {
   description: string;
   rewardMoney?: number; // in M
   teleportToIndex?: number;
+  // Open the flight picker on the spot: the holder flies from where they are
+  // to anywhere they like, this turn. Distinct from teleportToIndex, which
+  // decides the destination for them.
+  chooseDestination?: boolean;
   goJail?: boolean;
   collectFromAll?: number; // in M
   payToAll?: number; // in M - pay every other player this much

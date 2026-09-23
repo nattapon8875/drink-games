@@ -647,12 +647,12 @@ export const CHANCE_CARDS: CardAction[] = [
     id: 'cc-9',
     type: 'chance',
     title: 'ย้ายฐานการค้า',
-    description: 'เลือกทำเลใหม่ได้เองทั้งกระดาน ➜ ไปลงที่สนามบิน แล้วตาหน้าเลือกจุดหมาย (ถ้าผ่านจุดเริ่มต้นรับ 2.00M)',
-    // Was 21 - พิษณุโลก - while the title said เชียงใหม่, so it had been sending
-    // people to the wrong province for as long as it existed. Rather than
-    // correct it to 29, the card now does what its name suggests and lets the
-    // holder pick the new base themselves, by way of the airport.
-    teleportToIndex: 30,
+    description: 'เลือกทำเลใหม่ได้เองทั้งกระดาน ➜ ไปได้ทันทีในตานี้ (ถ้าผ่านจุดเริ่มต้นรับ 2.00M)',
+    // Used to point at 21 - พิษณุโลก - while the title said เชียงใหม่. It now
+    // moves you nowhere on its own: you pick, and you go this turn. No trip to
+    // the airport and no waiting for the next turn, which is what the ticket
+    // card is for.
+    chooseDestination: true,
   },
   {
     id: 'cc-10',
