@@ -107,6 +107,11 @@ function nextActiveAfter(
   return null;
 }
 
+// How many times a bot may roll in one turn. Doubles roll again, so this is
+// only a stop against a turn that never ends - six is about one turn in eight
+// thousand, where two was one turn in six.
+const BOT_MAX_ROLLS_PER_TURN = 6;
+
 export function useSuperMonopolyEngine(props: BaseGameProps) {
   const { room, players, currentPlayer, isHost, onUpdateGameState, onNextTurn, onUpdatePlayerDrink } = props;
 
@@ -1775,7 +1780,13 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
           };
         };
 
-        while (shouldRollAgain && rollsThisTurn < 2 && isMounted) {
+        // A bot gets the same doubles rule a player gets: keep rolling. This
+        // used to stop at two rolls, so a bot that rolled a double on its
+        // second roll handed the turn over anyway - the feed said "แต้มคู่!"
+        // and then "ส่งตาให้" on the very next line. The ceiling that is left
+        // is a safety valve against a runaway turn, not a rule, and it says so
+        // in the feed on the once-in-thousands turn that reaches it.
+        while (shouldRollAgain && rollsThisTurn < BOT_MAX_ROLLS_PER_TURN && isMounted) {
           rollsThisTurn++;
           shouldRollAgain = false;
 
@@ -2295,8 +2306,16 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             !botJailState[turnPlayerId] &&
             !botRestState[turnPlayerId]
           ) {
-            shouldRollAgain = true;
-            await new Promise((resolve) => setTimeout(resolve, 1500));
+            if (rollsThisTurn >= BOT_MAX_ROLLS_PER_TURN) {
+              botTurnLogs = addLog(
+                `🛑 🤖 ${currentTurnPlayer.display_name} ทอยแต้มคู่ครบ ${BOT_MAX_ROLLS_PER_TURN} ครั้งในตาเดียว ➜ จบตา`,
+                '#f59e0b',
+                botTurnLogs
+              );
+            } else {
+              shouldRollAgain = true;
+              await new Promise((resolve) => setTimeout(resolve, 1500));
+            }
           }
         } // end while loop
 

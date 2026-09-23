@@ -341,15 +341,15 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
         {/* คำขวัญประจำจังหวัด - flavour only, and only the 22 real provinces
             have one, so a hotel or a utility simply skips this strip. */}
         {motto && (
-          <div className="relative px-4 py-2.5 rounded-2xl bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-line))]">
+          <div className="relative px-5 py-3 rounded-2xl bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-line))]">
             <Quote
-              className="absolute left-1.5 top-1.5 w-3 h-3 text-[rgb(var(--c-butter-label))]/70"
+              className="absolute left-2 top-2 w-3.5 h-3.5 text-[rgb(var(--c-butter-label))]/70"
               aria-hidden
             />
-            <p className="text-[10px] font-bold leading-relaxed text-center text-[rgb(var(--c-ink-soft))]">
+            <p className="text-[13px] font-semibold leading-[1.95] text-center text-[rgb(var(--c-ink))]">
               {motto}
             </p>
-            <span className="block mt-1 text-[9px] font-black text-center text-[rgb(var(--c-ink-faint))]">
+            <span className="block mt-1.5 text-[10px] font-black text-center text-[rgb(var(--c-ink-faint))]">
               คำขวัญประจำจังหวัด
             </span>
           </div>
