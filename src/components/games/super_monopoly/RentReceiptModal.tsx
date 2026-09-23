@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal } from '@/components/common/Modal';
-import { formatMoneyM } from './superMonopolyData';
-import { Coins, ArrowRight, Wallet } from 'lucide-react';
+import { formatMoneyM, PROVINCE_MOTTOES } from './superMonopolyData';
+import { Coins, ArrowRight, Wallet, Quote } from 'lucide-react';
 
 // Broadcast through game_state so the landlord is told about a payment that
 // happened on someone else's turn - until now their balance just quietly went up.
@@ -28,8 +28,26 @@ export const RentReceiptModal: React.FC<RentReceiptModalProps> = ({
 }) => {
   if (!isOpen || !receipt) return null;
 
+  // The receipt only carries the tile's name, which is all the motto lookup
+  // needs: no hotel or utility is a key in that table, so a non-province
+  // simply finds nothing.
+  const motto = PROVINCE_MOTTOES[receipt.tileName] || null;
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="💰 มีคนตกที่ดินของคุณ">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="💰 มีคนตกที่ดินของคุณ"
+      footer={
+        <button
+          type="button"
+          onClick={onClose}
+          className="wood-btn-gold w-full py-3 rounded-2xl text-sm font-black shadow-lg active:scale-95"
+        >
+          รับทราบ
+        </button>
+      }
+    >
       <div className="flex flex-col gap-3 text-center">
         <div className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-[rgb(var(--c-mint-soft))] border-2 border-emerald-700">
           <span className="text-3xl">{receipt.tileIcon || '🏨'}</span>
@@ -38,6 +56,22 @@ export const RentReceiptModal: React.FC<RentReceiptModalProps> = ({
             [{receipt.payerName}] จ่ายค่าผ่านทางให้คุณ
           </span>
         </div>
+
+        {/* คำขวัญประจำจังหวัด - the land that just paid you, saying its piece */}
+        {motto && (
+          <div className="relative px-4 py-2 rounded-2xl bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-line))]">
+            <Quote
+              className="absolute left-1.5 top-1.5 w-3 h-3 text-[rgb(var(--c-butter-label))]/70"
+              aria-hidden
+            />
+            <p className="text-[10px] font-bold leading-relaxed text-[rgb(var(--c-ink-soft))]">
+              {motto}
+            </p>
+            <span className="block mt-1 text-[9px] font-black text-[rgb(var(--c-ink-faint))]">
+              คำขวัญประจำจังหวัด
+            </span>
+          </div>
+        )}
 
         <div className="flex items-center justify-center gap-2 py-2 rounded-2xl bg-emerald-500/15 border border-emerald-500/50">
           <Coins className="w-5 h-5 text-emerald-300" />
@@ -52,14 +86,6 @@ export const RentReceiptModal: React.FC<RentReceiptModalProps> = ({
           <ArrowRight className="w-3.5 h-3.5 text-amber-400/85" />
           <span className="text-amber-100 font-black">{formatMoneyM(receipt.ownerCashAfter)}</span>
         </div>
-
-        <button
-          type="button"
-          onClick={onClose}
-          className="wood-btn-gold w-full py-3 rounded-2xl text-sm font-black shadow-lg active:scale-95"
-        >
-          รับทราบ
-        </button>
       </div>
     </Modal>
   );

@@ -1,4 +1,4 @@
-import { SuperPropertyTile, CardAction } from '@/types/database';
+import { SuperPropertyTile, CardAction, PropertyOwnership } from '@/types/database';
 
 export const SUPER_MONOPOLY_TILES: SuperPropertyTile[] = [
   // แถวล่าง (Bottom: 0 -> 10, จากขวาไปซ้าย)
@@ -927,3 +927,53 @@ export function mottoOfTile(tile: { name?: string; isUtility?: boolean } | null 
   if (!tile || tile.isUtility || !tile.name) return null;
   return PROVINCE_MOTTOES[tile.name] || null;
 }
+
+// ---------------------------------------------------------------------------
+// Rent. This lives here, with the other rules, rather than in the engine: the
+// title deed needs to show the very number the engine is going to charge, and
+// the last time two copies of this table existed they drifted apart.
+// ---------------------------------------------------------------------------
+// How much a province's rent is multiplied by its owner holding a side of the
+// board. Hotels and utilities count towards that holding but are never
+// multiplied by it - they have their own multiplier.
+export function rowBonusFor(
+  tile: SuperPropertyTile,
+  ownership: Pick<PropertyOwnership, 'ownerId'>,
+  rowBonus: RowBonus | null | undefined
+): number {
+  if (!rowBonus || tile.isUtility || tile.type !== 'property') return 1;
+  if (rowBonus.ownerId !== ownership.ownerId) return 1;
+  if (rowBonus.row !== rowOfTile(tile.index)) return 1;
+  return rowMultiplierFor(rowBonus.count);
+}
+
+export function computeRent(
+  tile: SuperPropertyTile,
+  ownership: PropertyOwnership,
+  allProperties: Record<number, PropertyOwnership>,
+  rowBonus?: RowBonus | null
+): number {
+  if (tile.isUtility) {
+    // A hotel or a utility cannot be built on, so it earns its keep a different
+    // way: every time the owner lands on it the rent multiplier goes up one,
+    // to a ceiling of x4, and that rides on top of the chain bonus.
+    const boost = visitMultiplier(ownership.visits);
+    if (UTILITY_TILE_INDICES.includes(tile.index)) {
+      const owned = UTILITY_TILE_INDICES.filter(
+        (i) => allProperties[i]?.ownerId === ownership.ownerId
+      ).length;
+      return (owned >= 2 ? 1.2 : 0.5) * boost;
+    }
+    const hotels = HOTEL_TILE_INDICES.filter(
+      (i) => allProperties[i]?.ownerId === ownership.ownerId
+    ).length;
+    return (tile.baseRent || 0.4) * Math.max(1, hotels) * boost;
+  }
+  const row = rowBonusFor(tile, ownership, rowBonus);
+  if (ownership.houses === 1) return (tile.rent1House || 0.5) * row;
+  if (ownership.houses === 2) return (tile.rent2House || 1.2) * row;
+  if (ownership.houses === 3) return (tile.rent3House || 2.5) * row;
+  if (ownership.houses === 4) return (tile.rentHotel || 5.0) * row;
+  return (tile.baseRent || 0.2) * row;
+}
+

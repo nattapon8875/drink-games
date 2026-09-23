@@ -10,9 +10,10 @@ import {
   ROW_NAMES,
   RowBonus,
   mottoOfTile,
+  computeRent,
 } from './superMonopolyData';
 import { Modal } from '@/components/common/Modal';
-import { Home, Building2, Shield, Check, X, Wallet, Coins, Quote } from 'lucide-react';
+import { Home, Building2, Shield, Check, X, Wallet, Coins, Quote, Zap } from 'lucide-react';
 
 interface PropertyCardModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ interface PropertyCardModalProps {
   ownerColor?: string | null;
   isOwnedByMe?: boolean;
   rowBonus?: RowBonus | null;
+  allProperties?: Record<number, PropertyOwnership>;
   onClose: () => void;
   onBuyLand: () => Promise<void>;
   onBuildHouse: () => Promise<void>;
@@ -39,6 +41,7 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
   ownerColor,
   isOwnedByMe,
   rowBonus,
+  allProperties,
   onClose,
   onBuyLand,
   onBuildHouse,
@@ -92,6 +95,14 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
   };
 
   const motto = mottoOfTile(tile);
+
+  // What this square charges right now, and why. Both multipliers were only
+  // ever visible in passing - the visit one lived in the buy prompt, so simply
+  // looking at a square told you nothing about what it had grown into.
+  const liveRent =
+    isOwner && ownership ? computeRent(tile, ownership, allProperties || {}, rowBonus) : null;
+  const visitMult = tile.isUtility ? boost : 1;
+  const totalMult = visitMult * rowMult;
 
   const canAffordLand = tile.cost ? currentCash >= tile.cost : false;
   const houseCost = houses === 3 ? (tile.hotelCost || 2.0) : (tile.houseCost || 0.8);
@@ -377,6 +388,46 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
             </span>
           )}
         </div>
+
+        {/* ค่าผ่านทางตอนนี้ + ตัวคูณที่สะสมมาแล้ว */}
+        {liveRent !== null && (
+          <div className="rounded-2xl border-2 border-[rgb(var(--c-line-strong))] bg-[rgb(var(--c-bg-deep))] px-3 py-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="flex items-center gap-1.5 text-[11px] font-black text-[rgb(var(--c-ink-soft))]">
+                <Zap className="w-3.5 h-3.5 text-[rgb(var(--c-butter-label))]" />
+                ค่าผ่านทางตอนนี้
+              </span>
+              <span className="text-lg font-mono font-black text-[rgb(var(--c-butter-label))]">
+                {formatMoneyM(liveRent)}
+              </span>
+            </div>
+
+            <div className="mt-1.5 pt-1.5 border-t border-[rgb(var(--c-line))] flex flex-wrap items-center justify-center gap-1.5">
+              {totalMult > 1 ? (
+                <>
+                  {visitMult > 1 && (
+                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-[rgb(var(--c-sky-soft))] text-[rgb(var(--c-sky-label))] border border-[rgb(var(--c-line))]">
+                      แวะเองแล้ว {visits} ครั้ง ➜ x{visitMult}
+                      {visitMult >= MAX_VISIT_MULTIPLIER ? ' (สูงสุด)' : ''}
+                    </span>
+                  )}
+                  {rowMult > 1 && (
+                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-[rgb(var(--c-grape-soft))] text-[rgb(var(--c-grape))] border border-[rgb(var(--c-line))]">
+                      โบนัสแถว ➜ x{rowMult}
+                    </span>
+                  )}
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-[rgb(var(--c-butter-soft))] text-[rgb(var(--c-butter-label))] border border-[rgb(var(--c-line-strong))]">
+                    รวมคูณ x{totalMult}
+                  </span>
+                </>
+              ) : (
+                <span className="text-[10px] font-bold text-[rgb(var(--c-ink-faint))]">
+                  ยังไม่มีตัวคูณ (x1)
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         {rowMult > 1 && (
           <div className="rounded-2xl border-2 border-[rgb(var(--c-grape))] bg-[rgb(var(--c-grape-soft))] px-3 py-2 text-center">

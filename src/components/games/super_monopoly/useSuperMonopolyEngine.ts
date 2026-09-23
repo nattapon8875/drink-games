@@ -25,6 +25,8 @@ import {
   rowMultiplierFor,
   recomputeRowBonus,
   ROW_NAMES,
+  rowBonusFor,
+  computeRent,
 } from './superMonopolyData';
 import { sfx } from '@/lib/sound';
 import confetti from 'canvas-confetti';
@@ -103,50 +105,6 @@ function nextActiveAfter(
     if (!bankrupt[candidate.id]) return candidate;
   }
   return null;
-}
-
-// How much a province's rent is multiplied by its owner holding a side of the
-// board. Hotels and utilities count towards that holding but are never
-// multiplied by it - they have their own multiplier.
-export function rowBonusFor(
-  tile: SuperPropertyTile,
-  ownership: Pick<PropertyOwnership, 'ownerId'>,
-  rowBonus: RowBonus | null | undefined
-): number {
-  if (!rowBonus || tile.isUtility || tile.type !== 'property') return 1;
-  if (rowBonus.ownerId !== ownership.ownerId) return 1;
-  if (rowBonus.row !== rowOfTile(tile.index)) return 1;
-  return rowMultiplierFor(rowBonus.count);
-}
-
-function computeRent(
-  tile: SuperPropertyTile,
-  ownership: PropertyOwnership,
-  allProperties: Record<number, PropertyOwnership>,
-  rowBonus?: RowBonus | null
-): number {
-  if (tile.isUtility) {
-    // A hotel or a utility cannot be built on, so it earns its keep a different
-    // way: every time the owner lands on it the rent multiplier goes up one,
-    // to a ceiling of x4, and that rides on top of the chain bonus.
-    const boost = visitMultiplier(ownership.visits);
-    if (UTILITY_TILE_INDICES.includes(tile.index)) {
-      const owned = UTILITY_TILE_INDICES.filter(
-        (i) => allProperties[i]?.ownerId === ownership.ownerId
-      ).length;
-      return (owned >= 2 ? 1.2 : 0.5) * boost;
-    }
-    const hotels = HOTEL_TILE_INDICES.filter(
-      (i) => allProperties[i]?.ownerId === ownership.ownerId
-    ).length;
-    return (tile.baseRent || 0.4) * Math.max(1, hotels) * boost;
-  }
-  const row = rowBonusFor(tile, ownership, rowBonus);
-  if (ownership.houses === 1) return (tile.rent1House || 0.5) * row;
-  if (ownership.houses === 2) return (tile.rent2House || 1.2) * row;
-  if (ownership.houses === 3) return (tile.rent3House || 2.5) * row;
-  if (ownership.houses === 4) return (tile.rentHotel || 5.0) * row;
-  return (tile.baseRent || 0.2) * row;
 }
 
 export function useSuperMonopolyEngine(props: BaseGameProps) {
@@ -377,6 +335,13 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   // moments earlier must not be reported as a refusal.
   const propertiesRef = useRef(properties);
   propertiesRef.current = properties;
+  // The live cash table. A walk spreads `cash` on every step, and `cash` is the
+  // snapshot from the render the roll was clicked on - so a payment another
+  // client made while the token was walking would be spread away again. The
+  // walker's own balance still comes from its running total; only the base
+  // everyone else sits in is taken fresh.
+  const cashRef = useRef(cash);
+  cashRef.current = cash;
 
   const addLog = useCallback(
     (text: string, color?: string, currentLogs?: Array<{ text: string; time: string; color?: string }>) => {
@@ -483,7 +448,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
           activeStepPlayerId: currentTurnPlayer.id,
           isRolling: false,
           isMoving: true,
-          cash: { ...cash, [currentTurnPlayer.id]: playerCash },
+          cash: { ...cashRef.current, [currentTurnPlayer.id]: playerCash },
         });
 
         // Destination reached
@@ -513,7 +478,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
           let newLogs = addLog(moveLog, '#f59e0b');
           const updatedPositions = { ...positions, [currentTurnPlayer.id]: finalPos };
-          const updatedCash = { ...cash, [currentTurnPlayer.id]: playerCash };
+          const updatedCash = { ...cashRef.current, [currentTurnPlayer.id]: playerCash };
           const updatedJail = { ...inJailTurns, [currentTurnPlayer.id]: 0 };
           const updatedRest = { ...restTurns, [currentTurnPlayer.id]: 0 };
           const updatedFlights = { ...pendingFlights, [currentTurnPlayer.id]: false };
@@ -960,7 +925,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
     await onUpdateGameState({
       inJailTurns: { ...inJailTurns, [currentTurnPlayer.id]: 0 },
-      cash: { ...cash, [currentTurnPlayer.id]: remaining },
+      cash: { ...cashRef.current, [currentTurnPlayer.id]: remaining },
       gameLogs: newLogs,
     });
   }, [
@@ -1016,7 +981,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       return;
     }
 
-    const updatedCash = { ...cash, [currentTurnPlayer.id]: currentMoney - cost };
+    const updatedCash = { ...cashRef.current, [currentTurnPlayer.id]: currentMoney - cost };
     // Buying it is the first visit, which is what lets two houses go up on the
     // spot instead of waiting for the next lap.
     const updatedProperties = {
@@ -1105,7 +1070,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       return;
     }
 
-    const updatedCash = { ...cash, [currentTurnPlayer.id]: currentMoney - cost };
+    const updatedCash = { ...cashRef.current, [currentTurnPlayer.id]: currentMoney - cost };
     const updatedProperties = {
       ...properties,
       [tileIdx]: {
@@ -1191,7 +1156,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     const { props: nextProps, raised, soldNames } = mortgageUntil(me, properties, shortfall);
     const remaining = Math.max(0, cashNow + raised - debtDecision.amount);
 
-    const nextCash = { ...cash, [me]: remaining };
+    const nextCash = { ...cashRef.current, [me]: remaining };
     if (debtDecision.creditorId) {
       nextCash[debtDecision.creditorId] =
         (nextCash[debtDecision.creditorId] ?? INITIAL_CASH_M) + debtDecision.amount;
@@ -1237,7 +1202,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     const me = currentTurnPlayer.id;
     const cashNow = cash[me] ?? 0;
 
-    const nextCash = { ...cash, [me]: 0 };
+    const nextCash = { ...cashRef.current, [me]: 0 };
     if (debtDecision.creditorId) {
       nextCash[debtDecision.creditorId] =
         (nextCash[debtDecision.creditorId] ?? INITIAL_CASH_M) + cashNow;
@@ -1345,7 +1310,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     const actualRent = rent;
     const remaining = myCashNow - rent;
 
-    const rentCash = { ...cash, [currentTurnPlayer.id]: remaining };
+    const rentCash = { ...cashRef.current, [currentTurnPlayer.id]: remaining };
     if (owner) {
       rentCash[owner.id] = (rentCash[owner.id] ?? INITIAL_CASH_M) + actualRent;
     }
@@ -1421,7 +1386,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
     await onUpdateGameState({
       positions: { ...positions, [currentTurnPlayer.id]: destIndex },
-      cash: { ...cash, [currentTurnPlayer.id]: newCash },
+      cash: { ...cashRef.current, [currentTurnPlayer.id]: newCash },
       pendingFlights: { ...pendingFlights, [currentTurnPlayer.id]: false },
       gameLogs: flightLogs,
       activeStepTileIndex: null,
@@ -1611,6 +1576,12 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
         let shouldRollAgain = true;
         let botTurnLogs = gameLogsRef.current;
         let botCash: number = cash[turnPlayerId] ?? INITIAL_CASH_M;
+        // Everyone's cash, carried across the whole turn the way botProperties
+        // and botRowBonus are. `cash` is the render-time snapshot from when this
+        // turn started, so re-spreading it on the second roll of a double threw
+        // away any rent the bot had just paid on the first: the landlord was
+        // credited and then silently reset to their pre-rent balance.
+        let botCashAll: Record<string, number> = { ...cash };
         let botJailTurns: number = inJailTurns[turnPlayerId] ?? 0;
         let botRestTurns: number = restTurns[turnPlayerId] ?? 0;
         let currentPos: number = positions[turnPlayerId] ?? 0;
@@ -1831,7 +1802,8 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
             botTurnLogs = arrival.logs;
             if (arrival.wentBankrupt) botBankrupted = true;
 
-            const flightCash = { ...cash, [turnPlayerId]: botCash };
+            const flightCash = { ...botCashAll, [turnPlayerId]: botCash };
+            botCashAll = { ...flightCash };
             if (arrival.ownerPay) {
               flightCash[arrival.ownerPay.id] =
                 (cash[arrival.ownerPay.id] ?? INITIAL_CASH_M) + arrival.ownerPay.amount;
@@ -1893,7 +1865,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               );
               await botSync({
                 inJailTurns: botJailState,
-                cash: { ...cash, [turnPlayerId]: botCash },
+                cash: { ...botCashAll, [turnPlayerId]: botCash },
                 gameLogs: botTurnLogs,
               });
               await new Promise((resolve) => setTimeout(resolve, 1200));
@@ -1962,7 +1934,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               activeStepPlayerId: turnPlayerId,
               isRolling: false,
               isMoving: true,
-              cash: { ...cash, [turnPlayerId]: botCash },
+              cash: { ...botCashAll, [turnPlayerId]: botCash },
             });
 
             await new Promise((resolve) => setTimeout(resolve, 320));
@@ -1994,7 +1966,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
 
           botTurnLogs = addLog(logText, '#93c5fd', botTurnLogs);
           const updatedPositions = { ...positions, [turnPlayerId]: finalPos };
-          const updatedCash = { ...cash, [turnPlayerId]: botCash };
+          const updatedCash = { ...botCashAll, [turnPlayerId]: botCash };
           botJailState[turnPlayerId] = 0;
 
           // 4. Bot Decision on Target Tile:
@@ -2284,6 +2256,10 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
           }
 
           botTurnLogs = rowBonusAnnouncement(rowBonus, botRowBonus, botTurnLogs);
+
+          // Bank this roll's cash before sending it: on a double the next roll
+          // starts from here, not from the snapshot this turn opened with.
+          botCashAll = { ...updatedCash };
 
           // Single clean server state sync
           await botSync({

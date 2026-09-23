@@ -1009,6 +1009,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
         }
         isOwnedByMe={Boolean(shownTileOwner && currentPlayer && shownTileOwner.id === currentPlayer.id)}
         rowBonus={rowBonus}
+        allProperties={properties}
         onClose={() => {
           if (activePropertyModal) {
             handleCloseActiveModal();
