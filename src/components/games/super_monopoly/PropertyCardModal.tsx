@@ -9,9 +9,10 @@ import {
   rowOfTile,
   ROW_NAMES,
   RowBonus,
+  mottoOfTile,
 } from './superMonopolyData';
 import { Modal } from '@/components/common/Modal';
-import { Home, Building2, Shield, Check, X, Wallet, Coins } from 'lucide-react';
+import { Home, Building2, Shield, Check, X, Wallet, Coins, Quote } from 'lucide-react';
 
 interface PropertyCardModalProps {
   isOpen: boolean;
@@ -89,6 +90,8 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
       setLoading(false);
     }
   };
+
+  const motto = mottoOfTile(tile);
 
   const canAffordLand = tile.cost ? currentCash >= tile.cost : false;
   const houseCost = houses === 3 ? (tile.hotelCost || 2.0) : (tile.houseCost || 0.8);
@@ -323,6 +326,23 @@ export const PropertyCardModal: React.FC<PropertyCardModalProps> = ({
             ราคาที่ดิน: {tile.cost ? formatMoneyM(tile.cost) : '-'}
           </span>
         </div>
+
+        {/* คำขวัญประจำจังหวัด - flavour only, and only the 22 real provinces
+            have one, so a hotel or a utility simply skips this strip. */}
+        {motto && (
+          <div className="relative px-4 py-2.5 rounded-2xl bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-line))]">
+            <Quote
+              className="absolute left-1.5 top-1.5 w-3 h-3 text-[rgb(var(--c-butter-label))]/70"
+              aria-hidden
+            />
+            <p className="text-[10px] font-bold leading-relaxed text-center text-[rgb(var(--c-ink-soft))]">
+              {motto}
+            </p>
+            <span className="block mt-1 text-[9px] font-black text-center text-[rgb(var(--c-ink-faint))]">
+              คำขวัญประจำจังหวัด
+            </span>
+          </div>
+        )}
 
         {/* Who owns this tile - the card never said before */}
         <div
