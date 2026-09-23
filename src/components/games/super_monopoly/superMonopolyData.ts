@@ -646,11 +646,13 @@ export const CHANCE_CARDS: CardAction[] = [
   {
     id: 'cc-9',
     type: 'chance',
-    title: 'กลับไปตั้งหลักที่เชียงใหม่',
-    description: 'ย้ายฐานการค้าไปเชียงใหม่ทันที (ถ้าผ่านจุดเริ่มต้นรับ 2.00M)',
-    // 21 is พิษณุโลก. This card has been sending people to the wrong province
-    // since it was written; เชียงใหม่ is 29.
-    teleportToIndex: 29,
+    title: 'ย้ายฐานการค้า',
+    description: 'เลือกทำเลใหม่ได้เองทั้งกระดาน ➜ ไปลงที่สนามบิน แล้วตาหน้าเลือกจุดหมาย (ถ้าผ่านจุดเริ่มต้นรับ 2.00M)',
+    // Was 21 - พิษณุโลก - while the title said เชียงใหม่, so it had been sending
+    // people to the wrong province for as long as it existed. Rather than
+    // correct it to 29, the card now does what its name suggests and lets the
+    // holder pick the new base themselves, by way of the airport.
+    teleportToIndex: 30,
   },
   {
     id: 'cc-10',
