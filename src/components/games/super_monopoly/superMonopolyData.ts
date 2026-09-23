@@ -588,14 +588,18 @@ export const CHANCE_CARDS: CardAction[] = [
     title: 'เดินทางด่วนสู่จุดเริ่มต้น',
     description: 'ขึ้นรถไฟความเร็วสูงกลับไปยังจุดเริ่มต้นทันที รับ 2.0M',
     teleportToIndex: 0,
-    rewardMoney: 2.0,
+    // No rewardMoney here: arriving at the start pays the salary like any
+    // other arrival, and carrying both paid this card out twice.
   },
   {
+    // A free plane ticket should put you at the airport, not pick the
+    // destination for you - the whole point of a ticket is choosing where it
+    // takes you. The airport then works exactly as it does on foot.
     id: 'cc-2',
     type: 'chance',
-    title: 'บินลัดฟ้าไปอุดรธานี',
-    description: 'ได้ตั๋วเครื่องบินฟรี มุ่งตรงไปลงทุนที่อุดรธานีทันที (ถ้าผ่านจุดเริ่มต้นรับ 2.0M)',
-    teleportToIndex: 31,
+    title: 'ได้ตั๋วเครื่องบินฟรี',
+    description: 'บินลัดฟ้าไปลงที่สนามบินทันที ➜ ได้เลือกจุดหมายเอง (ถ้าผ่านจุดเริ่มต้นรับ 2.0M)',
+    teleportToIndex: 30,
   },
   {
     id: 'cc-3',
@@ -644,7 +648,9 @@ export const CHANCE_CARDS: CardAction[] = [
     type: 'chance',
     title: 'กลับไปตั้งหลักที่เชียงใหม่',
     description: 'ย้ายฐานการค้าไปเชียงใหม่ทันที (ถ้าผ่านจุดเริ่มต้นรับ 2.00M)',
-    teleportToIndex: 21,
+    // 21 is พิษณุโลก. This card has been sending people to the wrong province
+    // since it was written; เชียงใหม่ is 29.
+    teleportToIndex: 29,
   },
   {
     id: 'cc-10',

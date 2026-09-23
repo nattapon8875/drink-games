@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal } from '@/components/common/Modal';
-import { formatMoneyM } from './superMonopolyData';
-import { AlertTriangle, ArrowRight, Coins, Building, Home, Skull, ShieldAlert } from 'lucide-react';
+import { formatMoneyM, PROVINCE_MOTTOES } from './superMonopolyData';
+import { AlertTriangle, ArrowRight, Coins, Building, Home, Skull, ShieldAlert, Quote } from 'lucide-react';
 
 export interface PenaltyNotice {
   type: 'rent' | 'tax' | 'jail_bail' | 'penalty';
@@ -33,6 +33,10 @@ export const PenaltyModal: React.FC<PenaltyModalProps> = ({
   const isRent = notice.type === 'rent';
   const isTax = notice.type === 'tax';
 
+  // Keyed by name, so only the 22 provinces have one - a hotel, a utility or a
+  // tax square finds nothing and the strip is simply absent.
+  const motto = PROVINCE_MOTTOES[notice.tileName] || null;
+
   return (
     <Modal
       isOpen={isOpen}
@@ -40,6 +44,16 @@ export const PenaltyModal: React.FC<PenaltyModalProps> = ({
       title={isRent ? '💸 ชำระค่าผ่านทาง' : isTax ? '💰 ชำระภาษีทรัพย์สิน' : '⚠️ แจ้งเตือนการเสียค่าปรับ'}
       className="max-w-md"
       showCloseButton={false}
+      footer={
+        <button
+          type="button"
+          onClick={onAcknowledge}
+          className="wood-btn-gold w-full py-3 rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-xl active:scale-95 transition"
+        >
+          <span>รับทราบ</span>
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      }
     >
       <div className="flex flex-col items-center text-center gap-3 py-1">
         {/* Animated Icon Badge */}
@@ -74,6 +88,22 @@ export const PenaltyModal: React.FC<PenaltyModalProps> = ({
             {notice.reason}
           </p>
         </div>
+
+        {/* คำขวัญประจำจังหวัด - the province you just paid, saying its piece */}
+        {motto && (
+          <div className="relative w-full px-5 py-3 rounded-2xl bg-[rgb(var(--c-surface-2))] border border-[rgb(var(--c-line))]">
+            <Quote
+              className="absolute left-2 top-2 w-3.5 h-3.5 text-[rgb(var(--c-butter-label))]/70"
+              aria-hidden
+            />
+            <p className="text-[13px] font-semibold leading-[1.95] text-[rgb(var(--c-ink))]">
+              {motto}
+            </p>
+            <span className="block mt-1.5 text-[10px] font-black text-[rgb(var(--c-ink-faint))]">
+              คำขวัญประจำจังหวัด
+            </span>
+          </div>
+        )}
 
         {/* Recipient info if Rent */}
         {notice.recipientName && (
@@ -119,16 +149,6 @@ export const PenaltyModal: React.FC<PenaltyModalProps> = ({
             </span>
           </div>
         )}
-
-        {/* Acknowledge Button */}
-        <button
-          type="button"
-          onClick={onAcknowledge}
-          className="wood-btn-gold w-full py-3 rounded-xl font-black text-sm flex items-center justify-center gap-2 mt-1 shadow-xl active:scale-95 transition"
-        >
-          <span>รับทราบ</span>
-          <ArrowRight className="w-4 h-4" />
-        </button>
       </div>
     </Modal>
   );

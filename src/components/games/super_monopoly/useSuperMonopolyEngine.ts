@@ -665,12 +665,31 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               setActiveCard(card);
               requiresUserModalAction = true;
               sfx.playCardDraw();
-              if (card.rewardMoney) updatedCash[currentTurnPlayer.id] += card.rewardMoney;
+              let teleportPassedGo = false;
+              if (card.rewardMoney) {
+                playerCash += card.rewardMoney;
+                updatedCash[currentTurnPlayer.id] = playerCash;
+              }
               if (card.teleportToIndex !== undefined) {
                 updatedPositions[currentTurnPlayer.id] = card.teleportToIndex;
+                // A card move goes forward round the board, so a destination
+                // behind you means you went past the start. Every one of these
+                // cards has always promised that salary in its text and none of
+                // them ever paid it.
+                if (card.teleportToIndex <= finalPos) {
+                  playerCash += SALARY_M;
+                  updatedCash[currentTurnPlayer.id] = playerCash;
+                  teleportPassedGo = true;
+                }
                 const destTile = SUPER_MONOPOLY_TILES[card.teleportToIndex];
                 if (destTile?.type === 'property') {
                   setPendingTeleportTile(card.teleportToIndex);
+                } else if (destTile?.type === 'airport') {
+                  // Dropped at the airport by a card: the same deal as walking
+                  // in without a double - the seat is booked for the next turn.
+                  // Without this the card left you standing on the runway with
+                  // no flight at all.
+                  updatedFlights[currentTurnPlayer.id] = true;
                 }
               }
               if (card.goJail) {
@@ -684,7 +703,13 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                 chanceDesc += ` ➔ เสียเงิน ${formatMoneyM(Math.abs(card.rewardMoney))} (เหลือ ${formatMoneyM(updatedCash[currentTurnPlayer.id])})`;
               } else if (card.teleportToIndex !== undefined) {
                 const targetT = SUPER_MONOPOLY_TILES[card.teleportToIndex];
-                chanceDesc += ` ➔ วาร์ปไปที่ [${targetT?.name}]`;
+                chanceDesc +=
+                  targetT?.type === 'airport'
+                    ? ` ➔ บินไปลงที่ [${targetT.name}] ➜ ตาหน้าเลือกบินไปช่องไหนก็ได้`
+                    : ` ➔ วาร์ปไปที่ [${targetT?.name}]`;
+                if (teleportPassedGo) {
+                  chanceDesc += ` (ผ่านจุดเริ่มต้น รับ +${formatMoneyM(SALARY_M)})`;
+                }
               } else if (card.goJail) {
                 chanceDesc += ` ➔ ถูกส่งตัวเข้าห้องขังทันที!`;
               }
@@ -2118,7 +2143,15 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               botCash += card.rewardMoney;
               updatedCash[turnPlayerId] = botCash;
             }
+            let botTeleportPassedGo = false;
             if (card.teleportToIndex !== undefined) {
+              // Forward round the board: a destination behind you means the
+              // start went past, and the salary with it.
+              if (card.teleportToIndex <= currentPos) {
+                botCash += SALARY_M;
+                updatedCash[turnPlayerId] = botCash;
+                botTeleportPassedGo = true;
+              }
               updatedPositions[turnPlayerId] = card.teleportToIndex;
               currentPos = card.teleportToIndex;
 
@@ -2183,6 +2216,10 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
                     };
                   }
                 }
+              } else if (destTile && destTile.type === 'airport') {
+                // Same deal the bot gets for walking in: the seat is booked
+                // for its next turn.
+                botFlightState[turnPlayerId] = true;
               }
             }
             if (card.goJail) {
@@ -2197,7 +2234,13 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
               botChanceDesc += ` ➔ เสียเงิน ${formatMoneyM(Math.abs(card.rewardMoney))} (เหลือ ${formatMoneyM(botCash)})`;
             } else if (card.teleportToIndex !== undefined) {
               const targetT = SUPER_MONOPOLY_TILES[card.teleportToIndex];
-              botChanceDesc += ` ➔ วาร์ปไป [${targetT?.name}]`;
+              botChanceDesc +=
+                targetT?.type === 'airport'
+                  ? ` ➔ บินไปลงที่ [${targetT.name}] ➜ ตาหน้าจะบินต่อ`
+                  : ` ➔ วาร์ปไป [${targetT?.name}]`;
+              if (botTeleportPassedGo) {
+                botChanceDesc += ` (ผ่านจุดเริ่มต้น รับ +${formatMoneyM(SALARY_M)})`;
+              }
             } else if (card.goJail) {
               botChanceDesc += ` ➔ เข้าห้องขังทันที!`;
             }
