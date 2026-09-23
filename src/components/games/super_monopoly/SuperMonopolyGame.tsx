@@ -4,7 +4,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { BaseGameProps } from '@/types/game';
 import { useSuperMonopolyEngine } from './useSuperMonopolyEngine';
 import { SuperBoard } from './SuperBoard';
-import { SuperBoard3D, PLAYER_3D_COLORS } from './SuperBoard3D';
+import { SuperBoard3D } from './SuperBoard3D';
+import { colorOf } from './playerLooks';
 import { PropertyCardModal } from './PropertyCardModal';
 import { StartingHandModal } from './StartingHandModal';
 import { ChanceChestModal } from './ChanceChestModal';
@@ -107,6 +108,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
     bankrupt,
     bankruptcyNotice,
     rowBonus,
+    playerLooks,
     winnerId,
     debtDecision,
     handleMortgageAndPay,
@@ -239,6 +241,8 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
       pendingFlights: {},
       bankrupt: {},
       rowBonus: null,
+      // A new game draws new colours and characters.
+      looks: {},
       winnerId: null,
       startingDeal: null,
       bankruptcyNotice: null,
@@ -633,7 +637,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
             // returns to the corner of the board where there is room for it.
             <div className="mb-1 flex flex-nowrap overflow-x-auto scrollbar-none gap-1 lg:mb-0 lg:overflow-visible lg:flex-wrap lg:absolute lg:top-2 lg:left-2 lg:z-20 lg:flex-col lg:items-stretch lg:pointer-events-none lg:max-w-[40%]">
           {orderedPlayers.slice(0, 8).map((seatPlayer, seatIdx) => {
-              const colour = PLAYER_3D_COLORS[players.indexOf(seatPlayer) % PLAYER_3D_COLORS.length];
+              const colour = colorOf(playerLooks, players, seatPlayer.id);
               const isSeatTurn = seatPlayer.id === currentTurnPlayer?.id;
               const seatCash = cash[seatPlayer.id] ?? 15;
               const seatJailed = (inJailTurns[seatPlayer.id] ?? 0) > 0;
@@ -780,6 +784,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               activeStepPlayerId={activeStepPlayerId}
               bankrupt={bankrupt}
               rowBonus={rowBonus}
+              looks={playerLooks}
               dice={dice}
               isRolling={isRolling}
               showDice={diceShownForTurn}
@@ -795,6 +800,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
               activeStepPlayerId={activeStepPlayerId}
               bankrupt={bankrupt}
               rowBonus={rowBonus}
+              looks={playerLooks}
               onTileClick={handleTileClick}
             />
           )}
@@ -1005,7 +1011,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
         isMyTurn={Boolean(isMyTurn && activePropertyModal)}
         ownerName={shownTileOwner?.display_name || null}
         ownerColor={
-          shownTileOwner ? PLAYER_3D_COLORS[players.indexOf(shownTileOwner) % PLAYER_3D_COLORS.length] : null
+          shownTileOwner ? colorOf(playerLooks, players, shownTileOwner.id) : null
         }
         isOwnedByMe={Boolean(shownTileOwner && currentPlayer && shownTileOwner.id === currentPlayer.id)}
         rowBonus={rowBonus}
@@ -1241,6 +1247,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
         deal={startingDeal}
         players={players}
         myId={currentPlayer?.id || null}
+        looks={playerLooks}
         onClose={dismissStartingHand}
       />
 
@@ -1251,6 +1258,7 @@ export const SuperMonopolyGame: React.FC<BaseGameProps> = (props) => {
         players={players}
         myId={currentPlayer?.id || null}
         rowBonus={rowBonus}
+        looks={playerLooks}
         onChoose={handleChooseFlight}
         onClose={closeFlightPicker}
       />

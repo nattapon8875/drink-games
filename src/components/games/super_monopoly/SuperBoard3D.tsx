@@ -16,6 +16,7 @@ import {
   HOTEL_TILE_INDICES,
   UTILITY_TILE_INDICES,
 } from './superMonopolyData';
+import { FIGURE_CAST, PLAYER_3D_COLORS, PlayerLooks, lookOf } from './playerLooks';
 
 // การประปานครหลวง and โรงไฟฟ้านครหลวง, in the order the board lists them.
 const [WATER_TILE_INDEX, POWER_TILE_INDEX] = UTILITY_TILE_INDICES;
@@ -31,6 +32,8 @@ interface SuperBoard3DProps {
   // token comes off the board.
   bankrupt?: Record<string, boolean>;
   rowBonus?: RowBonus | null;
+  // Who is which colour and character this game (game_state.looks).
+  looks?: PlayerLooks | null;
   // Shown as real dice on the felt rather than a card floating over the board.
   dice?: number[] | null;
   isRolling?: boolean;
@@ -38,28 +41,7 @@ interface SuperBoard3DProps {
   onTileClick: (tile: SuperPropertyTile) => void;
 }
 
-export const PLAYER_3D_COLORS = [
-  '#ef4444', // 1. Crimson Red (Luffy)
-  '#3b82f6', // 2. Royal Blue (Goku / Sonic)
-  '#10b981', // 3. Emerald Green (Zoro / Deku)
-  '#f59e0b', // 4. Golden Amber (Naruto)
-  '#8b5cf6', // 5. Purple Violet (Frieza / Shinji)
-  '#ec4899', // 6. Hot Pink (Anya / Nezuko)
-  '#06b6d4', // 7. Electric Cyan (Rimuru / Hatsune Miku)
-  '#84cc16', // 8. Lime Green (Yoda / Piccolo)
-  '#f97316', // 9. Bright Orange (Denji / Chainsaw)
-  '#e11d48', // 10. Ruby Rose (Tanjiro)
-  '#14b8a6', // 11. Teal Mint (Satoru Gojo)
-  '#6366f1', // 12. Indigo Blue (Megumi)
-  '#d946ef', // 13. Neon Fuchsia (Jojo / Star Platinum)
-  '#eab308', // 14. Bright Yellow (Pikachu / Saitama)
-  '#64748b', // 15. Slate Steel (Kakashi / Levi)
-  '#fb7185', // 16. Coral Salmon (Sakura)
-  '#0284c7', // 17. Deep Sky Blue (Aqua / Megumin)
-  '#a855f7', // 18. Vivid Violet (Beerus)
-  '#4ade80', // 19. Light Green (Gon)
-  '#fbbf24', // 20. Sun Gold (Dio Brando)
-];
+
 
 // 6 Funny Anime / Meme Faces ported from เกมเศรษฐีวงเหล้า
 // An anime face, drawn big enough to read at the size a token actually is on
@@ -67,26 +49,7 @@ export const PLAYER_3D_COLORS = [
 // a table of players is not six copies of one expression.
 const animeFaceCache = new Map<string, THREE.CanvasTexture>();
 
-// One character per seat colour, fixed. Hashing the player id gave everyone a
-// different figure every game, so nobody could learn that the red one is the
-// player in the straw hat. The colour is the character now: same seat, same
-// face, same hair, every time.
-//
-// hat: 0 straw hat · 1 headband · 2 twin tails · 3 spiked up
-const FIGURE_CAST = [
-  { hair: '#2b2440', skin: '#ffe0c4', eyes: '#0ea5e9', face: 0, hat: 0 }, // 1 red
-  { hair: '#1e3a5f', skin: '#f8d3b0', eyes: '#0369a1', face: 2, hat: 1 }, // 2 blue
-  { hair: '#0f766e', skin: '#ffd8bc', eyes: '#059669', face: 3, hat: 3 }, // 3 green
-  { hair: '#c2410c', skin: '#eec6a6', eyes: '#b45309', face: 4, hat: 2 }, // 4 amber
-  { hair: '#4c1d95', skin: '#ffe6d0', eyes: '#7c3aed', face: 5, hat: 0 }, // 5 violet
-  { hair: '#9d174d', skin: '#ffe0c4', eyes: '#e11d48', face: 1, hat: 1 }, // 6 pink
-  { hair: '#155e75', skin: '#f3cba8', eyes: '#06b6d4', face: 0, hat: 2 }, // 7 cyan
-  { hair: '#3f6212', skin: '#f8d3b0', eyes: '#4d7c0f', face: 2, hat: 3 }, // 8 lime
-  { hair: '#7c2d12', skin: '#ffd8bc', eyes: '#ea580c', face: 3, hat: 0 }, // 9 orange
-  { hair: '#881337', skin: '#ffe6d0', eyes: '#be123c', face: 4, hat: 1 }, // 10 ruby
-  { hair: '#134e4a', skin: '#eec6a6', eyes: '#0d9488', face: 5, hat: 2 }, // 11 teal
-  { hair: '#312e81', skin: '#ffe0c4', eyes: '#4f46e5', face: 1, hat: 3 }, // 12 indigo
-];
+
 
 export function createAnimeFaceTexture(typeIndex: number, irisColor: string): THREE.CanvasTexture {
   const key = `${typeIndex % 6}|${irisColor}`;
@@ -1028,15 +991,16 @@ const PlayerToken3D: React.FC<{
   isCurrentTurn: boolean;
   players: PlayerRecord[];
   positions: Record<string, number>;
-}> = ({ player, targetTileIndex, playerIndex, isCurrentTurn, players, positions }) => {
+  looks?: PlayerLooks | null;
+}> = ({ player, targetTileIndex, playerIndex, isCurrentTurn, players, positions, looks }) => {
   const meshRef = useRef<THREE.Group>(null);
   const turnBeamRef = useRef<THREE.Group>(null);
 
   const [tx, ty, tz] = getSuperTile3DPosition(targetTileIndex);
-  const color = PLAYER_3D_COLORS[playerIndex % PLAYER_3D_COLORS.length];
-
-  // The seat decides the character, so the colour is something you can learn.
-  const cast = FIGURE_CAST[playerIndex % FIGURE_CAST.length];
+  // Drawn at random for each game; see playerLooks.ts.
+  const look = lookOf(looks, players, player.id);
+  const color = PLAYER_3D_COLORS[look.color];
+  const cast = FIGURE_CAST[look.figure];
 
   const faceTexture = useMemo(() => {
     if (typeof window === 'undefined') return null;
@@ -1570,6 +1534,7 @@ const SuperBoard3DBase: React.FC<SuperBoard3DProps> = ({
   activeStepPlayerId,
   bankrupt,
   rowBonus,
+  looks,
   dice,
   isRolling,
   showDice,
@@ -1626,8 +1591,7 @@ const SuperBoard3DBase: React.FC<SuperBoard3DProps> = ({
           {SUPER_MONOPOLY_TILES.map((tile) => {
             const ownership = properties[tile.index] || null;
             const ownerPlayer = ownership ? players.find((p) => p.id === ownership.ownerId) : null;
-            const ownerIdx = ownerPlayer ? players.indexOf(ownerPlayer) : -1;
-            const ownerColor = ownerIdx >= 0 ? PLAYER_3D_COLORS[ownerIdx % PLAYER_3D_COLORS.length] : null;
+            const ownerColor = ownerPlayer ? PLAYER_3D_COLORS[lookOf(looks, players, ownerPlayer.id).color] : null;
 
             return (
               <Tile3D
@@ -1663,6 +1627,7 @@ const SuperBoard3DBase: React.FC<SuperBoard3DProps> = ({
                 isCurrentTurn={isTurn}
                 players={players}
                 positions={positions}
+                looks={looks}
               />
             );
           })}

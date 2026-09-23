@@ -2,7 +2,7 @@ import React from 'react';
 import { Modal } from '@/components/common/Modal';
 import { PlayerRecord } from '@/types/database';
 import { SUPER_MONOPOLY_TILES, formatMoneyM, ROW_NAMES, rowOfTile } from './superMonopolyData';
-import { PLAYER_3D_COLORS } from './SuperBoard3D';
+import { PlayerLooks, colorOf } from './playerLooks';
 import { Wallet, ArrowRight } from 'lucide-react';
 
 export interface StartingHand {
@@ -22,6 +22,7 @@ interface StartingHandModalProps {
   deal: StartingDeal | null;
   players: PlayerRecord[];
   myId: string | null;
+  looks?: PlayerLooks | null;
   onClose: () => void;
 }
 
@@ -30,6 +31,7 @@ export const StartingHandModal: React.FC<StartingHandModalProps> = ({
   deal,
   players,
   myId,
+  looks,
   onClose,
 }) => {
   if (!isOpen || !deal) return null;
@@ -37,8 +39,7 @@ export const StartingHandModal: React.FC<StartingHandModalProps> = ({
   const mine = myId ? deal.hands[myId] : null;
   const others = players.filter((p) => p.id !== myId && deal.hands[p.id]);
 
-  const colourOf = (p: PlayerRecord) =>
-    PLAYER_3D_COLORS[players.indexOf(p) % PLAYER_3D_COLORS.length];
+  const colourOf = (p: PlayerRecord) => colorOf(looks, players, p.id);
 
   return (
     <Modal

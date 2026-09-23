@@ -10,7 +10,7 @@ import {
   RowBonus,
 } from './superMonopolyData';
 import { PropertyOwnership, PlayerRecord } from '@/types/database';
-import { PLAYER_3D_COLORS } from './SuperBoard3D';
+import { PlayerLooks, colorOf } from './playerLooks';
 
 interface FlightPickerModalProps {
   isOpen: boolean;
@@ -19,6 +19,7 @@ interface FlightPickerModalProps {
   players: PlayerRecord[];
   myId: string | null;
   rowBonus?: RowBonus | null;
+  looks?: PlayerLooks | null;
   onChoose: (destIndex: number) => void;
   onClose: () => void;
 }
@@ -44,12 +45,12 @@ export const FlightPickerModal: React.FC<FlightPickerModalProps> = ({
   players,
   myId,
   rowBonus,
+  looks,
   onChoose,
 }) => {
   if (!isOpen) return null;
 
-  const colourOf = (p: PlayerRecord) =>
-    PLAYER_3D_COLORS[players.indexOf(p) % PLAYER_3D_COLORS.length];
+  const colourOf = (p: PlayerRecord) => colorOf(looks, players, p.id);
 
   // Who actually holds land, so the key only lists people worth avoiding.
   const landlords = players.filter((p) =>

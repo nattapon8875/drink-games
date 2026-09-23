@@ -34,6 +34,7 @@ import { showToast } from '@/lib/alerts';
 import { PenaltyNotice } from './PenaltyModal';
 import { RentReceipt } from './RentReceiptModal';
 import { StartingDeal } from './StartingHandModal';
+import { PlayerLooks, assignLooks } from './playerLooks';
 
 // Buying your way out of jail costs a turn's worth of nothing if it is free, and
 // a fortune if it is steep. Half a million is roughly two bare-land rents.
@@ -130,6 +131,8 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
   const rowBonus: RowBonus | null = rawState.rowBonus || null;
   // The hands dealt at the start, kept so the summary can be shown once.
   const startingDeal: StartingDeal | null = rawState.startingDeal || null;
+  // Each player's colour and character, drawn at random by the host.
+  const playerLooks: PlayerLooks = (rawState.looks as PlayerLooks) || {};
   // Out of the game: no token, no turn, and their land is back on the market.
   const bankrupt: Record<string, boolean> = rawState.bankrupt || {};
   const winnerId: string | null = (rawState.winnerId as string | null) || null;
@@ -306,10 +309,12 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     endedTurnRef.current = '';
   }, [room.current_turn_player_id]);
 
-  // Ensure cash initialized for all players
+  // Ensure cash initialized for all players, and give each one a random colour
+  // and character.
   useEffect(() => {
     if (!isHost || players.length === 0) return;
-    let needInit = false;
+    const newLooks = assignLooks(players.map((p) => p.id), playerLooks);
+    let needInit = Boolean(newLooks);
     const initialCash = { ...cash };
     const initialPositions = { ...positions };
 
@@ -328,9 +333,10 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
       onUpdateGameState({
         cash: initialCash,
         positions: initialPositions,
+        ...(newLooks ? { looks: newLooks } : {}),
       });
     }
-  }, [players, isHost, cash, positions, onUpdateGameState]);
+  }, [players, isHost, cash, positions, playerLooks, onUpdateGameState]);
 
   // The history as of right now, not as of the render this callback was built
   // in. A walk writes its lines and immediately opens a modal; acknowledging it
@@ -2493,6 +2499,7 @@ export function useSuperMonopolyEngine(props: BaseGameProps) {
     bankrupt,
     bankruptcyNotice,
     rowBonus,
+    playerLooks,
     startingDeal,
     winnerId,
     debtDecision,

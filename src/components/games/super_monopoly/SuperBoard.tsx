@@ -8,6 +8,7 @@ import {
   rowOfTile,
   RowBonus,
 } from './superMonopolyData';
+import { PlayerLooks, colorOf } from './playerLooks';
 import { Home, Building2, Sparkles, Shield, Zap, Droplets } from 'lucide-react';
 
 interface SuperBoardProps {
@@ -19,6 +20,8 @@ interface SuperBoardProps {
   activeStepPlayerId?: string | null;
   bankrupt?: Record<string, boolean>;
   rowBonus?: RowBonus | null;
+  // Who is which colour this game; the same draw the 3D board uses.
+  looks?: PlayerLooks | null;
   onTileClick: (tile: SuperPropertyTile) => void;
 }
 
@@ -102,6 +105,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
   activeStepPlayerId,
   bankrupt,
   rowBonus,
+  looks,
   onTileClick,
 }) => {
   // 40 Tiles Perimeter Mapping on 11x11 Grid
@@ -122,13 +126,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
     }
   };
 
-  const getPlayerColor = (pIdx: number): string => {
-    const colors = [
-      '#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6',
-      '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#e11d48',
-    ];
-    return colors[pIdx % colors.length];
-  };
+  const getPlayerColor = (p: PlayerRecord): string => colorOf(looks, players, p.id);
 
   // Compact display names that fit cleanly on 2D board tiles without ugly ellipsis truncation
   const getTileShortName = (name: string): string => {
@@ -165,8 +163,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
           const { col, row } = getGridPosition(tile.index);
           const ownership = properties[tile.index];
           const ownerPlayer = ownership ? players.find((p) => p.id === ownership.ownerId) : null;
-          const ownerIdx = ownerPlayer ? players.indexOf(ownerPlayer) : -1;
-          const ownerColor = ownerIdx >= 0 ? getPlayerColor(ownerIdx) : '#f59e0b';
+          const ownerColor = ownerPlayer ? getPlayerColor(ownerPlayer) : '#f59e0b';
           const boost = boostOf(tile, ownership, rowBonus);
           const isCorner = tile.index === 0 || tile.index === 10 || tile.index === 20 || tile.index === 30;
           const isStepActive = activeStepTileIndex === tile.index;
@@ -284,7 +281,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
                         key={p.id}
                         player={p}
                         seat={players.indexOf(p)}
-                        color={getPlayerColor(players.indexOf(p))}
+                        color={getPlayerColor(p)}
                         isTurn={p.id === currentTurnPlayerId}
                         size="corner"
                       />
@@ -442,7 +439,7 @@ const SuperBoardBase: React.FC<SuperBoardProps> = ({
                       key={p.id}
                       player={p}
                       seat={players.indexOf(p)}
-                      color={getPlayerColor(players.indexOf(p))}
+                      color={getPlayerColor(p)}
                       isTurn={p.id === currentTurnPlayerId}
                       size="tile"
                     />
