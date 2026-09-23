@@ -93,7 +93,7 @@ export const CardCircle: React.FC<CardCircleProps> = ({
               <div className="absolute bottom-1 right-1 text-[10px] text-amber-300">♦</div>
 
               <div className="text-[10px] font-black tracking-widest text-amber-200 uppercase mt-1">
-                Doraemon
+                Kings
               </div>
 
               <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[rgb(var(--c-surface))]/40 border border-amber-400/50 flex flex-col items-center justify-center shadow-inner">

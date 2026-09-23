@@ -158,7 +158,7 @@ export const DoraemonActionModal: React.FC<DoraemonActionModalProps> = ({
       {/* Top Banner */}
       <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-black mb-3">
         <Sparkles className="w-3.5 h-3.5" />
-        <span>ผลการจั่วไพ่โดราเอมอน</span>
+        <span>ผลการจั่วไพ่คิงส์</span>
       </div>
 
       {/* Card Presentation Display */}

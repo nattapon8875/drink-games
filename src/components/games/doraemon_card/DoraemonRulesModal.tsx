@@ -97,7 +97,7 @@ export const DoraemonRulesModal: React.FC<DoraemonRulesModalProps> = ({
     if (!isHost) return;
     const confirmed = await showConfirm(
       'คืนค่ากฎดั้งเดิม?',
-      'ต้องการรีเซ็ตกฎของไพ่โดราเอมอนและคำสั่ง King ทุกใบกลับเป็นค่าเริ่มต้นใช่หรือไม่?',
+      'ต้องการรีเซ็ตกฎของไพ่คิงส์และคำสั่ง King ทุกใบกลับเป็นค่าเริ่มต้นใช่หรือไม่?',
       'รีเซ็ตกฎเดิม',
       'ยกเลิก'
     );
@@ -105,7 +105,7 @@ export const DoraemonRulesModal: React.FC<DoraemonRulesModalProps> = ({
       setRules(DEFAULT_DORAEMON_RULES);
       setSelectedKingMode('preset');
       setPresetRules(DEFAULT_KING_PRESET_RULES);
-      showToast('คืนค่ากฎโดราเอมอนมาตรฐานแล้ว', 'success');
+      showToast('คืนค่ากฎไพ่คิงส์มาตรฐานแล้ว', 'success');
     }
   };
 
@@ -115,7 +115,7 @@ export const DoraemonRulesModal: React.FC<DoraemonRulesModalProps> = ({
     try {
       await onSaveRules(rules, selectedKingMode, presetRules);
       setSavedSuccess(true);
-      showToast('บันทึกกฎไพ่โดราเอมอนเรียบร้อยแล้ว!', 'success');
+      showToast('บันทึกกฎไพ่คิงส์เรียบร้อยแล้ว!', 'success');
       setTimeout(() => {
         onClose();
       }, 700);
@@ -130,7 +130,7 @@ export const DoraemonRulesModal: React.FC<DoraemonRulesModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isHost ? '⚙️ ปรับแต่งกฎไพ่โดราเอมอน (A - K)' : '📜 กฎไพ่โดราเอมอน (A - K)'}
+      title={isHost ? '⚙️ ปรับแต่งกฎไพ่คิงส์ (A - K)' : '📜 กฎไพ่คิงส์ (A - K)'}
       className="max-w-xl max-h-[88vh] flex flex-col p-4 sm:p-5"
     >
       {/* Navigation Tabs */}

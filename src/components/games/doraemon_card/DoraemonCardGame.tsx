@@ -287,7 +287,7 @@ export const DoraemonCardGame: React.FC<DoraemonCardGameProps> = ({
           <div>
             <div className="text-[10px] uppercase tracking-wider text-amber-300 font-black flex items-center gap-1">
               <ShieldAlert className="w-3 h-3 text-amber-400" />
-              <span>กฎกลางโดราเอมอนประจำวง</span>
+              <span>กฎกลางประจำวง</span>
             </div>
             <div className="text-xs sm:text-sm font-black text-white">
               ห้ามชี้นิ้วเด็ดขาด! <span className="text-amber-300">ใครเผลอชี้นิ้ว ดื่ม 1 อึก</span>

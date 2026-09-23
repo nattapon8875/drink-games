@@ -258,7 +258,7 @@ export default function LobbyPage() {
                 : room?.game_type === 'spin-bottle'
                 ? 'หมุนขวดวัดใจ'
                 : room?.game_type === 'doraemon-card'
-                ? 'เกมไพ่โดราเอมอน'
+                ? 'เกมไพ่คิงส์'
                 : room?.game_type === 'wheel'
                 ? 'วงล้อเสี่ยงทายวงเหล้า'
                 : room?.game_type === 'crocodile'
@@ -317,7 +317,7 @@ export default function LobbyPage() {
             onClick={() => setShowCustomModal(true)}
             className="text-xs sm:text-sm font-black border-2 border-[rgb(var(--c-surface-3))]"
           >
-            📜 {isHost ? 'ปรับแต่งกฎไพ่โดราเอมอน (A-K)' : 'ดูกฎไพ่โดราเอมอน (A-K)'}
+            📜 {isHost ? 'ปรับแต่งกฎไพ่คิงส์ (A-K)' : 'ดูกฎไพ่คิงส์ (A-K)'}
           </Button>
         )}
 

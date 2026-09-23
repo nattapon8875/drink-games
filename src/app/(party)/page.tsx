@@ -50,8 +50,8 @@ const AVAILABLE_GAMES: GameInfo[] = [
   },
   {
     id: 'doraemon-card',
-    title: 'เกมไพ่โดราเอมอน',
-    subtitle: 'Doraemon Drinking Card',
+    title: 'เกมไพ่คิงส์',
+    subtitle: 'Kings Drinking Card',
     description: 'จั่วไพ่ 52 ใบ ลุ้นบทลงโทษสุดฮา บัดดี้ คนไร้ตัวตน และจิ๊กซอว์คิง 4 ส่วน!',
     minPlayers: 2,
     maxPlayers: 15,
