@@ -261,7 +261,7 @@ export function useRoomRealtime(roomCode: string, currentUser: UnifiedUser | nul
           const data = await res.json();
           if (data.room) setRoom((prev) => keepIfUnchanged(prev, data.room));
           if (data.players) setPlayers((prev) => keepIfUnchanged(prev, data.players));
-        } else if (res.status === 403) {
+        } else if (res.status === 403 || res.status === 409) {
           const errData = await res.json().catch(() => ({}));
           setError(errData.error || 'คุณถูกเตะออกจากห้องนี้แล้ว');
         }

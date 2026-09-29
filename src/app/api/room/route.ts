@@ -4,8 +4,55 @@ import { isSupabaseConfigured } from '@/lib/supabase/client';
 import { serverStore } from '@/lib/serverRoomStore';
 import { RoomRecord, PlayerRecord } from '@/types/database';
 
+// A listed room disappears once its host has missed a few heartbeats (sent every
+// 15s), so the list does not fill with rooms nobody is sitting in. Rooms are
+// never deleted from the store, so without this they would be listed forever.
+const LISTED_HOST_FRESH_MS = 45000;
+const SUPER_MAX_PLAYERS = 8;
+
+interface OpenRoomSummary {
+  code: string;
+  host_name: string;
+  host_avatar: string | null;
+  player_count: number;
+  bot_count: number;
+  created_at: string;
+}
+
+const isBot = (p: PlayerRecord) => p.line_user_id === 'bot' || p.id.startsWith('bot-');
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
+
+  // Rooms waiting for players that their host chose to show in the public list.
+  // Only a summary goes out: a room's game_state is not anyone else's business.
+  const listType = searchParams.get('list');
+  if (listType) {
+    if (isSupabaseConfigured()) {
+      return NextResponse.json({ rooms: [] });
+    }
+    const cutoff = Date.now() - LISTED_HOST_FRESH_MS;
+    const rooms: OpenRoomSummary[] = [];
+    serverStore.rooms.forEach((room, code) => {
+      if (room.game_type !== listType || room.status !== 'waiting') return;
+      if (room.game_state?.listed !== true) return;
+      const players = serverStore.players.get(code) || [];
+      if (players.length >= SUPER_MAX_PLAYERS) return;
+      const host = players.find((p) => p.id === room.host_id);
+      if (!host?.last_seen || new Date(host.last_seen).getTime() < cutoff) return;
+      rooms.push({
+        code,
+        host_name: host.display_name,
+        host_avatar: host.avatar_url,
+        player_count: players.length,
+        bot_count: players.filter(isBot).length,
+        created_at: room.created_at,
+      });
+    });
+    rooms.sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+    return NextResponse.json({ rooms });
+  }
+
   const code = searchParams.get('code')?.toUpperCase();
 
   if (!code) {
@@ -113,6 +160,12 @@ export async function POST(req: Request) {
           } else {
             // If room had a dummy guest-init player, replace or filter it out
             const cleaned = currentPlayers.filter((p) => p.id !== 'guest-init');
+
+            // With rooms in a public list, two strangers can pick the last seat
+            // at the same moment. Returning players are let back in above.
+            if (room?.game_type === 'super-monopoly' && cleaned.length >= SUPER_MAX_PLAYERS) {
+              return NextResponse.json({ error: 'ห้องนี้เต็มแล้ว (8 คน)' }, { status: 409 });
+            }
             const newPlayer: PlayerRecord = {
               ...player,
               turn_order: cleaned.length,

@@ -23,6 +23,7 @@ import {
   Trash2,
   Coins,
   Edit2,
+  Globe,
 } from 'lucide-react';
 import { BuffaloLogo } from '@/components/common/BuffaloLogo';
 
@@ -59,6 +60,7 @@ export default function SuperLobbyPage() {
     updatePlayerProfile,
     startGame,
     closeRoom,
+    updateGameState,
   } = useRoomRealtime(roomCode, user);
 
   const [starting, setStarting] = useState(false);
@@ -143,6 +145,7 @@ export default function SuperLobbyPage() {
   }, [room, roomCode, router, user]);
 
   const isHost = Boolean(room && user && room.host_id === user.id);
+  const isListed = room?.game_state?.listed === true;
 
   const handleStartGame = async () => {
     if (!isHost || starting) return;
@@ -238,7 +241,9 @@ export default function SuperLobbyPage() {
     return (
       <div className="w-full min-h-screen flex flex-col items-center justify-center p-4 max-w-md mx-auto text-center">
         <AlertCircle className="w-12 h-12 text-red-400 mb-3" />
-        <h2 className="text-lg font-black text-amber-100 mb-1">ไม่พบห้องที่ระบุ</h2>
+        <h2 className="text-lg font-black text-amber-100 mb-1">
+          {room ? 'เข้าห้องนี้ไม่ได้' : 'ไม่พบห้องที่ระบุ'}
+        </h2>
         <p className="text-xs text-amber-300/85 mb-4">{error || 'ห้องนี้อาจถูกปิดไปแล้วหรือรหัสไม่ถูกต้อง'}</p>
         <button
           onClick={() => {
@@ -461,6 +466,33 @@ export default function SuperLobbyPage() {
                   <span>{copied ? 'ก๊อปลิงก์แล้ว!' : 'คัดลอกลิงก์'}</span>
                 </button>
               </div>
+
+              {/* Whether strangers see this room in the list on /super */}
+              {isHost ? (
+                <label className="flex items-start gap-2.5 p-2.5 rounded-xl bg-[rgb(var(--c-bg-deep))] border border-[rgb(var(--c-surface-2))] cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isListed}
+                    onChange={(e) => updateGameState({ listed: e.target.checked })}
+                    className="mt-0.5 w-4 h-4 accent-yellow-400 shrink-0 cursor-pointer"
+                  />
+                  <span className="text-xs leading-relaxed">
+                    <span className="flex items-center gap-1 font-black text-[rgb(var(--c-ink))]">
+                      <Globe className="w-3.5 h-3.5" /> แสดงห้องนี้ในรายการห้อง
+                    </span>
+                    <span className="block text-[rgb(var(--c-ink-soft))] font-semibold">
+                      {isListed
+                        ? 'ใครก็กดเข้าห้องนี้ได้จากหน้าซุปเปอร์เศรษฐี'
+                        : 'ห้องส่วนตัว เข้าได้เฉพาะคนที่มีรหัสหรือลิงก์'}
+                    </span>
+                  </span>
+                </label>
+              ) : (
+                <p className="text-xs font-semibold text-[rgb(var(--c-ink-soft))] flex items-center gap-1">
+                  <Globe className="w-3.5 h-3.5" />
+                  {isListed ? 'ห้องนี้แสดงในรายการห้อง' : 'ห้องส่วนตัว (ไม่แสดงในรายการห้อง)'}
+                </p>
+              )}
 
               {/* The long invite message and the printed steps both lived here.
                   Copying the code or the link covers the same ground, and the

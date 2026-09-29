@@ -27,6 +27,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { BuffaloLogo } from '@/components/common/BuffaloLogo';
+import { OpenRoomsList } from '@/components/games/super_monopoly/OpenRoomsList';
 
 export default function SuperHomePage() {
   const router = useRouter();
@@ -215,6 +216,10 @@ export default function SuperHomePage() {
     setErrorMsg(null);
     const hostUser = getHostUser();
     const roomCode = discordRoomCode || generateRoomCode();
+    // A room opened from the button shows up in the open-rooms list, where
+    // strangers can join. One tied to a Discord voice channel is for the people
+    // in that channel, so it stays out; the host can change either in the lobby.
+    const initialState = { positions: { [hostUser.id]: 0 }, listed: !discordRoomCode };
 
     try {
       if (isSupabaseConfigured()) {
@@ -224,7 +229,7 @@ export default function SuperHomePage() {
           game_type: 'super-monopoly',
           status: 'waiting',
           current_turn_player_id: hostUser.id,
-          game_state: { positions: { [hostUser.id]: 0 } },
+          game_state: initialState,
         });
 
         if (roomError && roomError.code !== '23505') {
@@ -248,7 +253,7 @@ export default function SuperHomePage() {
           game_type: 'super-monopoly',
           status: 'waiting',
           current_turn_player_id: hostUser.id,
-          game_state: { positions: { [hostUser.id]: 0 } },
+          game_state: initialState,
           created_at: new Date().toISOString(),
         };
         const initialPlayer = {
@@ -638,8 +643,13 @@ export default function SuperHomePage() {
             </div>
           </div>
 
-          {/* Super Monopoly Feature Highlights (7 cols) */}
-          <div className="md:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Open rooms anyone can join (7 cols) */}
+          <div className="md:col-span-7">
+            <OpenRoomsList />
+          </div>
+
+          {/* Super Monopoly Feature Highlights */}
+          <div className="md:col-span-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div className="bg-[rgb(var(--c-surface))]/90 border border-[rgb(var(--c-surface-2))] rounded-2xl p-4 shadow-lg flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl bg-amber-950/80 border border-yellow-500/40 flex items-center justify-center shrink-0">
                 <Coins className="w-5 h-5 text-yellow-400" />
