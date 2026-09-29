@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/supabase/client';
 import { serverStore } from '@/lib/serverRoomStore';
+import { logStatsEvent, platformOf, hashPlayerId } from '@/lib/statsLog';
 import { RoomRecord, PlayerRecord } from '@/types/database';
 
 // A listed room disappears once its host has missed a few heartbeats (sent every
@@ -20,6 +21,18 @@ interface OpenRoomSummary {
 }
 
 const isBot = (p: PlayerRecord) => p.line_user_id === 'bot' || p.id.startsWith('bot-');
+
+function logGameStarted(req: Request, code: string, room: RoomRecord, players: PlayerRecord[]) {
+  const bots = players.filter(isBot).length;
+  logStatsEvent({
+    type: 'game_started',
+    game: room.game_type,
+    room: code,
+    platform: platformOf(req),
+    humans: players.length - bots,
+    bots,
+  });
+}
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -128,6 +141,31 @@ export async function POST(req: Request) {
               { ...player, last_seen: new Date().toISOString() },
             ]);
           }
+          if (room) {
+            const platform = platformOf(req);
+            const game = room.game_type;
+            logStatsEvent({
+              type: 'room_created',
+              game,
+              room: roomCode,
+              platform,
+              player: player ? hashPlayerId(player.id) : undefined,
+            });
+            // Solo-vs-bots skips the lobby: the room is created already playing,
+            // with the bots' seats laid out in positions before they join.
+            if (room.status === 'playing') {
+              const seats = Object.keys(room.game_state?.positions || {});
+              const bots = seats.filter((id) => id.startsWith('bot-')).length;
+              logStatsEvent({
+                type: 'game_started',
+                game,
+                room: roomCode,
+                platform,
+                humans: seats.length - bots,
+                bots,
+              });
+            }
+          }
           return NextResponse.json({ success: true, room, players: [player] });
         }
 
@@ -195,6 +233,16 @@ export async function POST(req: Request) {
                 room.current_turn_player_id = newPlayer.id;
               }
               serverStore.rooms.set(roomCode, room);
+
+              if (!isBot(newPlayer)) {
+                logStatsEvent({
+                  type: 'player_joined',
+                  game: room.game_type,
+                  room: roomCode,
+                  platform: platformOf(req),
+                  player: hashPlayerId(newPlayer.id),
+                });
+              }
             }
           }
 
@@ -210,6 +258,7 @@ export async function POST(req: Request) {
           const room = serverStore.rooms.get(roomCode);
           const players = serverStore.players.get(roomCode) || [];
           if (room && players.length > 0) {
+            if (room.status !== 'playing') logGameStarted(req, roomCode, room, players);
             room.status = 'playing';
             room.current_turn_player_id = players[0].id;
             serverStore.rooms.set(roomCode, room);
@@ -220,6 +269,9 @@ export async function POST(req: Request) {
         case 'close': {
           const room = serverStore.rooms.get(roomCode);
           if (room) {
+            if (room.status !== 'finished') {
+              logStatsEvent({ type: 'room_closed', game: room.game_type, room: roomCode });
+            }
             room.status = 'finished';
             serverStore.rooms.set(roomCode, room);
           }
@@ -230,6 +282,9 @@ export async function POST(req: Request) {
           const { status } = body;
           const room = serverStore.rooms.get(roomCode);
           if (room) {
+            if (status === 'playing' && room.status !== 'playing') {
+              logGameStarted(req, roomCode, room, serverStore.players.get(roomCode) || []);
+            }
             room.status = status;
             serverStore.rooms.set(roomCode, room);
           }
@@ -244,6 +299,10 @@ export async function POST(req: Request) {
             // a genuinely newer state from a poll that was already in flight and
             // is carrying an older board.
             const rev = ((room.game_state?.rev as number) || 0) + 1;
+            // Super Monopoly names a winner when one player is left standing.
+            if (partialState?.winnerId && !room.game_state?.winnerId) {
+              logStatsEvent({ type: 'game_finished', game: room.game_type, room: roomCode });
+            }
             room.game_state = { ...(room.game_state || {}), ...partialState, rev };
             serverStore.rooms.set(roomCode, room);
           }
