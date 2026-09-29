@@ -17,10 +17,10 @@ If the dev server starts serving a stale or broken chunk after a large edit, sto
 
 ## What this is
 
-A Thai party drinking-game hub ("Buffy Party Drink"), Next.js 14 App Router + React 18 + TypeScript + Tailwind. UI text is Thai. It runs as a normal website, inside a Discord Activity (iframe), and in LINE LIFF; `src/lib/platforms/` resolves who the user is on each.
+A Thai party drinking-game hub ("Buffy Party Drink"), Next.js 14 App Router + React 18 + TypeScript + Tailwind. UI text is Thai. It runs as a normal website, inside a Discord Activity (iframe), and in LINE LIFF; `src/lib/platforms/` resolves who the user is on each. The env vars it reads (`NEXT_PUBLIC_LIFF_ID`, `NEXT_PUBLIC_DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` for `src/app/api/discord/`) are listed in `.env.example`.
 
 Two separate front doors:
-- `/` (route group `src/app/(party)/`) - the party games: `doraemon-card`, `spin-bottle`, `wheel`, `crocodile`, `monopoly`. `play/[roomCode]/page.tsx` switches on `room.game_type`.
+- `/` (route group `src/app/(party)/`) - the party games, identified by `room.game_type`: `doraemon-card`, `spin-bottle`, `wheel`, `crocodile`, `monopoly`. A room goes `lobby/[roomCode]` → `play/[roomCode]`, and `play/[roomCode]/page.tsx` switches on `game_type`. The card game is shown to users as ไพ่คิงส์, but its `game_type`, folder (`doraemon_card/`) and component names still say Doraemon. Change only the displayed text, not the ids, because live rooms store the `game_type`.
 - `/super` - Super Monopoly, a much larger standalone game with its own lobby, play page and layout. A `super-monopoly` room opened through the party route is redirected to `/super/play/...`.
 
 The README describes an older state of the project (a 24-tile monopoly, Supabase as the only backend); trust the code over it.
